@@ -8,3 +8,4 @@ This section contains some helpful reference materials and resources for the Int
 * [Architecture of the Intel 8080](https://www.elprocus.com/know-about-architecture-of-the-intel-8080-microprocessor/)
 * [Space Invaders Wikipedia page](https://en.wikipedia.org/wiki/Space_Invaders)
 * [Classic Gaming Space Invaders (play online and more)](http://www.classicgaming.cc/classics/space-invaders/)
+* [Course materials for CS-450 Computer Graphics](https://web.engr.oregonstate.edu/~mjb/cs550/)
