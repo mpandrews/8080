@@ -9,3 +9,13 @@ This section contains some helpful reference materials and resources for the Int
 * [Space Invaders Wikipedia page](https://en.wikipedia.org/wiki/Space_Invaders)
 * [Classic Gaming Space Invaders (play online and more)](http://www.classicgaming.cc/classics/space-invaders/)
 * [Course materials for CS-450 Computer Graphics](https://web.engr.oregonstate.edu/~mjb/cs550/)
+
+### Some misc. planning notes
+* Initial timeline
+  * Get the ROM file from Professor Pfeil + any documentation he might have
+  * Mike - finish initial setup + a couple of opcodes
+  * Divide up the remaining opcodes to write (tentative deadline: Oct 23rd)
+* Miscellaneous 
+  * Figure out how to get keyboard input
+  * Figure out how to render screen using SDL
+
