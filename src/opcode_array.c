@@ -42,7 +42,7 @@ int (* const opcodes[256]) (uint8_t opcode, struct cpu_state* cpu) =
 	NULL, //0x03	INX	B
 	NULL, //0x04	INR	B
 	NULL, //0x05	DCR	B
-	NULL, //0x06	MVI	B
+	mvi, //0x06	MVI	B
 	NULL, //0x07	RLC
 	NULL, //0x08	NOP
 	NULL, //0x09	DAD	B
