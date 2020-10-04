@@ -20,7 +20,7 @@ BINDIR = bin
 DEBUG_OBJS = $(subst $(SRC_DIR),$(DEBUG_OBJ_DIR),$(SRCS:%.c=%.o))
 RELEASE_OBJS = $(subst $(SRC_DIR),$(RELEASE_OBJ_DIR),$(SRCS:%.c=%.o))
 
-CFLAGS = -std=gnu11 -Wall -Werror -Wextra -lpthread -I$(INCLUDE_DIR)
+CFLAGS = -std=gnu11 -Wall -Werror -Wextra -pthread -I$(INCLUDE_DIR)
 DEBUG_CFLAGS = -g -O0 -DVERBOSE -DDEBUG
 RELEASE_CFLAGS = -O2 -DNDEBUG
 

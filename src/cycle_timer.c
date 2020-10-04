@@ -21,7 +21,7 @@ void cycle_wait(int cycles)
 		//Adjust the target time upward by the amount of time
 		//the elapsed cycle count should have taken.
 		target.tv_nsec += count * CYCLE_TIME;
-#ifdef DEBUG
+#ifdef VERBOSE
 		fprintf(stderr, "t sec: %ld\nt nsec: %ld\n", target.tv_sec,
 				target.tv_nsec);
 #endif
