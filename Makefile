@@ -39,10 +39,11 @@ $(DEBUG_OBJ_DIR)/%.o : $(SRC_DIR)/%.c $(HEADERS) | $(DEBUG_OBJ_DIR)
 $(RELEASE_OBJ_DIR)/%.o : $(SRC_DIR)/%.c $(HEADERS) | $(RELEASE_OBJ_DIR)
 	$(CC) $(CFLAGS) $(RELEASE_CFLAGS) -c $< -o $@
 
-debug : $(DEBUG_OBJS)
+debug : $(DEBUG_OBJS) | $(BINDIR)
+	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) $^ -o $(BINDIR)/$(DEBUG_BIN)
 
-release : $(RELEASE_OBJS)
-
+release : $(RELEASE_OBJS) | $(BINDIR)
+	$(CC) $(CFLAGS) $(RELEASE_CFLAGS) $^ -o $(BINDIR)/$(BIN)
 clean :
 	rm -rf $(BINDIR) $(RELEASE_OBJ_DIR) $(DEBUG_OBJ_DIR)
 

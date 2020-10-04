@@ -20,7 +20,7 @@ int mov(uint8_t opcode, struct cpu_state* cpu)
 	//Our nice verbose debug information, slow, but we don't care
 	//for debug purposes.
 #ifdef VERBOSE
-	fprintf(stderr, "%#4x: MOV %c,%c\n",
+	fprintf(stderr, "%#4.4x: MOV %c,%c\n",
 			cpu->pc,
 			get_operand_name(GET_DESTINATION_OPERAND(opcode)),
 			get_operand_name(GET_SOURCE_OPERAND(opcode)));
@@ -54,7 +54,7 @@ int mvi(uint8_t opcode, struct cpu_state* cpu)
 	assert( (opcode & 0b11000111) == 0b00000110);
 
 #ifdef VERBOSE
-	fprintf(stderr, "%#4x: MVI %c",
+	fprintf(stderr, "%#4.4x: MVI %c\n",
 			cpu->pc,
 			get_operand_name(GET_DESTINATION_OPERAND(opcode)));
 #endif
@@ -64,6 +64,10 @@ int mvi(uint8_t opcode, struct cpu_state* cpu)
 
 	//Two-byte opcode, counting the immediate value.
 	cpu->pc += 2;
+
+#ifdef VERBOSE
+	print_registers(cpu);
+#endif
 	//Takes longer if writing to memory. 
 	if (GET_DESTINATION_OPERAND(opcode) == OPERAND_MEM)
 		return 10;

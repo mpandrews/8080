@@ -4,3 +4,4 @@ compile_commands.json
 .clangd/
 release_obj/
 debug_obj/
+bin

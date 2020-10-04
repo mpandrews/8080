@@ -139,8 +139,8 @@ static inline char get_operand_name(uint8_t operand_field)
 
 static inline void print_registers(const struct cpu_state* cpu)
 {
-	fprintf(stderr,"\tPC: %#4x\n\tBC: %#4x\n\tDE: %#4x\n"
-			"\tHL: %#4x\n\tPSW: %#4x\n",
+	fprintf(stderr,"\tPC: %#4.4x\n\tBC: %#4.4x\n\tDE: %#4.4x\n"
+			"\tHL: %#4.4x\n\tPSW: %#4.4x\n",
 			cpu->pc,
 			cpu->bc,
 			cpu->de,

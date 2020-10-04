@@ -58,10 +58,6 @@
 struct cpu_state
 {
 
-	//Mutexes for synchronization with other threads.
-	pthread_mutex_t* pin_lock;
-	pthread_mutex_t* mem_lock;
-
 	/* For interrupts, rather than use the actual 'pins',
 	 * we can just use a mutex and an additional little buffer
 	 * in which pending interrupts can be stored.
@@ -84,14 +80,14 @@ struct cpu_state
 	 * For Space Invaders, there's only one thread that might signal
 	 * an interrupt, but this is extensible.
 	 */
-	pthread_cond_t* int_cond;
-	pthread_mutex_t* int_lock;
+	pthread_cond_t * const int_cond;
+	pthread_mutex_t * const int_lock;
 
-	uint8_t *memory; //Points to an array containing the memory.
-	uint8_t *interrupt_buffer; //Points to the buffer where pending
+	uint8_t * const memory; //Points to an array containing the memory.
+	uint8_t * const interrupt_buffer; //Points to the buffer where pending
 	//interrupts are stored.
-	uint8_t *data_bus;
-	uint16_t *address_bus;
+	uint8_t * const data_bus;
+	uint16_t * const address_bus;
 
 	//Registers!
 	uint16_t sp; //Stack pointer
@@ -110,19 +106,14 @@ struct cpu_state
 	uint8_t halt_flag; //Flag for the HLT state.
 	uint8_t reset_flag;
 	/*
-	 * The interrupt enable flag has four states, rather than just two:
+	 * The interrupt enable flag has three states, rather than just two:
 	 * 0: interrupts disabled
 	 * 1: interrupts enabled
 	 * 2: interrupts should be enabled after the current opcode completes
-	 * 3: interrupts should be enabled after the following opcode
-	 * completes.
 	 *
 	 * The reason for this is that the EI instruction, which enables
 	 * interrupts, enables them following completion of the *following*
-	 * opcode.  So that opcode can set the flag to 3: at the end of the
-	 * CPU loop, it gets decremented to 2.  At the end of the next
-	 * CPU loop, it gets decremented again to 1 and interrupts are now
-	 * enabled.
+	 * opcode.
 	 */
 	uint8_t interrupt_enable_flag;
 };
@@ -132,13 +123,16 @@ struct cpu_state
 //thread initializers.
 struct system_resources
 {
-	pthread_mutex_t* mem_lock;
 	pthread_cond_t* interrupt_cond;
 	pthread_mutex_t* interrupt_lock;
 	uint8_t *memory; //Points to an array containing the memory.
 	uint8_t *interrupt_buffer; //Points to the buffer where pending
 	uint8_t *data_bus;
-	uint8_t *address_bus;
+	uint16_t *address_bus;
 };
+
+//Declaration of the CPU thread.
+
+void* cpu_thread(void*);
 
 #endif

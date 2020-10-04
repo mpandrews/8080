@@ -5,13 +5,27 @@
 #include "../include/opcode_array.h"
 #include "../include/cycle_timer.h"
 
-void cpu_thread(void* resources)
+void* cpu_thread(void* resources)
 {
 	//A shallow copy is fine, since we actually DO want
 	//to simply duplicate the pointers verbatim.
-	struct cpu_state cpu = *( (struct cpu_state*) resources);
+	//struct cpu_state cpu;
+       	struct system_resources* res = 
+		(struct system_resources*) resources;
+
+	struct cpu_state cpu = {
+		.memory = res->memory,
+		.int_lock = res->interrupt_lock,
+		.int_cond = res->interrupt_cond,
+		.interrupt_buffer = res->interrupt_buffer,
+		.address_bus = res->address_bus,
+		.data_bus = res->data_bus
+	};
+
 	uint8_t opcode;
 
+	//We can remove this assignment if we want to force the user
+	//to hardware reset on CPU boot.
 	cpu.reset_flag = 1;
 	for (;;)
 	{
@@ -21,6 +35,7 @@ void cpu_thread(void* resources)
 		{
 			cpu.pc = 0;
 			cpu.reset_flag = 0;
+			cpu.halt_flag = 0;
 			//Resetting is a 3-cycle operation.
 			cycle_wait(3);
 			continue;
@@ -43,7 +58,7 @@ void cpu_thread(void* resources)
 				if (cpu.interrupt_buffer)
 				{
 					opcode = *cpu.interrupt_buffer;
-					cpu.interrupt_buffer = 0;
+					*cpu.interrupt_buffer = 0;
 					cpu.halt_flag = 0;
 					cpu.interrupt_enable_flag = 0;
 					pthread_cond_signal(cpu.int_cond);
@@ -105,7 +120,9 @@ void cpu_thread(void* resources)
 					//increasing responsiveness.
 					cycle_wait(10);
 				else
+					//Full-wedge.
 					cycle_wait(CYCLE_CHUNK);
 		}
 	}
+	return NULL;
 }
