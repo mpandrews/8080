@@ -3,86 +3,94 @@
 #include "../include/opcode_helpers.h"
 
 #include <assert.h>
+#include <pthread.h>
+#include <stdio.h>
 
-int add(uint8_t opcode, struct cpu_state* cpu)
+int ana(uint8_t opcode, struct cpu_state* cpu)
 {
 	// TODO
 	return placeholder(opcode, cpu);
 }
 
-int adi(uint8_t opcode, struct cpu_state* cpu)
+int ani(uint8_t opcode, struct cpu_state* cpu)
 {
 	// TODO
 	return placeholder(opcode, cpu);
 }
 
-int adc(uint8_t opcode, struct cpu_state* cpu)
+int xra(uint8_t opcode, struct cpu_state* cpu)
 {
 	// TODO
 	return placeholder(opcode, cpu);
 }
 
-int aci(uint8_t opcode, struct cpu_state* cpu)
+int xri(uint8_t opcode, struct cpu_state* cpu)
 {
 	// TODO
 	return placeholder(opcode, cpu);
 }
 
-int sub(uint8_t opcode, struct cpu_state* cpu)
+int ora(uint8_t opcode, struct cpu_state* cpu)
 {
 	// TODO
 	return placeholder(opcode, cpu);
 }
 
-int sui(uint8_t opcode, struct cpu_state* cpu)
+int ori(uint8_t opcode, struct cpu_state* cpu)
 {
 	// TODO
 	return placeholder(opcode, cpu);
 }
 
-int sbb(uint8_t opcode, struct cpu_state* cpu)
+int cmp(uint8_t opcode, struct cpu_state* cpu)
 {
 	// TODO
 	return placeholder(opcode, cpu);
 }
 
-int sbi(uint8_t opcode, struct cpu_state* cpu)
+int cpi(uint8_t opcode, struct cpu_state* cpu)
 {
 	// TODO
 	return placeholder(opcode, cpu);
 }
 
-int inr(uint8_t opcode, struct cpu_state* cpu)
+int rlc(uint8_t opcode, struct cpu_state* cpu)
 {
 	// TODO
 	return placeholder(opcode, cpu);
 }
 
-int dcr(uint8_t opcode, struct cpu_state* cpu)
+int rrc(uint8_t opcode, struct cpu_state* cpu)
 {
 	// TODO
 	return placeholder(opcode, cpu);
 }
 
-int inx(uint8_t opcode, struct cpu_state* cpu)
+int ral(uint8_t opcode, struct cpu_state* cpu)
 {
 	// TODO
 	return placeholder(opcode, cpu);
 }
 
-int dcx(uint8_t opcode, struct cpu_state* cpu)
+int rar(uint8_t opcode, struct cpu_state* cpu)
 {
 	// TODO
 	return placeholder(opcode, cpu);
 }
 
-int dad(uint8_t opcode, struct cpu_state* cpu)
+int cma(uint8_t opcode, struct cpu_state* cpu)
 {
 	// TODO
 	return placeholder(opcode, cpu);
 }
 
-int daa(uint8_t opcode, struct cpu_state* cpu)
+int cmc(uint8_t opcode, struct cpu_state* cpu)
+{
+	// TODO
+	return placeholder(opcode, cpu);
+}
+
+int stc(uint8_t opcode, struct cpu_state* cpu)
 {
 	// TODO
 	return placeholder(opcode, cpu);

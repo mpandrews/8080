@@ -1,10 +1,10 @@
 #ifndef CPU
 #define CPU
 
-#include <stdint.h>
 #include <pthread.h>
+#include <stdint.h>
 
-//The maximum memory addressable by the CPU is 2^16 bytes.
+// The maximum memory addressable by the CPU is 2^16 bytes.
 #define MAX_MEMORY (1 << 16)
 
 /* Macros for pulling an 8-bit subregister out of a full 16-bit register.
@@ -21,8 +21,8 @@
  * Note that the diagrams in the manual tend not to show it this way when
  * depicting registers.  Be careful.
  */
-#define LOW_REG8(REG16) ( *((uint8_t*) &(REG16)) )
-#define HIGH_REG8(REG16) ( *( ((uint8_t*) &(REG16)) + 1) )
+#define LOW_REG8(REG16)	 (*((uint8_t*) &(REG16)))
+#define HIGH_REG8(REG16) (*(((uint8_t*) &(REG16)) + 1))
 
 /* Defines for accessing the flags.  These defines are designed
  * to be used on the 16-bit psw register member of the CPU struct.
@@ -31,15 +31,15 @@
  * bit 0 of the combined larger register.
  *
  * Usage examples:
- * 	
+ *
  * 	Set carry flag:
  * 		cpu.psw |= CARRY_FLAG;
  * 	Here, we've set the carry flag by ORing the register with 1:
- * 	0000 0001 0000 0000.  Recall that this is all little-endian, 
+ * 	0000 0001 0000 0000.  Recall that this is all little-endian,
  * 	so the first of the two bytes is the less significant.  The actual
  * 	defined constant is an int, so there will be an additional two
  * 	bytes of trailing zeroes that we don't care about.
- * 	
+ *
  * 	Clear zero flag:
  * 		cpu.psw &= ~ZERO_FLAG;
  * 	Here, we've cleared the zero flag by ANDing the register with the
@@ -49,11 +49,11 @@
  * 		if (cpu.psw & SIGN_FLAG) ...
  */
 
-#define CARRY_FLAG (1u) //Bit 0.
-#define PARITY_FLAG (1u << 2) //Bit 2.
+#define CARRY_FLAG     (1u)	 // Bit 0.
+#define PARITY_FLAG    (1u << 2) // Bit 2.
 #define AUX_CARRY_FLAG (1u << 4)
-#define ZERO_FLAG (1u << 6)
-#define SIGN_FLAG (1u << 7)
+#define ZERO_FLAG      (1u << 6)
+#define SIGN_FLAG      (1u << 7)
 
 struct cpu_state
 {
@@ -80,30 +80,30 @@ struct cpu_state
 	 * For Space Invaders, there's only one thread that might signal
 	 * an interrupt, but this is extensible.
 	 */
-	pthread_cond_t * const int_cond;
-	pthread_mutex_t * const int_lock;
+	pthread_cond_t* const int_cond;
+	pthread_mutex_t* const int_lock;
 
-	uint8_t * const memory; //Points to an array containing the memory.
-	uint8_t * const interrupt_buffer; //Points to the buffer where pending
-	//interrupts are stored.
-	uint8_t * const data_bus;
-	uint16_t * const address_bus;
+	uint8_t* const memory; // Points to an array containing the memory.
+	uint8_t* const interrupt_buffer; // Points to the buffer where pending
+	// interrupts are stored.
+	uint8_t* const data_bus;
+	uint16_t* const address_bus;
 
-	//Registers!
-	uint16_t sp; //Stack pointer
-	uint16_t pc; //Program counter;
-	uint16_t bc; //The B and C registers.
-	uint16_t de; //D and E
-	uint16_t hl; //H and L
+	// Registers!
+	uint16_t sp; // Stack pointer
+	uint16_t pc; // Program counter;
+	uint16_t bc; // The B and C registers.
+	uint16_t de; // D and E
+	uint16_t hl; // H and L
 
-	uint16_t psw; //A and flags.
+	uint16_t psw; // A and flags.
 	/* PSW is a special register, containing the Accumulator and
 	 * the flag byte.  The accumulator is the high byte, and the
 	 * flags are the low byte. This doesn't appear to be how the real
 	 * hardware does it, but this is how the manual treats it, and it
 	 * lets us work the push/pop logic more easily.
 	 */
-	uint8_t halt_flag; //Flag for the HLT state.
+	uint8_t halt_flag; // Flag for the HLT state.
 	uint8_t reset_flag;
 	/*
 	 * The interrupt enable flag has three states, rather than just two:
@@ -118,21 +118,21 @@ struct cpu_state
 	uint8_t interrupt_enable_flag;
 };
 
-//The system resources struct is just all the shared pointer members
-//of the CPU struct wrapped into a package by themselves, for passing into
-//thread initializers.
+// The system resources struct is just all the shared pointer members
+// of the CPU struct wrapped into a package by themselves, for passing into
+// thread initializers.
 struct system_resources
 {
 	pthread_cond_t* interrupt_cond;
 	pthread_mutex_t* interrupt_lock;
-	uint8_t *memory; //Points to an array containing the memory.
-	uint8_t *interrupt_buffer; //Points to the buffer where pending
-	uint8_t *data_bus;
-	uint16_t *address_bus;
+	uint8_t* memory;	   // Points to an array containing the memory.
+	uint8_t* interrupt_buffer; // Points to the buffer where pending
+	uint8_t* data_bus;
+	uint16_t* address_bus;
 };
 
-//Declaration of the CPU thread.
+// Declaration of the CPU thread.
 
-void* cpu_thread(void*);
+void* cpu_thread_routine(void*);
 
 #endif
