@@ -1,0 +1,8 @@
+tags
+compile_commands.commands.json
+compile_commands.json
+.clangd/
+release_obj/
+debug_obj/
+bin/
+.idea/
