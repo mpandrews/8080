@@ -8,8 +8,19 @@
 
 int jmp(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	// Check JMP opcodes are either 0xC3 or 0xCB
+	assert(opcode == 0b11000011 || opcode == 0b11001011);
+	(void) opcode;
+
+	uint16_t memory_address = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
+
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: JMP 0x%4.4x\n", cpu->pc, memory_address);
+	print_registers(cpu);
+#endif
+
+	cpu->pc = memory_address;
+	return 10;
 }
 
 int jcond(uint8_t opcode, struct cpu_state* cpu)
