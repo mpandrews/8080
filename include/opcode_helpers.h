@@ -56,8 +56,8 @@
 #define CONDITION_CARRY	      (0b011)
 #define CONDITION_PARITY_ODD  (0b100)
 #define CONDITION_PARITY_EVEN (0b101)
-#define CONDITION_SIGN	      (0b110)
-#define CONDITION_NO_SIGN     (0b111)
+#define CONDITION_NO_SIGN     (0b110)
+#define CONDITION_SIGN	      (0b111)
 
 // Returns 1 if even parity, 0 if odd parity.
 static inline uint8_t check_parity(uint8_t value)
@@ -141,6 +141,70 @@ static inline void print_registers(const struct cpu_state* cpu)
 			cpu->memory[cpu->sp],
 			*cpu->address_bus,
 			*cpu->data_bus);
+}
+
+/* */
+static inline char* get_condition_name(const uint8_t opcode)
+{
+	switch(GET_CONDITION(opcode))
+	{
+	 case CONDITION_NOT_ZERO: return "NZ";
+         case CONDITION_ZERO: return "Z";
+         case CONDITION_NO_CARRY: return "NC";
+         case CONDITION_CARRY: return "C";
+         case CONDITION_PARITY_ODD: return "PO";
+         case CONDITION_PARITY_EVEN: return "PE";
+         case CONDITION_SIGN: return "M";
+         case CONDITION_NO_SIGN: return "P";
+	}
+	return "??";
+}
+
+/* evaluate_condition is a helper function that takes an opcode and the contents
+ * of the flags register as arguments. It determines which condition the opcode
+ * indicates, switches on the condition, and returns the results of the
+ * evaluated condition*/
+static inline uint8_t evaluate_condition(const uint8_t opcode, const uint16_t psw)
+{
+	uint8_t conditionMet = 0;
+	switch(GET_CONDITION(opcode))
+	{
+	 case CONDITION_NOT_ZERO:
+                 if(!(psw & ZERO_FLAG))
+                         conditionMet = 1;
+                 break;
+         case CONDITION_ZERO:
+                 if(psw & ZERO_FLAG)
+                         conditionMet = 1;
+                 break;
+         case CONDITION_NO_CARRY:
+                 if(!(psw & CARRY_FLAG))
+                         conditionMet = 1;
+                 break;
+         case CONDITION_CARRY:
+                 if(psw & CARRY_FLAG)
+                         conditionMet = 1;
+                 break;
+         case CONDITION_PARITY_ODD:
+                 // Parity bit is set when parity is even
+                 if(!(psw & PARITY_FLAG))
+                         conditionMet = 1;
+                 break;
+         case CONDITION_PARITY_EVEN:
+                 // Parity bit is set when parity is even
+                 if(psw & PARITY_FLAG)
+                         conditionMet = 1;
+                 break;
+         case CONDITION_SIGN:
+                 if(psw & SIGN_FLAG)
+                         conditionMet = 1;
+                 break;
+         case CONDITION_NO_SIGN:
+                 if(!(psw & SIGN_FLAG))
+                         conditionMet = 1;
+                 break;
+	}
+	return conditionMet;
 }
 
 #endif
