@@ -1,5 +1,5 @@
-#include "../include/cpu.h"
-#include "../include/opcode_decls.h"
+#include "cpu.h"
+#include "opcode_decls.h"
 
 #include <stdlib.h>
 

@@ -1,5 +1,5 @@
-#include "../include/cpu.h"
-#include "../include/opcode_helpers.h"
+#include "cpu.h"
+#include "opcode_helpers.h"
 
 #include <assert.h>
 #include <pthread.h>
