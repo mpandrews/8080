@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-//Diagnostic print function to dump the CPU's state to stderr.
+// Diagnostic print function to dump the CPU's state to stderr.
 static inline void print_registers(const struct cpu_state* cpu)
 {
 	uint8_t flags[9];
@@ -21,7 +21,7 @@ static inline void print_registers(const struct cpu_state* cpu)
 			"\tHL:  0x%4.4x -> 0x%2.2x\n"
 			"\tPSW: 0x%4.4x\n"
 			"\tSP:  0x%4.4x -> 0x%2.2x\n"
-			"\tAddress Bus: 0x%4.4x\n"
+			"\tAddress Bus: 0x%4.4x -> 0x%2.2x\n"
 			"\tData Bus: 0x%2.2x\n"
 			"\tFlags: %s\n"
 			"\t       SZ-A-P-C\n",
@@ -37,6 +37,7 @@ static inline void print_registers(const struct cpu_state* cpu)
 			cpu->sp,
 			cpu->memory[cpu->sp],
 			*cpu->address_bus,
+			cpu->memory[*cpu->address_bus],
 			*cpu->data_bus,
 			flags);
 }
