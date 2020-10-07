@@ -16,10 +16,14 @@ int jmp(uint8_t opcode, struct cpu_state* cpu)
 
 #ifdef VERBOSE
 	fprintf(stderr, "0x%4.4x: JMP 0x%4.4x\n", cpu->pc, memory_address);
-	print_registers(cpu);
 #endif
 
 	cpu->pc = memory_address;
+
+#ifdef VERBOSE
+	print_registers(cpu);
+#endif
+
 	return 10;
 }
 
