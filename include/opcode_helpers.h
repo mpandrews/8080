@@ -3,6 +3,7 @@
 
 #include "cpu.h"
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -153,19 +154,19 @@ static inline void print_registers(const struct cpu_state* cpu)
  * PE - parity even
  * M  - "minus", sign bit is set
  * P - "plus", sign bit is reset
-*/
+ */
 static inline char* get_condition_name(const uint8_t opcode)
 {
-	switch(GET_CONDITION(opcode))
+	switch (GET_CONDITION(opcode))
 	{
-	 case CONDITION_NOT_ZERO: return "NZ";
-         case CONDITION_ZERO: return "Z";
-         case CONDITION_NO_CARRY: return "NC";
-         case CONDITION_CARRY: return "C";
-         case CONDITION_PARITY_ODD: return "PO";
-         case CONDITION_PARITY_EVEN: return "PE";
-         case CONDITION_SIGN: return "M";
-         case CONDITION_NO_SIGN: return "P";
+	case CONDITION_NOT_ZERO: return "NZ";
+	case CONDITION_ZERO: return "Z";
+	case CONDITION_NO_CARRY: return "NC";
+	case CONDITION_CARRY: return "C";
+	case CONDITION_PARITY_ODD: return "PO";
+	case CONDITION_PARITY_EVEN: return "PE";
+	case CONDITION_SIGN: return "M";
+	case CONDITION_NO_SIGN: return "P";
 	}
 	return "??";
 }
@@ -174,47 +175,30 @@ static inline char* get_condition_name(const uint8_t opcode)
  * of the flags register as arguments. It determines which condition the opcode
  * indicates, switches on the condition, and returns the results of the
  * evaluated condition*/
-static inline uint8_t evaluate_condition(const uint8_t opcode, const uint16_t psw)
+static inline uint8_t evaluate_condition(
+		const uint8_t opcode, const uint16_t psw)
 {
-	uint8_t conditionMet = 0;
-	switch(GET_CONDITION(opcode))
+	switch (GET_CONDITION(opcode))
 	{
-	 case CONDITION_NOT_ZERO:
-                 if(!(psw & ZERO_FLAG))
-                         conditionMet = 1;
-                 break;
-         case CONDITION_ZERO:
-                 if(psw & ZERO_FLAG)
-                         conditionMet = 1;
-                 break;
-         case CONDITION_NO_CARRY:
-                 if(!(psw & CARRY_FLAG))
-                         conditionMet = 1;
-                 break;
-         case CONDITION_CARRY:
-                 if(psw & CARRY_FLAG)
-                         conditionMet = 1;
-                 break;
-         case CONDITION_PARITY_ODD:
-                 // Parity bit is set when parity is even
-                 if(!(psw & PARITY_FLAG))
-                         conditionMet = 1;
-                 break;
-         case CONDITION_PARITY_EVEN:
-                 // Parity bit is set when parity is even
-                 if(psw & PARITY_FLAG)
-                         conditionMet = 1;
-                 break;
-         case CONDITION_SIGN:
-                 if(psw & SIGN_FLAG)
-                         conditionMet = 1;
-                 break;
-         case CONDITION_NO_SIGN:
-                 if(!(psw & SIGN_FLAG))
-                         conditionMet = 1;
-                 break;
+	case CONDITION_NOT_ZERO: return !(psw & ZERO_FLAG);
+	case CONDITION_ZERO: return psw & ZERO_FLAG;
+	case CONDITION_NO_CARRY: return !(psw & CARRY_FLAG);
+	case CONDITION_CARRY: return psw & CARRY_FLAG;
+	// Parity bit is set when parity is even
+	case CONDITION_PARITY_ODD: return !(psw & PARITY_FLAG);
+	// Parity bit is set when parity is even
+	case CONDITION_PARITY_EVEN: return psw & PARITY_FLAG;
+	case CONDITION_SIGN: return psw & SIGN_FLAG;
+	case CONDITION_NO_SIGN: return !(psw & SIGN_FLAG);
+	default:
+		fprintf(stderr,
+				"ERROR: evaluate_condition()"
+				"was passed 0x%4.4x, which did"
+				"not evaluate to any condition!",
+				opcode);
+		exit(1);
 	}
-	return conditionMet;
+	return 0;
 }
 
 #endif

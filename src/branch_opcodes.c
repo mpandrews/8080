@@ -36,10 +36,7 @@ int jcond(uint8_t opcode, struct cpu_state* cpu)
 
 	// Verbose debug info
 #ifdef VERBOSE
-	fprintf(stderr,
-			"0x%4.4x: J%s\n",
-			cpu->pc,
-			get_condition_name(opcode));
+	fprintf(stderr, "0x%4.4x: J%s\n", cpu->pc, get_condition_name(opcode));
 #endif
 
 	// Determine which condition this version of jcond is meant to check.
@@ -50,12 +47,12 @@ int jcond(uint8_t opcode, struct cpu_state* cpu)
 	// which is the next 2 bytes after the jcond opcode. If the condition
 	// was not met, then increment the program counter by 3 to the next
 	// opcode
-	if(conditionMet)
-		cpu->pc = *((uint16_t*) &cpu->memory[cpu->pc+1]);
+	if (conditionMet)
+		cpu->pc = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
 	else
 		cpu->pc += 3;
 
-	// More debug information.
+		// More debug information.
 #ifdef VERBOSE
 	print_registers(cpu);
 #endif
