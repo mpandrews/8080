@@ -143,7 +143,17 @@ static inline void print_registers(const struct cpu_state* cpu)
 			*cpu->data_bus);
 }
 
-/* */
+/* get_condition_name returns the name of the conditional opcode based
+ * on bits 3-5 of the opcode.
+ * NZ - not zero
+ * Z  - zero
+ * NC - no carry
+ * C  - carry
+ * PO - parity odd
+ * PE - parity even
+ * M  - "minus", sign bit is set
+ * P - "plus", sign bit is reset
+*/
 static inline char* get_condition_name(const uint8_t opcode)
 {
 	switch(GET_CONDITION(opcode))
