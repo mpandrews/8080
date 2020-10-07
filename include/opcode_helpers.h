@@ -124,7 +124,7 @@ static inline void print_registers(const struct cpu_state* cpu)
 	fprintf(stderr,
 			"\tPC:  0x%4.4x -> 0x%2.2x\n"
 			"\tBC:  0x%4.4x\n"
-			"\tDE:  0x%4.4x\n"
+			"\tDE:  0x%4.4x -> 0x%2.2x\n"
 			"\tHL:  0x%4.4x -> 0x%2.2x\n"
 			"\tPSW: 0x%4.4x\n"
 			"\tSP:  0x%4.4x -> 0x%2.2x\n"
@@ -134,6 +134,7 @@ static inline void print_registers(const struct cpu_state* cpu)
 			cpu->memory[cpu->pc],
 			cpu->bc,
 			cpu->de,
+			cpu->memory[cpu->de],
 			cpu->hl,
 			cpu->memory[cpu->hl],
 			cpu->psw,

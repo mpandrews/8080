@@ -120,6 +120,27 @@ int stax(uint8_t opcode, struct cpu_state* cpu)
 
 int xchg(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	// Check XCHG opcode is 0xEB
+	assert(opcode == 0b11101011);
+	(void) opcode;
+
+#ifdef VERBOSE
+	fprintf(stderr,
+			"0x%4.4x: XCHG\nBefore exchanging HL with DE:\n",
+			cpu->pc);
+	print_registers(cpu);
+#endif
+
+	uint16_t temp	     = cpu->memory[cpu->de];
+	cpu->memory[cpu->de] = cpu->memory[cpu->hl];
+	cpu->memory[cpu->hl] = temp;
+
+	cpu->pc++;
+
+#ifdef VERBOSE
+	fprintf(stderr, "After exchange:\n");
+	print_registers(cpu);
+#endif
+
+	return 5;
 }
