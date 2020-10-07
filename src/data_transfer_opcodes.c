@@ -131,9 +131,9 @@ int xchg(uint8_t opcode, struct cpu_state* cpu)
 	print_registers(cpu);
 #endif
 
-	uint16_t temp	     = cpu->memory[cpu->de];
-	cpu->memory[cpu->de] = cpu->memory[cpu->hl];
-	cpu->memory[cpu->hl] = temp;
+	uint16_t temp = cpu->de;
+	cpu->de	      = cpu->hl;
+	cpu->hl	      = temp;
 
 	cpu->pc++;
 
@@ -142,5 +142,5 @@ int xchg(uint8_t opcode, struct cpu_state* cpu)
 	print_registers(cpu);
 #endif
 
-	return 5;
+	return 4;
 }
