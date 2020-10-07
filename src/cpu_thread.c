@@ -4,6 +4,42 @@
 
 #include <pthread.h>
 #include <stdint.h>
+#include <stdio.h>
+
+//Diagnostic print function to dump the CPU's state to stderr.
+static inline void print_registers(const struct cpu_state* cpu)
+{
+	uint8_t flags[9];
+	uint8_t* f = flags;
+	for (uint8_t mask = 0x80; mask; mask >>= 1, ++f)
+		*f = mask & LOW_REG8(cpu->psw) ? '1' : '0';
+	*f = 0;
+	fprintf(stderr,
+			"\tPC:  0x%4.4x -> 0x%2.2x\n"
+			"\tBC:  0x%4.4x -> 0x%2.2x\n"
+			"\tDE:  0x%4.4x -> 0x%2.2x\n"
+			"\tHL:  0x%4.4x -> 0x%2.2x\n"
+			"\tPSW: 0x%4.4x\n"
+			"\tSP:  0x%4.4x -> 0x%2.2x\n"
+			"\tAddress Bus: 0x%4.4x\n"
+			"\tData Bus: 0x%2.2x\n"
+			"\tFlags: %s\n"
+			"\t       SZ-A-P-C\n",
+			cpu->pc,
+			cpu->memory[cpu->pc],
+			cpu->bc,
+			cpu->memory[cpu->bc],
+			cpu->de,
+			cpu->memory[cpu->de],
+			cpu->hl,
+			cpu->memory[cpu->hl],
+			cpu->psw,
+			cpu->sp,
+			cpu->memory[cpu->sp],
+			*cpu->address_bus,
+			*cpu->data_bus,
+			flags);
+}
 
 void* cpu_thread_routine(void* resources)
 {
@@ -102,7 +138,11 @@ void* cpu_thread_routine(void* resources)
 		 */
 		switch (cpu.halt_flag)
 		{
-		case 0: cycle_wait(opcodes[opcode](opcode, &cpu)); break;
+		case 0: cycle_wait(opcodes[opcode](opcode, &cpu));
+#ifdef VERBOSE
+			print_registers(&cpu);
+#endif
+			break;
 		default:
 			if (cpu.interrupt_enable_flag)
 				// Strictly speaking, halt should

@@ -3,6 +3,7 @@
 
 #include <pthread.h>
 #include <stdint.h>
+#include <stdio.h>
 
 // The maximum memory addressable by the CPU is 2^16 bytes.
 #define MAX_MEMORY (1 << 16)
@@ -130,6 +131,7 @@ struct system_resources
 	uint8_t* data_bus;
 	uint16_t* address_bus;
 };
+
 
 // Declaration of the CPU thread.
 

@@ -153,40 +153,6 @@ static inline char get_operand_name(uint8_t operand_field)
 	}
 }
 
-static inline void print_registers(const struct cpu_state* cpu)
-{
-	uint8_t flags[9];
-	uint8_t* f = flags;
-	for (uint8_t mask = 0x80; mask; mask >>= 1, ++f)
-		*f = mask & LOW_REG8(cpu->psw) ? '1' : '0';
-	*f = 0;
-	fprintf(stderr,
-			"\tPC:  0x%4.4x -> 0x%2.2x\n"
-			"\tBC:  0x%4.4x -> 0x%2.2x\n"
-			"\tDE:  0x%4.4x -> 0x%2.2x\n"
-			"\tHL:  0x%4.4x -> 0x%2.2x\n"
-			"\tPSW: 0x%4.4x\n"
-			"\tSP:  0x%4.4x -> 0x%2.2x\n"
-			"\tAddress Bus: 0x%4.4x\n"
-			"\tData Bus: 0x%2.2x\n"
-			"\tFlags: %s\n"
-			"\t       SZ-A-P-C\n",
-			cpu->pc,
-			cpu->memory[cpu->pc],
-			cpu->bc,
-			cpu->memory[cpu->bc],
-			cpu->de,
-			cpu->memory[cpu->de],
-			cpu->hl,
-			cpu->memory[cpu->hl],
-			cpu->psw,
-			cpu->sp,
-			cpu->memory[cpu->sp],
-			*cpu->address_bus,
-			*cpu->data_bus,
-			flags);
-}
-
 /* get_condition_name returns the name of the conditional opcode based
  * on bits 3-5 of the opcode.
  * NZ - not zero

@@ -36,10 +36,6 @@ int mov(uint8_t opcode, struct cpu_state* cpu)
 	// instruction.
 	++cpu->pc;
 
-	// More debug information.
-#ifdef VERBOSE
-	print_registers(cpu);
-#endif
 	// If either operand is memory, the instruction takes
 	// an additional two cycles.
 	if (GET_SOURCE_OPERAND(opcode) == OPERAND_MEM
@@ -66,10 +62,6 @@ int mvi(uint8_t opcode, struct cpu_state* cpu)
 
 	// Two-byte opcode, counting the immediate value.
 	cpu->pc += 2;
-
-#ifdef VERBOSE
-	print_registers(cpu);
-#endif
 	// Takes longer if writing to memory.
 	if (GET_DESTINATION_OPERAND(opcode) == OPERAND_MEM)
 		return 10;
