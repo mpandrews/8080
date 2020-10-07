@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.16)
 
 project(8080)
 set(CMAKE_CXX_STANDARD 11)
