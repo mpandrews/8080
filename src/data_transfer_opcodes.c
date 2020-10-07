@@ -134,9 +134,5 @@ int xchg(uint8_t opcode, struct cpu_state* cpu)
 
 	cpu->pc++;
 
-#ifdef VERBOSE
-	print_registers(cpu);
-#endif
-
 	return 4;
 }
