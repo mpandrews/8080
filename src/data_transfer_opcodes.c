@@ -125,10 +125,7 @@ int xchg(uint8_t opcode, struct cpu_state* cpu)
 	(void) opcode;
 
 #ifdef VERBOSE
-	fprintf(stderr,
-			"0x%4.4x: XCHG\nBefore exchanging HL with DE:\n",
-			cpu->pc);
-	print_registers(cpu);
+	fprintf(stderr, "0x%4.4x: XCHG\n", cpu->pc);
 #endif
 
 	uint16_t temp = cpu->de;
@@ -138,7 +135,6 @@ int xchg(uint8_t opcode, struct cpu_state* cpu)
 	cpu->pc++;
 
 #ifdef VERBOSE
-	fprintf(stderr, "After exchange:\n");
 	print_registers(cpu);
 #endif
 
