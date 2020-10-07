@@ -68,6 +68,39 @@ static inline uint8_t check_parity(uint8_t value)
 	return ~value & 1;
 }
 
+// Check to see if a result is zero, set the flag as appopriate.
+#define APPLY_ZERO_FLAG(value, flags) \
+	(flags = (!value ? flags | ZERO_FLAG : flags & ~ZERO_FLAG))
+// Check to see if a result is negative: just inspect the highest bit.
+#define APPLY_SIGN_FLAG(value, flags) \
+	(flags = (value & (1 << 7) ? flags | SIGN_FLAG : flags & ~SIGN_FLAG))
+// Because we use a 16-bit variable to hold our results, we can just
+// check to see if any bits in the second byte are set to check for a carry.
+#define APPLY_CARRY_FLAG(value, flags) \
+	(flags = (value & (0xff00) ? flags | CARRY_FLAG : flags & ~CARRY_FLAG))
+/* Setting the aux carry flag is gnarly, unfortunately.
+ * So here's what's happening.  We want to measure whether there was a carry
+ * OUT of bit 3 (0 indexed), which is the same as checking if there was a
+ * carry INTO bit 4.
+ * If bit 4 of the two operands are the same, bit 4 of the result should be
+ * 0.  If they're different, bit 4 should be 1.  That is to say, if both
+ * operands have 0 in bit 4, then obviously that should be 0 in the result.
+ * If they both have 1, then we should have 0 because we carried into bit 5.
+ * So, we XOR those two bits in the operands together and get our expected
+ * result bit.  We can then XOR it again with the real result bit: if it's true,
+ * then we didn't get what we expected, which means there was a carry into 4,
+ * so we set the flag.  We simplify it a little by just XORing the three
+ * operands together and then clearing everything except bit 4.
+ */
+#define APPLY_AUX_CARRY_FLAG(op1, op2, result, flags)                 \
+	(flags = (op1 ^ op2 ^ result) & 0x10 ? flags | AUX_CARRY_FLAG \
+					     : flags & ~AUX_CARRY_FLAG)
+
+// To apply the parity flag, we just call the parity-checker function above.
+#define APPLY_PARITY_FLAG(value, flags)                     \
+	(flags = (check_parity(value) ? flags | PARITY_FLAG \
+				      : flags & ~PARITY_FLAG))
+
 /* fetch_operand() is a helper function, which takes as its first argument
  * a copy of JUST the three bits representing a source or destination
  * code, shifted right in the case of a source code. Its second
@@ -121,26 +154,36 @@ static inline char get_operand_name(uint8_t operand_field)
 
 static inline void print_registers(const struct cpu_state* cpu)
 {
+	uint8_t flags[9];
+	uint8_t* f = flags;
+	for (uint8_t mask = 0x80; mask; mask >>= 1, ++f)
+		*f = mask & LOW_REG8(cpu->psw) ? '1' : '0';
+	*f = 0;
 	fprintf(stderr,
 			"\tPC:  0x%4.4x -> 0x%2.2x\n"
-			"\tBC:  0x%4.4x\n"
-			"\tDE:  0x%4.4x\n"
+			"\tBC:  0x%4.4x -> 0x%2.2x\n"
+			"\tDE:  0x%4.4x -> 0x%2.2x\n"
 			"\tHL:  0x%4.4x -> 0x%2.2x\n"
 			"\tPSW: 0x%4.4x\n"
 			"\tSP:  0x%4.4x -> 0x%2.2x\n"
 			"\tAddress Bus: 0x%4.4x\n"
-			"\tData Bus: 0x%2.2x\n",
+			"\tData Bus: 0x%2.2x\n"
+			"\tFlags: %s\n"
+			"\t       SZ-A-P-C\n",
 			cpu->pc,
 			cpu->memory[cpu->pc],
 			cpu->bc,
+			cpu->memory[cpu->bc],
 			cpu->de,
+			cpu->memory[cpu->de],
 			cpu->hl,
 			cpu->memory[cpu->hl],
 			cpu->psw,
 			cpu->sp,
 			cpu->memory[cpu->sp],
 			*cpu->address_bus,
-			*cpu->data_bus);
+			*cpu->data_bus,
+			flags);
 }
 
 #endif
