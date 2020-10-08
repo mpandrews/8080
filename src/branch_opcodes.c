@@ -20,10 +20,6 @@ int jmp(uint8_t opcode, struct cpu_state* cpu)
 
 	cpu->pc = memory_address;
 
-#ifdef VERBOSE
-	print_registers(cpu);
-#endif
-
 	return 10;
 }
 
@@ -51,11 +47,6 @@ int jcond(uint8_t opcode, struct cpu_state* cpu)
 		cpu->pc = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
 	else
 		cpu->pc += 3;
-
-		// More debug information.
-#ifdef VERBOSE
-	print_registers(cpu);
-#endif
 
 	return 10;
 }

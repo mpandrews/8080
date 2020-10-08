@@ -7,13 +7,13 @@
 
 int placeholder(uint8_t opcode, struct cpu_state* cpu)
 {
+	(void) cpu;
 	fprintf(stderr,
 			"Hi!  You've reached opcode 0x%2.2x!\n"
 			"We're not here to take your call right now.\n"
 			"Please implement me, or leave a message after the "
 			"tone.\n",
 			opcode);
-	print_registers(cpu);
 	exit(1);
 }
 
