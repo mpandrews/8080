@@ -15,8 +15,7 @@ int mov(uint8_t opcode, struct cpu_state* cpu)
 
 	// Note that I'm using binary literals here, because it's easier
 	// to cross-reference them against the manual.
-	assert((opcode & 0b11000000) == 0b01000000
-			&& cpu->memory[cpu->pc] != 0x76);
+	assert((opcode & 0b11000000) == 0b01000000 && opcode != 0x76);
 
 	// Our nice verbose debug information, slow, but we don't care
 	// for debug purposes.
