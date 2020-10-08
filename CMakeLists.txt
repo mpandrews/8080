@@ -44,11 +44,11 @@ add_executable(Tests
 target_include_directories(Tests 
 	PRIVATE 
 		include
-		${CMAKE_THREAD_LIBS_INIT}
 		${GTEST_INCLUDE_DIRS}
 )
 target_link_libraries(Tests
 	PRIVATE
+		${CMAKE_THREAD_LIBS_INIT}
 		${GTEST_BOTH_LIBRARIES}
 )
 
