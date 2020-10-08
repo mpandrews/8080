@@ -69,7 +69,7 @@ static inline uint8_t check_parity(uint8_t value)
 	return ~value & 1;
 }
 
-// Check to see if a result is zero, set the flag as appopriate.
+// Check to see if a result is zero, set the flag as appropriate.
 #define APPLY_ZERO_FLAG(value, flags) \
 	(flags = (!value ? flags | ZERO_FLAG : flags & ~ZERO_FLAG))
 // Check to see if a result is negative: just inspect the highest bit.

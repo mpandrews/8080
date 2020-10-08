@@ -25,8 +25,48 @@ int push(uint8_t opcode, struct cpu_state* cpu)
 
 int pop(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	// Check POP opcode is one of: 0xC1, 0xD1, 0xE1, 0xF1
+	// POP opcode should look like: 11RP0001, where RP is a register pair
+	assert((opcode & 0b11001111) == 0b11000001);
+	(void) opcode;
+
+	switch (GET_REGISTER_PAIR(opcode))
+	{
+	case REGISTER_PAIR_BC:
+#ifdef VERBOSE
+		fprintf(stderr, "0x%4.4x: POP B\n", cpu->pc);
+#endif
+		cpu->bc = *((uint16_t*) &cpu->memory[cpu->sp]);
+		break;
+	case REGISTER_PAIR_DE:
+#ifdef VERBOSE
+		fprintf(stderr, "0x%4.4x: POP D\n", cpu->pc);
+#endif
+		cpu->de = *((uint16_t*) &cpu->memory[cpu->sp]);
+		break;
+	case REGISTER_PAIR_HL:
+#ifdef VERBOSE
+		fprintf(stderr, "0x%4.4x: POP H\n", cpu->pc);
+#endif
+		cpu->hl = *((uint16_t*) &cpu->memory[cpu->sp]);
+		break;
+	case REGISTER_PAIR_SP_PSW:
+#ifdef VERBOSE
+		fprintf(stderr, "0x%4.4x: POP PSW\n", cpu->pc);
+#endif
+		cpu->psw = *((uint16_t*) &cpu->memory[cpu->sp]);
+		break;
+	default:
+#ifdef VERBOSE
+		fprintf(stderr, "ERROR: register pair not found!");
+#endif
+		exit(1);
+	}
+
+	cpu->sp += 2;
+	cpu->pc++;
+
+	return 10;
 }
 
 int xthl(uint8_t opcode, struct cpu_state* cpu)
