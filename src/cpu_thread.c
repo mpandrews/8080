@@ -1,6 +1,6 @@
-#include "../include/cpu.h"
-#include "../include/cycle_timer.h"
-#include "../include/opcode_array.h"
+#include "cpu.h"
+#include "cycle_timer.h"
+#include "opcode_array.h"
 
 #include <pthread.h>
 #include <stdint.h>

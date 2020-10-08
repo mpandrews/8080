@@ -1,4 +1,4 @@
-#include "../include/cpu.h"
+#include "cpu.h"
 
 #include <errno.h>
 #include <fcntl.h>

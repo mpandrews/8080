@@ -1,4 +1,4 @@
-#include "../include/cycle_timer.h"
+#include "cycle_timer.h"
 
 #include <errno.h>
 #include <stdio.h>

@@ -2,9 +2,13 @@
 
 ### Project Quickstart
 - Clone this repository
-- Run `make` to compile 
-- Run `./8080-debug filename` inside `/bin` to run the emulator in debug mode. 
-  - You can create a test ROM file like this: `echo -e -n \\x26\\x01\\x2e\\x01\\x36\\xff\\x46 > rom`
+- Within the project directory, create a build subdirectory. (i.e. Debug or Release) 
+- Navigate into your subdirectory, and run either of the following:
+    - `cmake -DCMAKE_BUILD_TYPE=Release ..`
+    - `cmake -DCMAKE_BUILD_TYPE=Debug ..`
+- Run `make`.  Once a build tree is established for a build type, any changes to the actual source files will be picked up by make.
+- To run the emulator, run `8080 <ROM>` where ROM is the name of the rom file you want the emulator to execute.
+- You can create a test ROM file like this: `echo -e -n \\x26\\x01\\x2e\\x01\\x36\\xff\\x46 > rom`
 
 ### Contributing Guidelines
 - Branch from master and make a pull request when ready to review.
