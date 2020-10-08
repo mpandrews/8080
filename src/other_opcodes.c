@@ -113,6 +113,14 @@ int hlt(uint8_t opcode, struct cpu_state* cpu)
 
 int nop(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	// Check NOP opcode is one of:
+	// 0x00, 0x10, 0x20, 0x30, 0x08, 0x18 0x28, 0x38
+	assert((opcode == 0b00000000) | (opcode == 0b00010000)
+			| (opcode == 0b00100000) | (opcode == 0b00110000)
+			| (opcode == 0b00001000) | (opcode == 0b00011000)
+			| (opcode == 0b00101000) | (opcode == 0b00111000));
+	(void) opcode;
+
+	cpu->pc++;
+	return 4;
 }
