@@ -5,6 +5,9 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+set(FlagSettings "-Wall" "-Werror" "-Wextra" 
+	"$<$<CONFIG:RELEASE>:-DNDEBUG-O2>"
+	"$<$<CONFIG:DEBUG>:-DVERBOSE -DDEBUG -O0>")
 
 add_library(SourceFiles
 	OBJECT
@@ -17,6 +20,10 @@ add_library(SourceFiles
 		src/logical_opcodes.c
 		src/other_opcodes.c
 )
+
+
+target_compile_options(SourceFiles PRIVATE ${FlagSettings})
+
 target_include_directories(SourceFiles PRIVATE include)
 
 add_executable(8080 
@@ -28,12 +35,7 @@ find_package(Threads)
 target_link_libraries(8080 ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(8080 PRIVATE include)
 
-target_compile_options(8080
-		PRIVATE
-			-Wall -Werror -Wextra 
-			$<$<CONFIG:RELEASE>:-DNDEBUG -O2>
-			$<$<CONFIG:DEBUG>:-DVERBOSE -DDEBUG -O0>
-)
+target_compile_options(8080 PRIVATE ${FlagSettings})
 
 enable_testing()
 find_package(GTest)
