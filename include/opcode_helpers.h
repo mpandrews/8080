@@ -115,18 +115,18 @@ static inline uint8_t check_parity(uint8_t value)
  */
 
 static inline uint8_t* fetch_operand(
-		uint8_t operand_field, const struct cpu_state* cpu)
+		uint8_t operand_field, struct cpu_state* cpu)
 {
 	switch (operand_field)
 	{
-	case OPERAND_REG_B: return &HIGH_REG8(cpu->bc);
-	case OPERAND_REG_C: return &LOW_REG8(cpu->bc);
-	case OPERAND_REG_D: return &HIGH_REG8(cpu->de);
-	case OPERAND_REG_E: return &LOW_REG8(cpu->de);
-	case OPERAND_REG_H: return &HIGH_REG8(cpu->hl);
-	case OPERAND_REG_L: return &LOW_REG8(cpu->hl);
+	case OPERAND_REG_B: return &cpu->b;
+	case OPERAND_REG_C: return &cpu->c;
+	case OPERAND_REG_D: return &cpu->d;
+	case OPERAND_REG_E: return &cpu->e;
+	case OPERAND_REG_H: return &cpu->h;
+	case OPERAND_REG_L: return &cpu->l;
 	case OPERAND_MEM: return cpu->memory + cpu->hl;
-	case OPERAND_REG_A: return &HIGH_REG8(cpu->psw);
+	case OPERAND_REG_A: return &cpu->a;
 	default:
 		fprintf(stderr,
 				"ERROR: fetch_operand()"

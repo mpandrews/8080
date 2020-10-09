@@ -7,23 +7,6 @@
 // The maximum memory addressable by the CPU is 2^16 bytes.
 #define MAX_MEMORY (1 << 16)
 
-/* Macros for pulling an 8-bit subregister out of a full 16-bit register.
- * Note that this is little-endian: the high register is in the second
- * byte, the byte with the higher memory address.  This accords with
- * how push/pop operations work.
- *
- * This can get a touch confusing when it comes to the naming:
- * as an example, take the BC register pair.  B is the high register, and
- * C is the low register.  Thus if BC is at 0x400, then C is at 0x400 and B
- * is at Ox401.  HIGH_REG8(cpu.bc) will evaluate to the byte at 0x401, which
- * is B.
- *
- * Note that the diagrams in the manual tend not to show it this way when
- * depicting registers.  Be careful.
- */
-#define LOW_REG8(REG16)	 (*((uint8_t*) &(REG16)))
-#define HIGH_REG8(REG16) (*(((uint8_t*) &(REG16)) + 1))
-
 /* Defines for accessing the flags.  These defines are designed
  * to be used on the 16-bit psw register member of the CPU struct.
  * You do not need to extract just that byte, although you can.
@@ -91,18 +74,49 @@ struct cpu_state
 
 	// Registers!
 	uint16_t sp; // Stack pointer
-	uint16_t pc; // Program counter;
-	uint16_t bc; // The B and C registers.
-	uint16_t de; // D and E
-	uint16_t hl; // H and L
-
-	uint16_t psw; // A and flags.
+	uint16_t pc; //Program counter.
+	union
+	{
+		uint16_t bc;
+		struct
+		{
+			uint8_t c;
+			uint8_t b;
+		};
+	};
+	union
+	{
+		uint16_t de;
+		struct
+		{
+			uint8_t e;
+			uint8_t d;
+		};
+	};
+	union
+	{
+		uint16_t hl;
+		struct
+		{
+			uint8_t l;
+			uint8_t h;
+		};
+	};
 	/* PSW is a special register, containing the Accumulator and
 	 * the flag byte.  The accumulator is the high byte, and the
 	 * flags are the low byte. This doesn't appear to be how the real
 	 * hardware does it, but this is how the manual treats it, and it
 	 * lets us work the push/pop logic more easily.
 	 */
+	union
+	{
+		uint16_t psw;
+		struct
+		{
+			uint8_t flags;
+			uint8_t a;
+		};
+	};
 	uint8_t halt_flag; // Flag for the HLT state.
 	uint8_t reset_flag;
 	/*
