@@ -18,6 +18,7 @@ TEST(JMP, All)
 		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
 		.interrupt_enable_flag = 0
 	};
+	memset(memory, 0, 1 << 16);
 
 	// JMP <0x3412>
 	cpu.memory[cpu.pc + 1] = 0x12;
