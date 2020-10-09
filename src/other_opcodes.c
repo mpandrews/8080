@@ -30,38 +30,15 @@ int pop(uint8_t opcode, struct cpu_state* cpu)
 	assert((opcode & 0b11001111) == 0b11000001);
 	(void) opcode;
 
-	switch (GET_REGISTER_PAIR(opcode))
-	{
-	case REGISTER_PAIR_BC:
 #ifdef VERBOSE
-		fprintf(stderr, "0x%4.4x: POP B\n", cpu->pc);
+	fprintf(stderr,
+			"0x%4.4x: POP %s\n",
+			cpu->pc,
+			get_register_name(opcode));
 #endif
-		cpu->bc = *((uint16_t*) &cpu->memory[cpu->sp]);
-		break;
-	case REGISTER_PAIR_DE:
-#ifdef VERBOSE
-		fprintf(stderr, "0x%4.4x: POP D\n", cpu->pc);
-#endif
-		cpu->de = *((uint16_t*) &cpu->memory[cpu->sp]);
-		break;
-	case REGISTER_PAIR_HL:
-#ifdef VERBOSE
-		fprintf(stderr, "0x%4.4x: POP H\n", cpu->pc);
-#endif
-		cpu->hl = *((uint16_t*) &cpu->memory[cpu->sp]);
-		break;
-	case REGISTER_PAIR_SP_PSW:
-#ifdef VERBOSE
-		fprintf(stderr, "0x%4.4x: POP PSW\n", cpu->pc);
-#endif
-		cpu->psw = *((uint16_t*) &cpu->memory[cpu->sp]);
-		break;
-	default:
-#ifdef VERBOSE
-		fprintf(stderr, "ERROR: register pair not found!");
-#endif
-		exit(1);
-	}
+
+	uint16_t* rp = get_register_pair(opcode, cpu);
+	*rp	     = *((uint16_t*) &cpu->memory[cpu->sp]);
 
 	cpu->sp += 2;
 	cpu->pc++;
@@ -115,11 +92,12 @@ int nop(uint8_t opcode, struct cpu_state* cpu)
 {
 	// Check NOP opcode is one of:
 	// 0x00, 0x10, 0x20, 0x30, 0x08, 0x18 0x28, 0x38
-	assert((opcode == 0b00000000) | (opcode == 0b00010000)
-			| (opcode == 0b00100000) | (opcode == 0b00110000)
-			| (opcode == 0b00001000) | (opcode == 0b00011000)
-			| (opcode == 0b00101000) | (opcode == 0b00111000));
+	assert((opcode & 0b11000111) == 0b00000000);
 	(void) opcode;
+
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: NOP\n", cpu->pc);
+#endif
 
 	cpu->pc++;
 	return 4;
