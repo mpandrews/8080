@@ -7,3 +7,4 @@ debug_obj/
 bin/
 .idea/
 rom
+build/
