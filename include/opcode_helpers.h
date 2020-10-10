@@ -114,7 +114,7 @@ static inline uint8_t check_parity(uint8_t value)
  * operand_pointer = fetch_operand(GET_SOURCE_OPERAND(opcode), cpu);
  */
 
-static inline uint8_t* fetch_operand(
+static inline uint8_t* fetch_operand_ptr(
 		uint8_t operand_field, struct cpu_state* cpu)
 {
 	switch (operand_field)
@@ -129,7 +129,31 @@ static inline uint8_t* fetch_operand(
 	case OPERAND_REG_A: return &cpu->a;
 	default:
 		fprintf(stderr,
-				"ERROR: fetch_operand()"
+				"ERROR: fetch_operand_ptr()"
+				"was passed 0x%2.2x, which is"
+				"out of range!",
+				operand_field);
+		exit(1);
+	}
+}
+
+
+static inline uint8_t fetch_operand_val(
+		uint8_t operand_field, struct cpu_state const* cpu)
+{
+	switch (operand_field)
+	{
+	case OPERAND_REG_B: return cpu->b;
+	case OPERAND_REG_C: return cpu->c;
+	case OPERAND_REG_D: return cpu->d;
+	case OPERAND_REG_E: return cpu->e;
+	case OPERAND_REG_H: return cpu->h;
+	case OPERAND_REG_L: return cpu->l;
+	case OPERAND_MEM: return cpu->memory[cpu->hl];
+	case OPERAND_REG_A: return cpu->a;
+	default:
+		fprintf(stderr,
+				"ERROR: fetch_operand_val()"
 				"was passed 0x%2.2x, which is"
 				"out of range!",
 				operand_field);
@@ -233,6 +257,16 @@ static inline const char* get_register_name(const uint8_t opcode)
 	case REGISTER_PAIR_SP_PSW: return "PSW";
 	default: exit(1);
 	}
+}
+
+static inline uint16_t _add(uint8_t left, uint8_t right, uint8_t* flags)
+{
+	uint16_t result = left + right;
+	APPLY_AUX_CARRY_FLAG(left, right, result, *flags);
+	APPLY_ZERO_FLAG((uint8_t) result, *flags);
+	APPLY_PARITY_FLAG(result, *flags);
+	APPLY_SIGN_FLAG(result, *flags);
+	return result;
 }
 
 #endif
