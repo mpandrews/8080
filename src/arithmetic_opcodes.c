@@ -4,10 +4,28 @@
 
 #include <assert.h>
 
-int add(uint8_t opcode, struct cpu_state* cpu)
+int add_adc(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	assert((opcode & 0b11110000) == 0b10000000);
+#ifdef VERBOSE
+	// This looks funky, but the idea is: if bit 3 of the opcode
+	// is set, then this is ADC.  If it's not, this is ADD.
+	// So we add the reverse of that bit to the character C, and if we have
+	// add, we end up with D.
+	fprintf(stderr,
+			"0x%4.4x: AD%c %c\n",
+			cpu->pc,
+			!(opcode & (1 << 3)) + 'C',
+			GET_SOURCE_OPERAND(opcode));
+#endif
+	uint16_t result = _add(cpu->a,
+			fetch_operand_val(GET_SOURCE_OPERAND(opcode), cpu),
+			&cpu->flags);
+
+	if (opcode & (1 << 3) && cpu->flags & CARRY_FLAG) ++result;
+	cpu->a = result;
+	++cpu->pc;
+	return 4;
 }
 
 int adi(uint8_t opcode, struct cpu_state* cpu)

@@ -27,9 +27,8 @@ int xchg(uint8_t, struct cpu_state*);
 
 // ARITHMETIC GROUP
 
-int add(uint8_t, struct cpu_state*);
+int add_adc(uint8_t, struct cpu_state*);
 int adi(uint8_t, struct cpu_state*);
-int adc(uint8_t, struct cpu_state*);
 int aci(uint8_t, struct cpu_state*);
 int sub(uint8_t, struct cpu_state*);
 int sui(uint8_t, struct cpu_state*);

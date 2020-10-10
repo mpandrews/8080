@@ -27,10 +27,10 @@ int mov(uint8_t opcode, struct cpu_state* cpu)
 			get_operand_name(GET_SOURCE_OPERAND(opcode)));
 #endif
 	// Fetch pointers to the operands.
-	uint8_t* source = fetch_operand(GET_SOURCE_OPERAND(opcode), cpu);
-	uint8_t* dest	= fetch_operand(GET_DESTINATION_OPERAND(opcode), cpu);
+	uint8_t source = fetch_operand_val(GET_SOURCE_OPERAND(opcode), cpu);
+	uint8_t* dest = fetch_operand_ptr(GET_DESTINATION_OPERAND(opcode), cpu);
 
-	*dest = *source;
+	*dest = source;
 	// Increment the program counter, since this is a one-byte
 	// instruction.
 	++cpu->pc;
@@ -56,7 +56,7 @@ int mvi(uint8_t opcode, struct cpu_state* cpu)
 			get_operand_name(GET_DESTINATION_OPERAND(opcode)));
 #endif
 	// Write the byte following the opcode to the destination.
-	*fetch_operand(GET_DESTINATION_OPERAND(opcode), cpu) =
+	*fetch_operand_ptr(GET_DESTINATION_OPERAND(opcode), cpu) =
 			cpu->memory[cpu->pc + 1];
 
 	// Two-byte opcode, counting the immediate value.
