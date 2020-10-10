@@ -74,7 +74,7 @@ struct cpu_state
 
 	// Registers!
 	uint16_t sp; // Stack pointer
-	uint16_t pc; //Program counter.
+	uint16_t pc; // Program counter.
 	union
 	{
 		uint16_t bc;

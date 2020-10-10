@@ -45,7 +45,7 @@ void cycle_wait(int cycles)
 			;
 	}
 }
-#else //BENCHMARK is defined
+#else // BENCHMARK is defined
 /*
  * This version of cycle_wait() just lets the program run unthrottled
  * and calculates its effective spead in hertz.  Note that it only looks at CPU
@@ -55,10 +55,7 @@ void cycle_wait(int cycles)
 {
 	static size_t count;
 	static clock_t last;
-	if (!last)
-	{
-		last = clock();
-	}
+	if (!last) { last = clock(); }
 	count += cycles;
 	if (count >= (1 << 30))
 	{

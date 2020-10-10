@@ -137,7 +137,6 @@ static inline uint8_t* fetch_operand_ptr(
 	}
 }
 
-
 static inline uint8_t fetch_operand_val(
 		uint8_t operand_field, struct cpu_state const* cpu)
 {
