@@ -54,10 +54,19 @@ TEST(NOP, All)
 {
 	struct cpu_state cpu
 	{
-		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
-		.interrupt_buffer = nullptr, .data_bus = nullptr,
-		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
-		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
+		.int_cond = nullptr,
+		.int_lock = nullptr,
+		.memory = nullptr,
+		.interrupt_buffer = nullptr,
+		.data_bus = nullptr,
+		.address_bus = nullptr,
+		.sp = 0, .pc = 0,
+		.bc = 0,
+		.de = 0,
+		.hl = 0,
+		.psw = 0,
+		.halt_flag = 0,
+		.reset_flag = 0,
 		.interrupt_enable_flag = 0
 	};
 
@@ -68,4 +77,31 @@ TEST(NOP, All)
 	// NOP 0x38
 	EXPECT_EQ(nop(0x38, &cpu), 4);
 	EXPECT_EQ(cpu.pc, 2);
+}
+
+TEST(XTHL, all)
+{
+	unsigned char memory[(1 << 16)];
+	memset(memory, 0, 1 << 16);
+	struct cpu_state cpu
+	{
+		.int_cond = 0,
+		.int_lock = 0,
+		.memory = memory,
+		.interrupt_buffer = 0,
+		.data_bus = 0,
+		.address_bus = 0,
+		.sp = 0,
+		.pc = 0,
+		.bc = 0,
+		.de = 0,
+		.hl = 0,
+		.psw = 0,
+		.halt_flag = 0,
+		.reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	cpu.h = 0xff;
+	cpu.l = 0xfe;
 }
