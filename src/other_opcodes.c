@@ -84,8 +84,16 @@ int di(uint8_t opcode, struct cpu_state* cpu)
 
 int hlt(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	// Check HLT opcode is 0x76
+	assert(opcode == 0b01110110);
+	(void) opcode;
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: HLT\n", cpu->pc);
+#endif
+
+	cpu->halt_flag = 1;
+	cpu->pc++;
+	return 7;
 }
 
 int nop(uint8_t opcode, struct cpu_state* cpu)
