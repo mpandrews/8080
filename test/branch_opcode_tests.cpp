@@ -12,26 +12,15 @@ extern "C"
  * The only complication is that there are 4 opcodes that call it */
 TEST(CALL, allOpcodes)
 {
-	
+
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// argument for first call
@@ -84,30 +73,19 @@ TEST(RET, allOpcodes)
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// two versions of ret: 0xc9 and 0xd9
-	cpu.sp = 0xfffc;
+	cpu.sp		   = 0xfffc;
 	cpu.memory[0xfffc] = 0xee;
 	cpu.memory[0xfffd] = 0x00;
 	cpu.memory[0xfffe] = 0xff;
 	cpu.memory[0xffff] = 0x01;
-	int cycles = ret(0xc9, &cpu);
+	int cycles	   = ret(0xc9, &cpu);
 	EXPECT_EQ(cycles, 10);
 	EXPECT_EQ(cpu.sp, 0xfffe);
 	EXPECT_EQ(cpu.pc, 0x00ee);
@@ -125,33 +103,22 @@ TEST(JMP, allOpcodes)
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 	// two versions of jmp: 0xc3 and 0xcb
 	// set argument for first jump call
 	cpu.memory[0x0001] = 0x03;
 	cpu.memory[0x0002] = 0x30;
-	int cycles = jmp(0xc3, &cpu);
+	int cycles	   = jmp(0xc3, &cpu);
 	EXPECT_EQ(cpu.pc, 0x3003);
 	EXPECT_EQ(cycles, 10);
-	
+
 	cpu.memory[0x3004] = 0x03;
 	cpu.memory[0x3005] = 0x00;
-	cycles = jmp(0xcb, &cpu);
+	cycles		   = jmp(0xcb, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 10);
 }
@@ -160,27 +127,16 @@ TEST(JMP, allOpcodes)
 TEST(JNZ, JumpAndNoJump)
 {
 	uint8_t opcode = 0xc2;
-	uint8_t flag = ZERO_FLAG;
+	uint8_t flag   = ZERO_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set jmp arguments in cpu memory,
@@ -188,8 +144,8 @@ TEST(JNZ, JumpAndNoJump)
 	// assert that jnz did jmp
 	cpu.memory[0x0001] = 0x05;
 	cpu.memory[0x0002] = 0x04;
-	cpu.psw = flag;
-	int cycles = jcond(opcode, &cpu);
+	cpu.psw		   = flag;
+	int cycles	   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 10);
 
@@ -198,46 +154,34 @@ TEST(JNZ, JumpAndNoJump)
 	// assert that jmp did not jmp
 	cpu.memory[0x0004] = 0x05;
 	cpu.memory[0x0005] = 0x04;
-	cpu.psw = ~flag;
-	cycles = jcond(opcode, &cpu);
+	cpu.psw		   = ~flag;
+	cycles		   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cycles, 10);
-
 }
 
 TEST(JNC, JumpAndNoJump)
 {
 	// this test is for jnc, 0xd2
 	uint8_t opcode = 0xd2;
-	uint8_t flag = CARRY_FLAG;
+	uint8_t flag   = CARRY_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set jmp arguments in cpu memory, set the flag and call jcond, 
+	// set jmp arguments in cpu memory, set the flag and call jcond,
 	// and assert that jcond did not jmp
 	cpu.memory[0x0001] = 0x05;
 	cpu.memory[0x0002] = 0x04;
-	cpu.psw = flag;
-	int cycles = jcond(opcode, &cpu);
+	cpu.psw		   = flag;
+	int cycles	   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 10);
 
@@ -245,11 +189,10 @@ TEST(JNC, JumpAndNoJump)
 	// and assert that jmp did jmp
 	cpu.memory[0x0004] = 0x05;
 	cpu.memory[0x0005] = 0x04;
-	cpu.psw = ~flag;
-	cycles = jcond(opcode, &cpu);
+	cpu.psw		   = ~flag;
+	cycles		   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cycles, 10);
-
 }
 
 TEST(JPO, JumpAndNoJump)
@@ -257,27 +200,16 @@ TEST(JPO, JumpAndNoJump)
 
 	// this test is for jpo, 0xe2
 	uint8_t opcode = 0xe2;
-	uint8_t flag = PARITY_FLAG;
+	uint8_t flag   = PARITY_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set jmp arguments in cpu memory, set the flag and call jcond,
@@ -286,8 +218,8 @@ TEST(JPO, JumpAndNoJump)
 	// should jump when the parity flag is reset
 	cpu.memory[0x0001] = 0x05;
 	cpu.memory[0x0002] = 0x04;
-	cpu.psw = flag;
-	int cycles = jcond(opcode, &cpu);
+	cpu.psw		   = flag;
+	int cycles	   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 10);
 
@@ -295,11 +227,10 @@ TEST(JPO, JumpAndNoJump)
 	// and assert that jmp did jmp
 	cpu.memory[0x0004] = 0x05;
 	cpu.memory[0x0005] = 0x04;
-	cpu.psw = ~flag;
-	cycles = jcond(opcode, &cpu);
+	cpu.psw		   = ~flag;
+	cycles		   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cycles, 10);
-
 }
 
 TEST(JP, JumpAndNoJump)
@@ -307,35 +238,24 @@ TEST(JP, JumpAndNoJump)
 
 	// this test is for jp, 0xf2
 	uint8_t opcode = 0xf2;
-	uint8_t flag = SIGN_FLAG;
+	uint8_t flag   = SIGN_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set jmp arguments in cpu memory, set the flag and call jcond,
 	// and assert that jcond did not jmp
 	cpu.memory[0x0001] = 0x05;
 	cpu.memory[0x0002] = 0x04;
-	cpu.psw = flag;
-	int cycles = jcond(opcode, &cpu);
+	cpu.psw		   = flag;
+	int cycles	   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 10);
 
@@ -343,47 +263,34 @@ TEST(JP, JumpAndNoJump)
 	// and assert that jmp did jmp
 	cpu.memory[0x0004] = 0x05;
 	cpu.memory[0x0005] = 0x04;
-	cpu.psw = ~flag;
-	cycles = jcond(opcode, &cpu);
+	cpu.psw		   = ~flag;
+	cycles		   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cycles, 10);
-
-
 }
 
 TEST(JZ, JumpAndNoJump)
 {
 	// this test is for jz, 0xca
 	uint8_t opcode = 0xca;
-	uint8_t flag = ZERO_FLAG;
+	uint8_t flag   = ZERO_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set jmp arguments in cpu memory, set the flag and call jcond,
 	// and assert that jcond did not jmp
 	cpu.memory[0x0001] = 0x05;
 	cpu.memory[0x0002] = 0x04;
-	cpu.psw = ~flag;
-	int cycles = jcond(opcode, &cpu);
+	cpu.psw		   = ~flag;
+	int cycles	   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 10);
 
@@ -391,8 +298,8 @@ TEST(JZ, JumpAndNoJump)
 	// and assert that jmp did jmp
 	cpu.memory[0x0004] = 0x05;
 	cpu.memory[0x0005] = 0x04;
-	cpu.psw = flag;
-	cycles = jcond(opcode, &cpu);
+	cpu.psw		   = flag;
+	cycles		   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cycles, 10);
 }
@@ -402,35 +309,24 @@ TEST(JC, JumpAndNoJump)
 
 	// this test is for jc, 0xda
 	uint8_t opcode = 0xda;
-	uint8_t flag = CARRY_FLAG;
+	uint8_t flag   = CARRY_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set jmp arguments in cpu memory, set the flag and call jcond,
 	// and assert that jcond did not jmp
 	cpu.memory[0x0001] = 0x05;
 	cpu.memory[0x0002] = 0x04;
-	cpu.psw = ~flag;
-	int cycles = jcond(opcode, &cpu);
+	cpu.psw		   = ~flag;
+	int cycles	   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 10);
 
@@ -438,46 +334,34 @@ TEST(JC, JumpAndNoJump)
 	// and assert that jmp did jmp
 	cpu.memory[0x0004] = 0x05;
 	cpu.memory[0x0005] = 0x04;
-	cpu.psw = flag;
-	cycles = jcond(opcode, &cpu);
+	cpu.psw		   = flag;
+	cycles		   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cycles, 10);
-
 }
 
 TEST(JPE, JumpAndNoJump)
 {
 	// this test is for jpe, 0xea
 	uint8_t opcode = 0xea;
-	uint8_t flag = PARITY_FLAG;
+	uint8_t flag   = PARITY_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set jmp arguments in cpu memory, set the flag and call jcond,
 	// and assert that jcond did not jmp
 	cpu.memory[0x0001] = 0x05;
 	cpu.memory[0x0002] = 0x04;
-	cpu.psw = ~flag;
-	int cycles = jcond(opcode, &cpu);
+	cpu.psw		   = ~flag;
+	int cycles	   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 10);
 
@@ -485,11 +369,10 @@ TEST(JPE, JumpAndNoJump)
 	// and assert that jmp did jmp
 	cpu.memory[0x0004] = 0x05;
 	cpu.memory[0x0005] = 0x04;
-	cpu.psw = flag;
-	cycles = jcond(opcode, &cpu);
+	cpu.psw		   = flag;
+	cycles		   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cycles, 10);
-
 }
 
 TEST(JM, JumpAndNoJump)
@@ -497,35 +380,24 @@ TEST(JM, JumpAndNoJump)
 
 	// this test is for jm, 0xfa
 	uint8_t opcode = 0xfa;
-	uint8_t flag = SIGN_FLAG;
+	uint8_t flag   = SIGN_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set jmp arguments in cpu memory, set the flag and call jcond,
 	// and assert that jcond did not jmp
 	cpu.memory[0x0001] = 0x05;
 	cpu.memory[0x0002] = 0x04;
-	cpu.psw = ~flag;
-	int cycles = jcond(opcode, &cpu);
+	cpu.psw		   = ~flag;
+	int cycles	   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 10);
 
@@ -533,8 +405,8 @@ TEST(JM, JumpAndNoJump)
 	// and assert that jmp did jmp
 	cpu.memory[0x0004] = 0x05;
 	cpu.memory[0x0005] = 0x04;
-	cpu.psw = flag;
-	cycles = jcond(opcode, &cpu);
+	cpu.psw		   = flag;
+	cycles		   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cycles, 10);
 }
@@ -544,38 +416,27 @@ TEST(RNZ, ReturnAndNoReturn)
 {
 	// this test is for rnz, 0xc0
 	uint8_t opcode = 0xc0;
-	uint8_t flag = ZERO_FLAG;
+	uint8_t flag   = ZERO_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set stack pointer and populate memory at stack pointer as if there
 	// with .. something. So that return has something testable to return
 	cpu.memory[0x00ff] = 0x05;
 	cpu.memory[0x00fe] = 0x04;
-	cpu.sp = 0x00fe;
+	cpu.sp		   = 0x00fe;
 
 	// No return should take 5 cycles and simply advance the program counter
 	// to the next address.
-	cpu.psw = flag;
+	cpu.psw	   = flag;
 	int cycles = retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0001);
 	EXPECT_EQ(cycles, 5);
@@ -583,7 +444,7 @@ TEST(RNZ, ReturnAndNoReturn)
 	// Return case should pop 0x0504 off the stack and put it in the pc
 	// and takes 11 cycles
 	cpu.psw = ~flag;
-	cycles = retcond(opcode, &cpu);
+	cycles	= retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0504);
 	EXPECT_EQ(cycles, 11);
 }
@@ -592,38 +453,27 @@ TEST(RNC, ReturnAndNoReturn)
 {
 	// this test is for rnc, 0xd0
 	uint8_t opcode = 0xd0;
-	uint8_t flag = CARRY_FLAG;
+	uint8_t flag   = CARRY_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set stack pointer and populate memory at stack pointer as if there
 	// with .. something. So that return has something testable to return
 	cpu.memory[0x00ff] = 0x05;
 	cpu.memory[0x00fe] = 0x04;
-	cpu.sp = 0x00fe;
+	cpu.sp		   = 0x00fe;
 
 	// No return should take 5 cycles and simply advance the program counter
 	// to the next address.
-	cpu.psw = flag;
+	cpu.psw	   = flag;
 	int cycles = retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0001);
 	EXPECT_EQ(cycles, 5);
@@ -631,7 +481,7 @@ TEST(RNC, ReturnAndNoReturn)
 	// Return case should pop 0x0504 off the stack and put it in the pc
 	// and takes 11 cycles
 	cpu.psw = ~flag;
-	cycles = retcond(opcode, &cpu);
+	cycles	= retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0504);
 	EXPECT_EQ(cycles, 11);
 }
@@ -640,38 +490,27 @@ TEST(RPO, ReturnAndNoReturn)
 {
 	// this test is for rpo, 0xe0
 	uint8_t opcode = 0xe0;
-	uint8_t flag = PARITY_FLAG;
+	uint8_t flag   = PARITY_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set stack pointer and populate memory at stack pointer as if there
 	// with .. something. So that return has something testable to return
 	cpu.memory[0x00ff] = 0x05;
 	cpu.memory[0x00fe] = 0x04;
-	cpu.sp = 0x00fe;
+	cpu.sp		   = 0x00fe;
 
 	// No return should take 5 cycles and simply advance the program counter
 	// to the next address.
-	cpu.psw = flag;
+	cpu.psw	   = flag;
 	int cycles = retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0001);
 	EXPECT_EQ(cycles, 5);
@@ -679,7 +518,7 @@ TEST(RPO, ReturnAndNoReturn)
 	// Return case should pop 0x0504 off the stack and put it in the pc
 	// and takes 11 cycles
 	cpu.psw = ~flag;
-	cycles = retcond(opcode, &cpu);
+	cycles	= retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0504);
 	EXPECT_EQ(cycles, 11);
 }
@@ -688,38 +527,27 @@ TEST(RP, ReturnAndNoReturn)
 {
 	// this test is for rp, 0xf0
 	uint8_t opcode = 0xf0;
-	uint8_t flag = SIGN_FLAG;
+	uint8_t flag   = SIGN_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set stack pointer and populate memory at stack pointer as if there
 	// with .. something. So that return has something testable to return
 	cpu.memory[0x00ff] = 0x05;
 	cpu.memory[0x00fe] = 0x04;
-	cpu.sp = 0x00fe;
+	cpu.sp		   = 0x00fe;
 
 	// No return should take 5 cycles and simply advance the program counter
 	// to the next address.
-	cpu.psw = flag;
+	cpu.psw	   = flag;
 	int cycles = retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0001);
 	EXPECT_EQ(cycles, 5);
@@ -727,48 +555,36 @@ TEST(RP, ReturnAndNoReturn)
 	// Return case should pop 0x0504 off the stack and put it in the pc
 	// and takes 11 cycles
 	cpu.psw = ~flag;
-	cycles = retcond(opcode, &cpu);
+	cycles	= retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0504);
 	EXPECT_EQ(cycles, 11);
-
 }
 
 TEST(RZ, ReturnAndNoReturn)
 {
 	// this test is for rz, 0xc8
 	uint8_t opcode = 0xc8;
-	uint8_t flag = ZERO_FLAG;
+	uint8_t flag   = ZERO_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set stack pointer and populate memory at stack pointer as if there
 	// with .. something. So that return has something testable to return
 	cpu.memory[0x00ff] = 0x05;
 	cpu.memory[0x00fe] = 0x04;
-	cpu.sp = 0x00fe;
+	cpu.sp		   = 0x00fe;
 
 	// No return should take 5 cycles and simply advance the program counter
 	// to the next address.
-	cpu.psw = ~flag;
+	cpu.psw	   = ~flag;
 	int cycles = retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0001);
 	EXPECT_EQ(cycles, 5);
@@ -776,7 +592,7 @@ TEST(RZ, ReturnAndNoReturn)
 	// Return case should pop 0x0504 off the stack and put it in the pc
 	// and takes 11 cycles
 	cpu.psw = flag;
-	cycles = retcond(opcode, &cpu);
+	cycles	= retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0504);
 	EXPECT_EQ(cycles, 11);
 }
@@ -785,38 +601,27 @@ TEST(RC, ReturnAndNoReturn)
 {
 	// this test is for rc, 0xd8
 	uint8_t opcode = 0xd8;
-	uint8_t flag = CARRY_FLAG;
+	uint8_t flag   = CARRY_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set stack pointer and populate memory at stack pointer as if there
 	// with .. something. So that return has something testable to return
 	cpu.memory[0x00ff] = 0x05;
 	cpu.memory[0x00fe] = 0x04;
-	cpu.sp = 0x00fe;
+	cpu.sp		   = 0x00fe;
 
 	// No return should take 5 cycles and simply advance the program counter
 	// to the next address.
-	cpu.psw = ~flag;
+	cpu.psw	   = ~flag;
 	int cycles = retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0001);
 	EXPECT_EQ(cycles, 5);
@@ -824,7 +629,7 @@ TEST(RC, ReturnAndNoReturn)
 	// Return case should pop 0x0504 off the stack and put it in the pc
 	// and takes 11 cycles
 	cpu.psw = flag;
-	cycles = retcond(opcode, &cpu);
+	cycles	= retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0504);
 	EXPECT_EQ(cycles, 11);
 }
@@ -833,38 +638,27 @@ TEST(RPE, ReturnAndNoReturn)
 {
 	// this test is for rpe, 0xe8
 	uint8_t opcode = 0xe8;
-	uint8_t flag = PARITY_FLAG;
+	uint8_t flag   = PARITY_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set stack pointer and populate memory at stack pointer as if there
 	// with .. something. So that return has something testable to return
 	cpu.memory[0x00ff] = 0x05;
 	cpu.memory[0x00fe] = 0x04;
-	cpu.sp = 0x00fe;
+	cpu.sp		   = 0x00fe;
 
 	// No return should take 5 cycles and simply advance the program counter
 	// to the next address.
-	cpu.psw = ~flag;
+	cpu.psw	   = ~flag;
 	int cycles = retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0001);
 	EXPECT_EQ(cycles, 5);
@@ -872,7 +666,7 @@ TEST(RPE, ReturnAndNoReturn)
 	// Return case should pop 0x0504 off the stack and put it in the pc
 	// and takes 11 cycles
 	cpu.psw = flag;
-	cycles = retcond(opcode, &cpu);
+	cycles	= retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0504);
 	EXPECT_EQ(cycles, 11);
 }
@@ -881,38 +675,27 @@ TEST(RM, ReturnAndNoReturn)
 {
 	// this test is for rm, 0xf8
 	uint8_t opcode = 0xf8;
-	uint8_t flag = SIGN_FLAG;
+	uint8_t flag   = SIGN_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set stack pointer and populate memory at stack pointer as if there
 	// with .. something. So that return has something testable to return
 	cpu.memory[0x00ff] = 0x05;
 	cpu.memory[0x00fe] = 0x04;
-	cpu.sp = 0x00fe;
+	cpu.sp		   = 0x00fe;
 
 	// No return should take 5 cycles and simply advance the program counter
 	// to the next address.
-	cpu.psw = ~flag;
+	cpu.psw	   = ~flag;
 	int cycles = retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0001);
 	EXPECT_EQ(cycles, 5);
@@ -920,7 +703,7 @@ TEST(RM, ReturnAndNoReturn)
 	// Return case should pop 0x0504 off the stack and put it in the pc
 	// and takes 11 cycles
 	cpu.psw = flag;
-	cycles = retcond(opcode, &cpu);
+	cycles	= retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0504);
 	EXPECT_EQ(cycles, 11);
 }
@@ -930,27 +713,16 @@ TEST(CNZ, CallAndNoCall)
 {
 	// this test is for cnz, 0xc4
 	uint8_t opcode = 0xc4;
-	uint8_t flag = ZERO_FLAG;
+	uint8_t flag   = ZERO_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set a call location into memory that the stack pointer will be set
@@ -960,7 +732,7 @@ TEST(CNZ, CallAndNoCall)
 	cpu.memory[0x0005] = 0x04;
 
 	// a no-call should take 11 cycles and simply advance the pc by 3
-	cpu.psw = flag;
+	cpu.psw	   = flag;
 	int cycles = ccond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 11);
@@ -971,7 +743,7 @@ TEST(CNZ, CallAndNoCall)
 	// 	3. decrement the sp by 2,
 	// 	4. take 17 cycles
 	cpu.psw = ~flag;
-	cycles = ccond(opcode, &cpu);
+	cycles	= ccond(opcode, &cpu);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x0006);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cpu.sp, 0Xfffe);
@@ -982,27 +754,16 @@ TEST(CNC, CallAndNoCall)
 {
 	// this test is for cnc, 0xd4
 	uint8_t opcode = 0xd4;
-	uint8_t flag = CARRY_FLAG;
+	uint8_t flag   = CARRY_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set a call location into memory that the stack pointer will be set
@@ -1012,7 +773,7 @@ TEST(CNC, CallAndNoCall)
 	cpu.memory[0x0005] = 0x04;
 
 	// a no-call should take 11 cycles and simply advance the pc by 3
-	cpu.psw = flag;
+	cpu.psw	   = flag;
 	int cycles = ccond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 11);
@@ -1023,7 +784,7 @@ TEST(CNC, CallAndNoCall)
 	// 	3. decrement the sp by 2,
 	// 	4. take 17 cycles
 	cpu.psw = ~flag;
-	cycles = ccond(opcode, &cpu);
+	cycles	= ccond(opcode, &cpu);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x0006);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cpu.sp, 0Xfffe);
@@ -1034,27 +795,16 @@ TEST(CPO, CallAndNoCall)
 {
 	// this test is for cpo, 0xe4
 	uint8_t opcode = 0xe4;
-	uint8_t flag = PARITY_FLAG;
+	uint8_t flag   = PARITY_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set a call location into memory that the stack pointer will be set
@@ -1064,7 +814,7 @@ TEST(CPO, CallAndNoCall)
 	cpu.memory[0x0005] = 0x04;
 
 	// a no-call should take 11 cycles and simply advance the pc by 3
-	cpu.psw = flag;
+	cpu.psw	   = flag;
 	int cycles = ccond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 11);
@@ -1075,7 +825,7 @@ TEST(CPO, CallAndNoCall)
 	// 	3. decrement the sp by 2,
 	// 	4. take 17 cycles
 	cpu.psw = ~flag;
-	cycles = ccond(opcode, &cpu);
+	cycles	= ccond(opcode, &cpu);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x0006);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cpu.sp, 0Xfffe);
@@ -1086,27 +836,16 @@ TEST(CP, CallAndNoCall)
 {
 	// this test is for cp, 0xf4
 	uint8_t opcode = 0xf4;
-	uint8_t flag = SIGN_FLAG;
+	uint8_t flag   = SIGN_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set a call location into memory that the stack pointer will be set
@@ -1116,7 +855,7 @@ TEST(CP, CallAndNoCall)
 	cpu.memory[0x0005] = 0x04;
 
 	// a no-call should take 11 cycles and simply advance the pc by 3
-	cpu.psw = flag;
+	cpu.psw	   = flag;
 	int cycles = ccond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 11);
@@ -1127,7 +866,7 @@ TEST(CP, CallAndNoCall)
 	// 	3. decrement the sp by 2,
 	// 	4. take 17 cycles
 	cpu.psw = ~flag;
-	cycles = ccond(opcode, &cpu);
+	cycles	= ccond(opcode, &cpu);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x0006);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cpu.sp, 0Xfffe);
@@ -1138,27 +877,16 @@ TEST(CZ, CallAndNoCall)
 {
 	// this test is for cnz, 0xcc
 	uint8_t opcode = 0xcc;
-	uint8_t flag = ZERO_FLAG;
+	uint8_t flag   = ZERO_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set a call location into memory that the stack pointer will be set
@@ -1168,7 +896,7 @@ TEST(CZ, CallAndNoCall)
 	cpu.memory[0x0005] = 0x04;
 
 	// a no-call should take 11 cycles and simply advance the pc by 3
-	cpu.psw = ~flag;
+	cpu.psw	   = ~flag;
 	int cycles = ccond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 11);
@@ -1179,7 +907,7 @@ TEST(CZ, CallAndNoCall)
 	// 	3. decrement the sp by 2,
 	// 	4. take 17 cycles
 	cpu.psw = flag;
-	cycles = ccond(opcode, &cpu);
+	cycles	= ccond(opcode, &cpu);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x0006);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cpu.sp, 0Xfffe);
@@ -1190,27 +918,16 @@ TEST(CC, CallAndNoCall)
 {
 	// this test is for cnz, 0xdc
 	uint8_t opcode = 0xdc;
-	uint8_t flag = CARRY_FLAG;
+	uint8_t flag   = CARRY_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set a call location into memory that the stack pointer will be set
@@ -1220,7 +937,7 @@ TEST(CC, CallAndNoCall)
 	cpu.memory[0x0005] = 0x04;
 
 	// a no-call should take 11 cycles and simply advance the pc by 3
-	cpu.psw = ~flag;
+	cpu.psw	   = ~flag;
 	int cycles = ccond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 11);
@@ -1231,7 +948,7 @@ TEST(CC, CallAndNoCall)
 	// 	3. decrement the sp by 2,
 	// 	4. take 17 cycles
 	cpu.psw = flag;
-	cycles = ccond(opcode, &cpu);
+	cycles	= ccond(opcode, &cpu);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x0006);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cpu.sp, 0Xfffe);
@@ -1242,27 +959,16 @@ TEST(CPE, CallAndNoCall)
 {
 	// this test is for cpe, 0xec
 	uint8_t opcode = 0xec;
-	uint8_t flag = PARITY_FLAG;
+	uint8_t flag   = PARITY_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set a call location into memory that the stack pointer will be set
@@ -1272,7 +978,7 @@ TEST(CPE, CallAndNoCall)
 	cpu.memory[0x0005] = 0x04;
 
 	// a no-call should take 11 cycles and simply advance the pc by 3
-	cpu.psw = ~flag;
+	cpu.psw	   = ~flag;
 	int cycles = ccond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 11);
@@ -1283,7 +989,7 @@ TEST(CPE, CallAndNoCall)
 	// 	3. decrement the sp by 2,
 	// 	4. take 17 cycles
 	cpu.psw = flag;
-	cycles = ccond(opcode, &cpu);
+	cycles	= ccond(opcode, &cpu);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x0006);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cpu.sp, 0Xfffe);
@@ -1294,27 +1000,16 @@ TEST(CM, CallAndNoCall)
 {
 	// this test is for cm, 0xfc
 	uint8_t opcode = 0xfc;
-	uint8_t flag = SIGN_FLAG;
+	uint8_t flag   = SIGN_FLAG;
 
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0,
-		.de = 0,
-		.hl = 0,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
 	// set a call location into memory that the stack pointer will be set
@@ -1324,7 +1019,7 @@ TEST(CM, CallAndNoCall)
 	cpu.memory[0x0005] = 0x04;
 
 	// a no-call should take 11 cycles and simply advance the pc by 3
-	cpu.psw = ~flag;
+	cpu.psw	   = ~flag;
 	int cycles = ccond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 11);
@@ -1335,7 +1030,7 @@ TEST(CM, CallAndNoCall)
 	// 	3. decrement the sp by 2,
 	// 	4. take 17 cycles
 	cpu.psw = flag;
-	cycles = ccond(opcode, &cpu);
+	cycles	= ccond(opcode, &cpu);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x0006);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cpu.sp, 0Xfffe);

@@ -33,23 +33,12 @@ TEST(MOV, RegisterToMem)
 	unsigned char memory[(1 << 16)];
 	struct cpu_state cpu
 	{
-		.int_cond = 0,
-		.int_lock = 0,
-		.memory = memory,
-		.interrupt_buffer = 0,
-		.data_bus = 0,
-		.address_bus = 0,
-		.sp = 0,
-		.pc = 0,
-		.bc = 0x0001,
-		.de = 0,
-		.hl = 12345,
-		.psw = 0,
-		.halt_flag = 0,
-		.reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0x0001, .de = 0, .hl = 12345, .psw = 0,
+		.halt_flag = 0, .reset_flag = 0, .interrupt_enable_flag = 0
 	};
-	
+
 	memset(memory, 0, 1 << 16);
 	// MOV M,C
 	mov(0x71, &cpu);
