@@ -232,9 +232,8 @@ TEST(JNC, JumpAndNoJump)
 		.interrupt_enable_flag = 0
 	};
 
-	// set jmp arguments in cpu memory,
-	// set the flag and call jcond, and
-	// assert that jcond did jmp
+	// set jmp arguments in cpu memory, set the flag and call jcond, 
+	// and assert that jcond did not jmp
 	cpu.memory[0x0001] = 0x05;
 	cpu.memory[0x0002] = 0x04;
 	cpu.psw = flag;
@@ -242,9 +241,8 @@ TEST(JNC, JumpAndNoJump)
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 10);
 
-	// set jmp arguments in cpu memory,
-	// reset the flag and call jump, and
-	// assert that jmp did not jmp
+	// set jmp arguments in cpu memory, reset the flag and call jump,
+	// and assert that jmp did jmp
 	cpu.memory[0x0004] = 0x05;
 	cpu.memory[0x0005] = 0x04;
 	cpu.psw = ~flag;
@@ -283,7 +281,7 @@ TEST(JPO, JumpAndNoJump)
 	};
 
 	// set jmp arguments in cpu memory, set the flag and call jcond,
-	// and assert that jcond did jmp
+	// and assert that jcond did not jmp
 	// parity flag is set when parity is even, so jpo (aka jump-parity-odd)
 	// should jump when the parity flag is reset
 	cpu.memory[0x0001] = 0x05;
@@ -294,7 +292,7 @@ TEST(JPO, JumpAndNoJump)
 	EXPECT_EQ(cycles, 10);
 
 	// set jmp arguments in cpu memory, reset the flag and call jump,
-	// and assert that jmp did not jmp
+	// and assert that jmp did jmp
 	cpu.memory[0x0004] = 0x05;
 	cpu.memory[0x0005] = 0x04;
 	cpu.psw = ~flag;
@@ -333,7 +331,7 @@ TEST(JP, JumpAndNoJump)
 	};
 
 	// set jmp arguments in cpu memory, set the flag and call jcond,
-	// and assert that jcond did jmp
+	// and assert that jcond did not jmp
 	cpu.memory[0x0001] = 0x05;
 	cpu.memory[0x0002] = 0x04;
 	cpu.psw = flag;
@@ -342,7 +340,7 @@ TEST(JP, JumpAndNoJump)
 	EXPECT_EQ(cycles, 10);
 
 	// set jmp arguments in cpu memory, reset the flag and call jump,
-	// and assert that jmp did not jmp
+	// and assert that jmp did jmp
 	cpu.memory[0x0004] = 0x05;
 	cpu.memory[0x0005] = 0x04;
 	cpu.psw = ~flag;
@@ -381,7 +379,7 @@ TEST(JZ, JumpAndNoJump)
 	};
 
 	// set jmp arguments in cpu memory, set the flag and call jcond,
-	// and assert that jcond did jmp
+	// and assert that jcond did not jmp
 	cpu.memory[0x0001] = 0x05;
 	cpu.memory[0x0002] = 0x04;
 	cpu.psw = ~flag;
@@ -390,7 +388,7 @@ TEST(JZ, JumpAndNoJump)
 	EXPECT_EQ(cycles, 10);
 
 	// set jmp arguments in cpu memory, reset the flag and call jump,
-	// and assert that jmp did not jmp
+	// and assert that jmp did jmp
 	cpu.memory[0x0004] = 0x05;
 	cpu.memory[0x0005] = 0x04;
 	cpu.psw = flag;
@@ -428,7 +426,7 @@ TEST(JC, JumpAndNoJump)
 	};
 
 	// set jmp arguments in cpu memory, set the flag and call jcond,
-	// and assert that jcond did jmp
+	// and assert that jcond did not jmp
 	cpu.memory[0x0001] = 0x05;
 	cpu.memory[0x0002] = 0x04;
 	cpu.psw = ~flag;
@@ -437,7 +435,7 @@ TEST(JC, JumpAndNoJump)
 	EXPECT_EQ(cycles, 10);
 
 	// set jmp arguments in cpu memory, reset the flag and call jump,
-	// and assert that jmp did not jmp
+	// and assert that jmp did jmp
 	cpu.memory[0x0004] = 0x05;
 	cpu.memory[0x0005] = 0x04;
 	cpu.psw = flag;
@@ -475,7 +473,7 @@ TEST(JPE, JumpAndNoJump)
 	};
 
 	// set jmp arguments in cpu memory, set the flag and call jcond,
-	// and assert that jcond did jmp
+	// and assert that jcond did not jmp
 	cpu.memory[0x0001] = 0x05;
 	cpu.memory[0x0002] = 0x04;
 	cpu.psw = ~flag;
@@ -484,7 +482,7 @@ TEST(JPE, JumpAndNoJump)
 	EXPECT_EQ(cycles, 10);
 
 	// set jmp arguments in cpu memory, reset the flag and call jump,
-	// and assert that jmp did not jmp
+	// and assert that jmp did jmp
 	cpu.memory[0x0004] = 0x05;
 	cpu.memory[0x0005] = 0x04;
 	cpu.psw = flag;
@@ -523,7 +521,7 @@ TEST(JM, JumpAndNoJump)
 	};
 
 	// set jmp arguments in cpu memory, set the flag and call jcond,
-	// and assert that jcond did jmp
+	// and assert that jcond did not jmp
 	cpu.memory[0x0001] = 0x05;
 	cpu.memory[0x0002] = 0x04;
 	cpu.psw = ~flag;
@@ -532,7 +530,7 @@ TEST(JM, JumpAndNoJump)
 	EXPECT_EQ(cycles, 10);
 
 	// set jmp arguments in cpu memory, reset the flag and call jump,
-	// and assert that jmp did not jmp
+	// and assert that jmp did jmp
 	cpu.memory[0x0004] = 0x05;
 	cpu.memory[0x0005] = 0x04;
 	cpu.psw = flag;
