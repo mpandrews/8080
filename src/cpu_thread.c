@@ -12,7 +12,7 @@ static inline void print_registers(const struct cpu_state* cpu)
 	uint8_t flags[9];
 	uint8_t* f = flags;
 	for (uint8_t mask = 0x80; mask; mask >>= 1, ++f)
-		*f = mask & LOW_REG8(cpu->psw) ? '1' : '0';
+		*f = mask & cpu->flags ? '1' : '0';
 	*f = 0;
 	fprintf(stderr,
 			"\tPC:  0x%4.4x -> 0x%2.2x\n"

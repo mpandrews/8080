@@ -69,7 +69,7 @@ static inline uint8_t check_parity(uint8_t value)
 	return ~value & 1;
 }
 
-// Check to see if a result is zero, set the flag as appopriate.
+// Check to see if a result is zero, set the flag as appropriate.
 #define APPLY_ZERO_FLAG(value, flags) \
 	(flags = (!value ? flags | ZERO_FLAG : flags & ~ZERO_FLAG))
 // Check to see if a result is negative: just inspect the highest bit.
@@ -115,18 +115,18 @@ static inline uint8_t check_parity(uint8_t value)
  */
 
 static inline uint8_t* fetch_operand(
-		uint8_t operand_field, const struct cpu_state* cpu)
+		uint8_t operand_field, struct cpu_state* cpu)
 {
 	switch (operand_field)
 	{
-	case OPERAND_REG_B: return &HIGH_REG8(cpu->bc);
-	case OPERAND_REG_C: return &LOW_REG8(cpu->bc);
-	case OPERAND_REG_D: return &HIGH_REG8(cpu->de);
-	case OPERAND_REG_E: return &LOW_REG8(cpu->de);
-	case OPERAND_REG_H: return &HIGH_REG8(cpu->hl);
-	case OPERAND_REG_L: return &LOW_REG8(cpu->hl);
+	case OPERAND_REG_B: return &cpu->b;
+	case OPERAND_REG_C: return &cpu->c;
+	case OPERAND_REG_D: return &cpu->d;
+	case OPERAND_REG_E: return &cpu->e;
+	case OPERAND_REG_H: return &cpu->h;
+	case OPERAND_REG_L: return &cpu->l;
 	case OPERAND_MEM: return cpu->memory + cpu->hl;
-	case OPERAND_REG_A: return &HIGH_REG8(cpu->psw);
+	case OPERAND_REG_A: return &cpu->a;
 	default:
 		fprintf(stderr,
 				"ERROR: fetch_operand()"
@@ -208,6 +208,31 @@ static inline uint8_t evaluate_condition(
 		exit(1);
 	}
 	return 0;
+}
+
+static inline uint16_t* get_register_pair(
+		const uint8_t opcode, struct cpu_state* cpu)
+{
+	switch (GET_REGISTER_PAIR(opcode))
+	{
+	case REGISTER_PAIR_BC: return &cpu->bc;
+	case REGISTER_PAIR_DE: return &cpu->de;
+	case REGISTER_PAIR_HL: return &cpu->hl;
+	case REGISTER_PAIR_SP_PSW: return &cpu->psw;
+	default: exit(1);
+	}
+}
+
+static inline const char* get_register_name(const uint8_t opcode)
+{
+	switch (GET_REGISTER_PAIR(opcode))
+	{
+	case REGISTER_PAIR_BC: return "B";
+	case REGISTER_PAIR_DE: return "D";
+	case REGISTER_PAIR_HL: return "H";
+	case REGISTER_PAIR_SP_PSW: return "PSW";
+	default: exit(1);
+	}
 }
 
 #endif
