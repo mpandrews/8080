@@ -1,5 +1,0 @@
-if(EXISTS "/home/jordan/Documents/schoolwork/CS467/8080/debug/Tests[1]_tests.cmake")
-  include("/home/jordan/Documents/schoolwork/CS467/8080/debug/Tests[1]_tests.cmake")
-else()
-  add_test(Tests_NOT_BUILT Tests_NOT_BUILT)
-endif()
