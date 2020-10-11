@@ -85,3 +85,52 @@ TEST(NOP, All)
 	EXPECT_EQ(nop(0x38, &cpu), 4);
 	EXPECT_EQ(cpu.pc, 2);
 }
+
+TEST(XTHL, All)
+{
+	unsigned char memory[(1 << 16)];
+	memset(memory, 0, 1 << 16);
+	// set the contents of the h register, and the stack pointer
+	// and put something in memory at the addres pointed to by the
+	// stack pointer.
+	struct cpu_state cpu
+	{
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0,
+		.sp = 0x10ad, .pc = 0, .bc = 0, .de = 0, .hl = 0x0b3c, .psw = 0,
+		.halt_flag = 0, .reset_flag = 0, .interrupt_enable_flag = 0
+	};
+
+	cpu.memory[cpu.sp]     = 0xf0;
+	cpu.memory[cpu.sp + 1] = 0x0d;
+
+	// execute xthl, assert that the contents of the h register are now
+	// stored in memory at the address pointed to by the stack pointer
+	// and vice versa
+	int cycles = xthl(0xe3, &cpu);
+	EXPECT_EQ(cycles, 18);
+	EXPECT_EQ(cpu.sp, 0x10ad);
+	EXPECT_EQ(cpu.memory[cpu.sp], 0x3c);
+	EXPECT_EQ(cpu.memory[cpu.sp + 1], 0x0b);
+	EXPECT_EQ(cpu.h, 0x0d);
+	EXPECT_EQ(cpu.l, 0xf0);
+}
+
+TEST(SPHL, All)
+{
+	// set the contents of the h register, and the stack pointer
+	// and put something in memory at the addres pointed to by the
+	// stack pointer.
+	struct cpu_state cpu
+	{
+		.int_cond = 0, .int_lock = 0, .memory = nullptr,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0,
+		.sp = 0x10ad, .pc = 0, .bc = 0, .de = 0, .hl = 0x0b3c, .psw = 0,
+		.halt_flag = 0, .reset_flag = 0, .interrupt_enable_flag = 0
+	};
+
+	int cycles = sphl(0xf9, &cpu);
+	EXPECT_EQ(cycles, 5);
+	EXPECT_EQ(cpu.sp, 0x0b3c);
+	EXPECT_EQ(cpu.hl, 0x0b3c);
+}
