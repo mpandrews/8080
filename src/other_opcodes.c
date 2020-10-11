@@ -48,14 +48,34 @@ int pop(uint8_t opcode, struct cpu_state* cpu)
 
 int xthl(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	// assert that this is the correct opcode
+	assert(opcode == 0b11100011);
+
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: XTHL\n", opcode);
+#endif
+
+	// swap the contents of hl and memory[sp]
+	uint16_t temp = *((uint16_t*) &cpu->memory[cpu->sp]);
+	*((uint16_t*) &cpu->memory[cpu->sp]) = cpu->hl;
+	cpu->hl				     = temp;
+
+	return 18;
 }
 
 int sphl(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	// assert that this is the correct opcode
+	assert(opcode == 0b11111001);
+
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: SPHL\n", opcode);
+#endif
+
+	// replace sp with the contents of hl
+	cpu->sp = cpu->hl;
+
+	return 5;
 }
 
 int in(uint8_t opcode, struct cpu_state* cpu)
@@ -84,8 +104,16 @@ int di(uint8_t opcode, struct cpu_state* cpu)
 
 int hlt(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	// Check HLT opcode is 0x76
+	assert(opcode == 0b01110110);
+	(void) opcode;
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: HLT\n", cpu->pc);
+#endif
+
+	cpu->halt_flag = 1;
+	cpu->pc++;
+	return 7;
 }
 
 int nop(uint8_t opcode, struct cpu_state* cpu)
