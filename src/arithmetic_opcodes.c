@@ -16,7 +16,7 @@ int add_adc(uint8_t opcode, struct cpu_state* cpu)
 			"0x%4.4x: AD%c %c\n",
 			cpu->pc,
 			!(opcode & (1 << 3)) + 'C',
-			GET_SOURCE_OPERAND(opcode));
+			get_operand_name(GET_SOURCE_OPERAND(opcode)));
 #endif
 	uint16_t result = _add(cpu->a,
 			fetch_operand_val(GET_SOURCE_OPERAND(opcode), cpu),
