@@ -23,42 +23,41 @@ TEST(CALL, All)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// argument for first call
+	// Call should unconditionally perform the following actions:
+	// 	1. Decrement the stack pointer by 2
+	// 	2. push the next next instruction (cpu.pc + 3) onto the stack
+	// 	3. set its argument (the next 2 bytes at cpu.pc + 1) as the
+	// 	   program counter, and
+	// 	4. take 17 clock cycles to perform
+	// There are 4 opcodes that perform call 0xcd, 0xdd, 0xed, and 0xfd
+
+	// execute CALL with opcode 0xcd
 	*((uint16_t*) &cpu.memory[1]) = 0x8000;
-
-	// argument for second call
-	*((uint16_t*) &cpu.memory[0x8001]) = 0x8010;
-
-	// argument for third call
-	*((uint16_t*) &cpu.memory[0x8011]) = 0x8020;
-
-	// argument for fourth call
-	*((uint16_t*) &cpu.memory[0x8021]) = 0x8030;
-
-	// call CALL, assert the return value is correct and the stack pointer
-	// is as expected and the program counter is as expected
-	// 0xcd
 	int cycles = call(0xcd, &cpu);
 	EXPECT_EQ(cycles, 17);
 	EXPECT_EQ(cpu.pc, 0x8000);
 	EXPECT_EQ(cpu.sp, 0xfffe);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x0003);
 
-	// 0xdd
+
+	// execute CALL with opcode 0xdd
+	*((uint16_t*) &cpu.memory[0x8001]) = 0x8010;
 	cycles = call(0xdd, &cpu);
 	EXPECT_EQ(cycles, 17);
 	EXPECT_EQ(cpu.pc, 0x8010);
 	EXPECT_EQ(cpu.sp, 0xfffc);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x8003);
 
-	// 0xed
+	// execute CALL with opcode 0xed
+	*((uint16_t*) &cpu.memory[0x8011]) = 0x8020;
 	cycles = call(0xed, &cpu);
 	EXPECT_EQ(cycles, 17);
 	EXPECT_EQ(cpu.pc, 0x8020);
 	EXPECT_EQ(cpu.sp, 0xfffa);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x8013);
 
-	// 0xfd
+	// execute CALL with opcode 0xfd
+	*((uint16_t*) &cpu.memory[0x8021]) = 0x8030;
 	cycles = call(0xfd, &cpu);
 	EXPECT_EQ(cycles, 17);
 	EXPECT_EQ(cpu.pc, 0x8030);
@@ -68,7 +67,6 @@ TEST(CALL, All)
 
 TEST(RET, All)
 {
-
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
