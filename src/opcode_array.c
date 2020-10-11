@@ -165,22 +165,22 @@ int (*const opcodes[256])(uint8_t opcode, struct cpu_state* cpu) = {
 		mov,	 // 0x7D	MOV	A,L
 		mov,	 // 0x7E	MOV	A,M
 		mov,	 // 0x7F	MOV	A,A
-		add,	 // 0x80	ADD	B
-		add,	 // 0x81	ADD	C
-		add,	 // 0x82	ADD	D
-		add,	 // 0x83	ADD	E
-		add,	 // 0x84	ADD	H
-		add,	 // 0x85	ADD	L
-		add,	 // 0x86	ADD	M
-		add,	 // 0x87	ADD	A
-		adc,	 // 0x88	ADC	B
-		adc,	 // 0x89 	ADC	C
-		adc,	 // 0x8A 	ADC	D
-		adc,	 // 0x8B 	ADC	E
-		adc,	 // 0x8C 	ADC	H
-		adc,	 // 0x8D 	ADC	L
-		adc,	 // 0x8E 	ADC	M
-		adc,	 // 0x8F 	ADC	A
+		add_adc, // 0x80	ADD	B
+		add_adc, // 0x81	ADD	C
+		add_adc, // 0x82	ADD	D
+		add_adc, // 0x83	ADD	E
+		add_adc, // 0x84	ADD	H
+		add_adc, // 0x85	ADD	L
+		add_adc, // 0x86	ADD	M
+		add_adc, // 0x87	ADD	A
+		add_adc, // 0x88	ADC	B
+		add_adc, // 0x89 	ADC	C
+		add_adc, // 0x8A 	ADC	D
+		add_adc, // 0x8B 	ADC	E
+		add_adc, // 0x8C 	ADC	H
+		add_adc, // 0x8D 	ADC	L
+		add_adc, // 0x8E 	ADC	M
+		add_adc, // 0x8F 	ADC	A
 		sub,	 // 0x90	SUB	B
 		sub,	 // 0x91	SUB	C
 		sub,	 // 0x92	SUB	D
