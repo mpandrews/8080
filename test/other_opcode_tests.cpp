@@ -50,6 +50,22 @@ TEST(POP, B_D_H_PSW)
 	EXPECT_EQ(cpu.sp, 8);
 }
 
+TEST(HLT, All)
+{
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
+		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	// HLT
+	EXPECT_EQ(hlt(0x76, &cpu), 7);
+	EXPECT_EQ(cpu.halt_flag, 1);
+}
+
 TEST(NOP, All)
 {
 	struct cpu_state cpu
