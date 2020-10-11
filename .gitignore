@@ -8,3 +8,4 @@ bin/
 .idea/
 rom
 build/
+cmake-build-debug/
