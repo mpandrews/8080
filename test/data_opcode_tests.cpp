@@ -48,6 +48,57 @@ TEST(MOV, RegisterToMem)
 	EXPECT_EQ(cpu.psw, 0x0100);
 }
 
+TEST(LDAX, B_D)
+{
+
+	unsigned char memory[(1 << 16)];
+	struct cpu_state cpu
+	{
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0x1234, .de = 0x5678, .hl = 0, .psw = 0,
+		.halt_flag = 0, .reset_flag = 0, .interrupt_enable_flag = 0
+	};
+	memset(memory, 0, 1 << 16);
+	cpu.memory[cpu.bc] = 0xab;
+	cpu.memory[cpu.de] = 0xcd;
+
+	// LDAX B
+	int cycles = ldax(0x0a, &cpu);
+	EXPECT_EQ(cycles, 7);
+	EXPECT_EQ(cpu.a, 0xab);
+
+	// LDAX D
+	ldax(0x1a, &cpu);
+	EXPECT_EQ(cpu.a, 0xcd);
+}
+
+TEST(STAX, B_D)
+{
+
+	unsigned char memory[(1 << 16)];
+	struct cpu_state cpu
+	{
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0x1234, .de = 0x5678, .hl = 0, .psw = 0,
+		.halt_flag = 0, .reset_flag = 0, .interrupt_enable_flag = 0
+	};
+	memset(memory, 0, 1 << 16);
+	cpu.a		   = 0xab;
+	cpu.memory[cpu.bc] = 0;
+	cpu.memory[cpu.de] = 0;
+
+	// STAX B
+	int cycles = stax(0x02, &cpu);
+	EXPECT_EQ(cycles, 7);
+	EXPECT_EQ(cpu.memory[cpu.bc], 0xab);
+
+	// STAX D
+	stax(0x12, &cpu);
+	EXPECT_EQ(cpu.memory[cpu.de], 0xab);
+}
+
 TEST(XCHG, All)
 {
 	struct cpu_state cpu
