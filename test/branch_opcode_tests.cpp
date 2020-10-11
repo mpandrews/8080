@@ -10,7 +10,7 @@ extern "C"
  * its argument onto the program counter, stores the next instruction
  * address in the stack, and decrements the stack pointer by 2.
  * The only complication is that there are 4 opcodes that call it */
-TEST(CALL, allOpcodes)
+TEST(CALL, All)
 {
 
 	unsigned char memory[(1 << 16)];
@@ -24,49 +24,49 @@ TEST(CALL, allOpcodes)
 	};
 
 	// argument for first call
-	cpu.memory[1] = 0x10;
-	cpu.memory[2] = 0x00;
+	*((uint16_t*) &cpu.memory[1]) = 0x8000;
 
 	// argument for second call
-	cpu.memory[0x0011] = 0x20;
-	cpu.memory[0x0012] = 0x00;
+	*((uint16_t*) &cpu.memory[0x8001]) = 0x8010;
 
 	// argument for third call
-	cpu.memory[0x0021] = 0x30;
-	cpu.memory[0x0022] = 0x00;
+	*((uint16_t*) &cpu.memory[0x8011]) = 0x8020;
 
 	// argument for fourth call
-	cpu.memory[0x0031] = 0x40;
-	cpu.memory[0x0032] = 0x00;
+	*((uint16_t*) &cpu.memory[0x8021]) = 0x8030;
 
 	// call CALL, assert the return value is correct and the stack pointer
 	// is as expected and the program counter is as expected
 	// 0xcd
 	int cycles = call(0xcd, &cpu);
 	EXPECT_EQ(cycles, 17);
-	EXPECT_EQ(cpu.pc, 0x0010);
+	EXPECT_EQ(cpu.pc, 0x8000);
 	EXPECT_EQ(cpu.sp, 0xfffe);
+	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x0003);
 
 	// 0xdd
 	cycles = call(0xdd, &cpu);
 	EXPECT_EQ(cycles, 17);
-	EXPECT_EQ(cpu.pc, 0x0020);
+	EXPECT_EQ(cpu.pc, 0x8010);
 	EXPECT_EQ(cpu.sp, 0xfffc);
+	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x8003);
 
 	// 0xed
 	cycles = call(0xed, &cpu);
 	EXPECT_EQ(cycles, 17);
-	EXPECT_EQ(cpu.pc, 0x0030);
+	EXPECT_EQ(cpu.pc, 0x8020);
 	EXPECT_EQ(cpu.sp, 0xfffa);
+	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x8013);
 
-	// 0xed
+	// 0xfd
 	cycles = call(0xfd, &cpu);
 	EXPECT_EQ(cycles, 17);
-	EXPECT_EQ(cpu.pc, 0x0040);
+	EXPECT_EQ(cpu.pc, 0x8030);
 	EXPECT_EQ(cpu.sp, 0xfff8);
+	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x8023);
 }
 
-TEST(RET, allOpcodes)
+TEST(RET, All)
 {
 
 	unsigned char memory[(1 << 16)];
@@ -80,12 +80,11 @@ TEST(RET, allOpcodes)
 	};
 
 	// two versions of ret: 0xc9 and 0xd9
-	cpu.sp		   = 0xfffc;
-	cpu.memory[0xfffc] = 0xee;
-	cpu.memory[0xfffd] = 0x00;
-	cpu.memory[0xfffe] = 0xff;
-	cpu.memory[0xffff] = 0x01;
-	int cycles	   = ret(0xc9, &cpu);
+	cpu.sp				   = 0xfffc;
+	*((uint16_t*) &cpu.memory[0xfffc]) = 0x00ee;
+	*((uint16_t*) &cpu.memory[0xfffe]) = 0x01ff;
+
+	int cycles = ret(0xc9, &cpu);
 	EXPECT_EQ(cycles, 10);
 	EXPECT_EQ(cpu.sp, 0xfffe);
 	EXPECT_EQ(cpu.pc, 0x00ee);
@@ -96,7 +95,7 @@ TEST(RET, allOpcodes)
 	EXPECT_EQ(cpu.pc, 0x01ff);
 }
 
-TEST(JMP, allOpcodes)
+TEST(JMP, All)
 {
 
 	unsigned char memory[(1 << 16)];
@@ -108,17 +107,17 @@ TEST(JMP, allOpcodes)
 		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
+
 	// two versions of jmp: 0xc3 and 0xcb
-	// set argument for first jump call
-	cpu.memory[0x0001] = 0x03;
-	cpu.memory[0x0002] = 0x30;
-	int cycles	   = jmp(0xc3, &cpu);
+	// JMP simply sets the program counter equal to its argument. JMP's
+	// argument is stored in the next two bytes after JMP
+	*((uint16_t*) &cpu.memory[0x0001]) = 0x3003;
+	int cycles			   = jmp(0xc3, &cpu);
 	EXPECT_EQ(cpu.pc, 0x3003);
 	EXPECT_EQ(cycles, 10);
 
-	cpu.memory[0x3004] = 0x03;
-	cpu.memory[0x3005] = 0x00;
-	cycles		   = jmp(0xcb, &cpu);
+	*((uint16_t*) &cpu.memory[0x3004]) = 0x0003;
+	cycles				   = jmp(0xcb, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 10);
 }
@@ -126,6 +125,7 @@ TEST(JMP, allOpcodes)
 /* 8 JCOND opcodes jump and no jump branches for each  */
 TEST(JNZ, JumpAndNoJump)
 {
+	// JNZ = "jump not zero" -- Jump when zero flag is reset.
 	uint8_t opcode = 0xc2;
 	uint8_t flag   = ZERO_FLAG;
 
@@ -139,30 +139,28 @@ TEST(JNZ, JumpAndNoJump)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set jmp arguments in cpu memory,
-	// set the flag and call jnz, and
-	// assert that jnz did jmp
-	cpu.memory[0x0001] = 0x05;
-	cpu.memory[0x0002] = 0x04;
-	cpu.psw		   = flag;
-	int cycles	   = jcond(opcode, &cpu);
+	// Set argument address for JNZ in cpu.memory at cpu.pc+1, set the
+	// cpu's zero flag and call JNZ. Assert that JNZ did not execute
+	// a jump.
+	*((uint16_t*) &cpu.memory[0x0001]) = 0x0405;
+	cpu.psw				   = flag;
+	int cycles			   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 10);
 
-	// set jmp arguments in cpu memory,
-	// reset the flag and call jump, and
-	// assert that jmp did not jmp
-	cpu.memory[0x0004] = 0x05;
-	cpu.memory[0x0005] = 0x04;
-	cpu.psw		   = ~flag;
-	cycles		   = jcond(opcode, &cpu);
+	// Set the argument address for JNZ in cpu.memory at cpu.pc+1, reset
+	// zero flag and set all other cpu flags. Call JNZ and assert that
+	// JNZ did execute a jump.
+	*((uint16_t*) &cpu.memory[0x0004]) = 0x0405;
+	cpu.psw				   = ~flag;
+	cycles				   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cycles, 10);
 }
 
 TEST(JNC, JumpAndNoJump)
 {
-	// this test is for jnc, 0xd2
+	// JNC = "Jjmp no carry" -- Jump when carry flag is reset.
 	uint8_t opcode = 0xd2;
 	uint8_t flag   = CARRY_FLAG;
 
@@ -176,29 +174,28 @@ TEST(JNC, JumpAndNoJump)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set jmp arguments in cpu memory, set the flag and call jcond,
-	// and assert that jcond did not jmp
-	cpu.memory[0x0001] = 0x05;
-	cpu.memory[0x0002] = 0x04;
-	cpu.psw		   = flag;
-	int cycles	   = jcond(opcode, &cpu);
+	// Set argument address for JNC in cpu.memory at cpu.pc+1, set the
+	// cpu's carry flag and call JNC. Assert that JNC did not execute
+	// a jump.
+	*((uint16_t*) &cpu.memory[0x0001]) = 0x0405;
+	cpu.psw				   = flag;
+	int cycles			   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 10);
 
-	// set jmp arguments in cpu memory, reset the flag and call jump,
-	// and assert that jmp did jmp
-	cpu.memory[0x0004] = 0x05;
-	cpu.memory[0x0005] = 0x04;
-	cpu.psw		   = ~flag;
-	cycles		   = jcond(opcode, &cpu);
+	// Set the argument address for JNC in cpu.memory at cpu.pc+1, reset
+	// carry flag and set all other cpu flags. Call JNC and assert that
+	// JNC did execute a jump.
+	*((uint16_t*) &cpu.memory[0x0004]) = 0x0405;
+	cpu.psw				   = ~flag;
+	cycles				   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cycles, 10);
 }
 
 TEST(JPO, JumpAndNoJump)
 {
-
-	// this test is for jpo, 0xe2
+	// JPO = "jump parity odd" -- Jump when parity flag is reset.
 	uint8_t opcode = 0xe2;
 	uint8_t flag   = PARITY_FLAG;
 
@@ -212,31 +209,28 @@ TEST(JPO, JumpAndNoJump)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set jmp arguments in cpu memory, set the flag and call jcond,
-	// and assert that jcond did not jmp
-	// parity flag is set when parity is even, so jpo (aka jump-parity-odd)
-	// should jump when the parity flag is reset
-	cpu.memory[0x0001] = 0x05;
-	cpu.memory[0x0002] = 0x04;
-	cpu.psw		   = flag;
-	int cycles	   = jcond(opcode, &cpu);
+	// Set argument address for JPO in cpu.memory at cpu.pc+1, set the
+	// cpu's parity flag and call JPO. Assert that JPO did not execute
+	// a jump.
+	*((uint16_t*) &cpu.memory[0x0001]) = 0x0405;
+	cpu.psw				   = flag;
+	int cycles			   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 10);
 
-	// set jmp arguments in cpu memory, reset the flag and call jump,
-	// and assert that jmp did jmp
-	cpu.memory[0x0004] = 0x05;
-	cpu.memory[0x0005] = 0x04;
-	cpu.psw		   = ~flag;
-	cycles		   = jcond(opcode, &cpu);
+	// Set the argument address for JPO in cpu.memory at cpu.pc+1, reset
+	// parity flag and set all other cpu flags. Call JPO and assert that
+	// JPO did execute a jump.
+	*((uint16_t*) &cpu.memory[0x0004]) = 0x0405;
+	cpu.psw				   = ~flag;
+	cycles				   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cycles, 10);
 }
 
 TEST(JP, JumpAndNoJump)
 {
-
-	// this test is for jp, 0xf2
+	// JP = "jump positive" -- Jump when sign flag is reset.
 	uint8_t opcode = 0xf2;
 	uint8_t flag   = SIGN_FLAG;
 
@@ -250,28 +244,28 @@ TEST(JP, JumpAndNoJump)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set jmp arguments in cpu memory, set the flag and call jcond,
-	// and assert that jcond did not jmp
-	cpu.memory[0x0001] = 0x05;
-	cpu.memory[0x0002] = 0x04;
-	cpu.psw		   = flag;
-	int cycles	   = jcond(opcode, &cpu);
+	// Set argument address for JP in cpu.memory at cpu.pc+1, set the
+	// cpu's sign flag and call JP. Assert that JP did not execute
+	// a jump.
+	*((uint16_t*) &cpu.memory[0x0001]) = 0x0405;
+	cpu.psw				   = flag;
+	int cycles			   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 10);
 
-	// set jmp arguments in cpu memory, reset the flag and call jump,
-	// and assert that jmp did jmp
-	cpu.memory[0x0004] = 0x05;
-	cpu.memory[0x0005] = 0x04;
-	cpu.psw		   = ~flag;
-	cycles		   = jcond(opcode, &cpu);
+	// Set the argument address for JP in cpu.memory at cpu.pc+1, reset
+	// sign flag and set all other cpu flags. Call JP and assert that
+	// JP did execute a jump.
+	*((uint16_t*) &cpu.memory[0x0004]) = 0x0405;
+	cpu.psw				   = ~flag;
+	cycles				   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cycles, 10);
 }
 
 TEST(JZ, JumpAndNoJump)
 {
-	// this test is for jz, 0xca
+	// JZ = "Jump zero" -- Jump when zero flag is set.
 	uint8_t opcode = 0xca;
 	uint8_t flag   = ZERO_FLAG;
 
@@ -285,21 +279,21 @@ TEST(JZ, JumpAndNoJump)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set jmp arguments in cpu memory, set the flag and call jcond,
-	// and assert that jcond did not jmp
-	cpu.memory[0x0001] = 0x05;
-	cpu.memory[0x0002] = 0x04;
-	cpu.psw		   = ~flag;
-	int cycles	   = jcond(opcode, &cpu);
+	// Set the argument address for JZ in cpu.memory at cpu.pc+1, reset
+	// the zero flag and set all other cpu flags. Call JZ and assert
+	// that JZ did not execute a jump.
+	*((uint16_t*) &cpu.memory[0x0001]) = 0x0405;
+	cpu.psw				   = ~flag;
+	int cycles			   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 10);
 
-	// set jmp arguments in cpu memory, reset the flag and call jump,
-	// and assert that jmp did jmp
-	cpu.memory[0x0004] = 0x05;
-	cpu.memory[0x0005] = 0x04;
-	cpu.psw		   = flag;
-	cycles		   = jcond(opcode, &cpu);
+	// Set argument address for JZ in cpu.memory at cpu.pc+1, set the
+	// cpu's zero flag, reset all other flags, and call JZ. Assert
+	// that JZ did execute a jump.
+	*((uint16_t*) &cpu.memory[0x0004]) = 0x0405;
+	cpu.psw				   = flag;
+	cycles				   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cycles, 10);
 }
@@ -307,7 +301,7 @@ TEST(JZ, JumpAndNoJump)
 TEST(JC, JumpAndNoJump)
 {
 
-	// this test is for jc, 0xda
+	// JC = "Jump carry" -- Jump when carry flag is set.
 	uint8_t opcode = 0xda;
 	uint8_t flag   = CARRY_FLAG;
 
@@ -321,28 +315,28 @@ TEST(JC, JumpAndNoJump)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set jmp arguments in cpu memory, set the flag and call jcond,
-	// and assert that jcond did not jmp
-	cpu.memory[0x0001] = 0x05;
-	cpu.memory[0x0002] = 0x04;
-	cpu.psw		   = ~flag;
-	int cycles	   = jcond(opcode, &cpu);
+	// Set the argument address for JC in cpu.memory at cpu.pc+1, reset
+	// the carry flag and set all other cpu flags. Call JC and assert
+	// that JC did not execute a jump.
+	*((uint16_t*) &cpu.memory[0x0001]) = 0x0405;
+	cpu.psw				   = ~flag;
+	int cycles			   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 10);
 
-	// set jmp arguments in cpu memory, reset the flag and call jump,
-	// and assert that jmp did jmp
-	cpu.memory[0x0004] = 0x05;
-	cpu.memory[0x0005] = 0x04;
-	cpu.psw		   = flag;
-	cycles		   = jcond(opcode, &cpu);
+	// Set argument address for JC in cpu.memory at cpu.pc+1, set the
+	// cpu's carry flag, reset all other flags, and call JC. Assert
+	// that JC did execute a jump.
+	*((uint16_t*) &cpu.memory[0x0004]) = 0x0405;
+	cpu.psw				   = flag;
+	cycles				   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cycles, 10);
 }
 
 TEST(JPE, JumpAndNoJump)
 {
-	// this test is for jpe, 0xea
+	// JPE = "Jump parity even" -- Jump when parity flag is set.
 	uint8_t opcode = 0xea;
 	uint8_t flag   = PARITY_FLAG;
 
@@ -356,21 +350,21 @@ TEST(JPE, JumpAndNoJump)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set jmp arguments in cpu memory, set the flag and call jcond,
-	// and assert that jcond did not jmp
-	cpu.memory[0x0001] = 0x05;
-	cpu.memory[0x0002] = 0x04;
-	cpu.psw		   = ~flag;
-	int cycles	   = jcond(opcode, &cpu);
+	// Set the argument address for JPE in cpu.memory at cpu.pc+1, reset
+	// the parity flag and set all other cpu flags. Call JPE and assert
+	// that JPE did not execute a jump.
+	*((uint16_t*) &cpu.memory[0x0001]) = 0x0405;
+	cpu.psw				   = ~flag;
+	int cycles			   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 10);
 
-	// set jmp arguments in cpu memory, reset the flag and call jump,
-	// and assert that jmp did jmp
-	cpu.memory[0x0004] = 0x05;
-	cpu.memory[0x0005] = 0x04;
-	cpu.psw		   = flag;
-	cycles		   = jcond(opcode, &cpu);
+	// Set argument address for JPE in cpu.memory at cpu.pc+1, set the
+	// cpu's parity flag, reset all other flags, and call JPE. Assert
+	// that JPE did execute a jump.
+	*((uint16_t*) &cpu.memory[0x0004]) = 0x0405;
+	cpu.psw				   = flag;
+	cycles				   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cycles, 10);
 }
@@ -378,6 +372,7 @@ TEST(JPE, JumpAndNoJump)
 TEST(JM, JumpAndNoJump)
 {
 
+	// JM = "Jump minus" -- Jump when sign flag is set.
 	// this test is for jm, 0xfa
 	uint8_t opcode = 0xfa;
 	uint8_t flag   = SIGN_FLAG;
@@ -392,21 +387,21 @@ TEST(JM, JumpAndNoJump)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set jmp arguments in cpu memory, set the flag and call jcond,
-	// and assert that jcond did not jmp
-	cpu.memory[0x0001] = 0x05;
-	cpu.memory[0x0002] = 0x04;
-	cpu.psw		   = ~flag;
-	int cycles	   = jcond(opcode, &cpu);
+	// Set the argument address for JM in cpu.memory at cpu.pc+1, reset
+	// the sign flag and set all other cpu flags. Call JM and assert
+	// that JM did not execute a jump.
+	*((uint16_t*) &cpu.memory[0x0001]) = 0x0405;
+	cpu.psw				   = ~flag;
+	int cycles			   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 10);
 
-	// set jmp arguments in cpu memory, reset the flag and call jump,
-	// and assert that jmp did jmp
-	cpu.memory[0x0004] = 0x05;
-	cpu.memory[0x0005] = 0x04;
-	cpu.psw		   = flag;
-	cycles		   = jcond(opcode, &cpu);
+	// Set argument address for JM in cpu.memory at cpu.pc+1, set the
+	// cpu's sign flag, reset all other flags, and call JM. Assert
+	// that JM did execute a jump.
+	*((uint16_t*) &cpu.memory[0x0004]) = 0x0405;
+	cpu.psw				   = flag;
+	cycles				   = jcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cycles, 10);
 }
@@ -414,7 +409,7 @@ TEST(JM, JumpAndNoJump)
 /* 8 RCOND opcodes return and no return branches for each */
 TEST(RNZ, ReturnAndNoReturn)
 {
-	// this test is for rnz, 0xc0
+	// RNZ = "return not zero" -- Return when zero flag is reset.
 	uint8_t opcode = 0xc0;
 	uint8_t flag   = ZERO_FLAG;
 
@@ -428,21 +423,20 @@ TEST(RNZ, ReturnAndNoReturn)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set stack pointer and populate memory at stack pointer as if there
-	// with .. something. So that return has something testable to return
+	// set stack pointer and put something in memory on the stack
 	cpu.memory[0x00ff] = 0x05;
 	cpu.memory[0x00fe] = 0x04;
 	cpu.sp		   = 0x00fe;
 
-	// No return should take 5 cycles and simply advance the program counter
-	// to the next address.
+	// Set the zero flag and reset all other flags. Call RNZ and assert
+	// that RNZ did not execute a return.
 	cpu.psw	   = flag;
 	int cycles = retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0001);
 	EXPECT_EQ(cycles, 5);
 
-	// Return case should pop 0x0504 off the stack and put it in the pc
-	// and takes 11 cycles
+	// Reset the zero flag and set all other cpu flags. Call RNZ and
+	// assert that RNZ did execute a return.
 	cpu.psw = ~flag;
 	cycles	= retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0504);
@@ -451,7 +445,7 @@ TEST(RNZ, ReturnAndNoReturn)
 
 TEST(RNC, ReturnAndNoReturn)
 {
-	// this test is for rnc, 0xd0
+	// RNC = "return no carry"-- Return when carry flag is reset.
 	uint8_t opcode = 0xd0;
 	uint8_t flag   = CARRY_FLAG;
 
@@ -465,21 +459,20 @@ TEST(RNC, ReturnAndNoReturn)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set stack pointer and populate memory at stack pointer as if there
-	// with .. something. So that return has something testable to return
+	// set stack pointer and put something in memory on the stack
 	cpu.memory[0x00ff] = 0x05;
 	cpu.memory[0x00fe] = 0x04;
 	cpu.sp		   = 0x00fe;
 
-	// No return should take 5 cycles and simply advance the program counter
-	// to the next address.
+	// Set the carry flag and reset all other flags. Call RNC and assert
+	// that RNC did not execute a return.
 	cpu.psw	   = flag;
 	int cycles = retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0001);
 	EXPECT_EQ(cycles, 5);
 
-	// Return case should pop 0x0504 off the stack and put it in the pc
-	// and takes 11 cycles
+	// Reset the carry flag and set all other cpu flags. Call RNC and
+	// assert that RNC did execute a return.
 	cpu.psw = ~flag;
 	cycles	= retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0504);
@@ -488,7 +481,7 @@ TEST(RNC, ReturnAndNoReturn)
 
 TEST(RPO, ReturnAndNoReturn)
 {
-	// this test is for rpo, 0xe0
+	// RPO = "return parity odd" -- Return when parity flag is reset.
 	uint8_t opcode = 0xe0;
 	uint8_t flag   = PARITY_FLAG;
 
@@ -502,21 +495,20 @@ TEST(RPO, ReturnAndNoReturn)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set stack pointer and populate memory at stack pointer as if there
-	// with .. something. So that return has something testable to return
+	// set stack pointer and put something in memory on the stack
 	cpu.memory[0x00ff] = 0x05;
 	cpu.memory[0x00fe] = 0x04;
 	cpu.sp		   = 0x00fe;
 
-	// No return should take 5 cycles and simply advance the program counter
-	// to the next address.
+	// Set the parity flag and reset all other flags. Call RPO and assert
+	// that RPO did not execute a return.
 	cpu.psw	   = flag;
 	int cycles = retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0001);
 	EXPECT_EQ(cycles, 5);
 
-	// Return case should pop 0x0504 off the stack and put it in the pc
-	// and takes 11 cycles
+	// Reset the parity flag and set all other cpu flags. Call RPO and
+	// assert that RPO did execute a return.
 	cpu.psw = ~flag;
 	cycles	= retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0504);
@@ -525,7 +517,7 @@ TEST(RPO, ReturnAndNoReturn)
 
 TEST(RP, ReturnAndNoReturn)
 {
-	// this test is for rp, 0xf0
+	// RP = "return positive" -- Return when sign flag is reset.
 	uint8_t opcode = 0xf0;
 	uint8_t flag   = SIGN_FLAG;
 
@@ -539,21 +531,20 @@ TEST(RP, ReturnAndNoReturn)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set stack pointer and populate memory at stack pointer as if there
-	// with .. something. So that return has something testable to return
+	// set stack pointer and put something in memory on the stack
 	cpu.memory[0x00ff] = 0x05;
 	cpu.memory[0x00fe] = 0x04;
 	cpu.sp		   = 0x00fe;
 
-	// No return should take 5 cycles and simply advance the program counter
-	// to the next address.
+	// Set the sign flag and reset all other flags. Call RP and assert
+	// that RP did not execute a return.
 	cpu.psw	   = flag;
 	int cycles = retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0001);
 	EXPECT_EQ(cycles, 5);
 
-	// Return case should pop 0x0504 off the stack and put it in the pc
-	// and takes 11 cycles
+	// Reset the sign flag and set all other cpu flags. Call RP and
+	// assert that RP did execute a return.
 	cpu.psw = ~flag;
 	cycles	= retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0504);
@@ -562,7 +553,7 @@ TEST(RP, ReturnAndNoReturn)
 
 TEST(RZ, ReturnAndNoReturn)
 {
-	// this test is for rz, 0xc8
+	// RZ = "return zero" -- Return when zero flag is set.
 	uint8_t opcode = 0xc8;
 	uint8_t flag   = ZERO_FLAG;
 
@@ -576,21 +567,20 @@ TEST(RZ, ReturnAndNoReturn)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set stack pointer and populate memory at stack pointer as if there
-	// with .. something. So that return has something testable to return
+	// set stack pointer and put something in memory on the stack
 	cpu.memory[0x00ff] = 0x05;
 	cpu.memory[0x00fe] = 0x04;
 	cpu.sp		   = 0x00fe;
 
-	// No return should take 5 cycles and simply advance the program counter
-	// to the next address.
+	// Reset the zero flag and set all other flags. Call RZ and assert
+	// that RZ did not execute a return.
 	cpu.psw	   = ~flag;
 	int cycles = retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0001);
 	EXPECT_EQ(cycles, 5);
 
-	// Return case should pop 0x0504 off the stack and put it in the pc
-	// and takes 11 cycles
+	// Set the zero flag and reset all other cpu flags. Call RZ and
+	// assert that RZ did execute a return.
 	cpu.psw = flag;
 	cycles	= retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0504);
@@ -599,6 +589,7 @@ TEST(RZ, ReturnAndNoReturn)
 
 TEST(RC, ReturnAndNoReturn)
 {
+	// RC = "return carry" -- Return when carry flag is set.
 	// this test is for rc, 0xd8
 	uint8_t opcode = 0xd8;
 	uint8_t flag   = CARRY_FLAG;
@@ -613,29 +604,28 @@ TEST(RC, ReturnAndNoReturn)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set stack pointer and populate memory at stack pointer as if there
-	// with .. something. So that return has something testable to return
-	cpu.memory[0x00ff] = 0x05;
-	cpu.memory[0x00fe] = 0x04;
-	cpu.sp		   = 0x00fe;
+	// set stack pointer and put something in memory on the stack
+	*((uint16_t*) &cpu.memory[0x00fe]) = 0x0405;
+	cpu.sp				   = 0x00fe;
 
-	// No return should take 5 cycles and simply advance the program counter
-	// to the next address.
+	// Reset the carry flag and set all other flags. Call RC and assert
+	// that RC did not execute a return.
 	cpu.psw	   = ~flag;
 	int cycles = retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0001);
 	EXPECT_EQ(cycles, 5);
 
-	// Return case should pop 0x0504 off the stack and put it in the pc
-	// and takes 11 cycles
+	// Set the carry flag and reset all other cpu flags. Call RC and
+	// assert that RC did execute a return.
 	cpu.psw = flag;
 	cycles	= retcond(opcode, &cpu);
-	EXPECT_EQ(cpu.pc, 0x0504);
+	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cycles, 11);
 }
 
 TEST(RPE, ReturnAndNoReturn)
 {
+	// RPE = "return parity odd" -- Return when parity flag is set.
 	// this test is for rpe, 0xe8
 	uint8_t opcode = 0xe8;
 	uint8_t flag   = PARITY_FLAG;
@@ -650,29 +640,28 @@ TEST(RPE, ReturnAndNoReturn)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set stack pointer and populate memory at stack pointer as if there
-	// with .. something. So that return has something testable to return
-	cpu.memory[0x00ff] = 0x05;
-	cpu.memory[0x00fe] = 0x04;
-	cpu.sp		   = 0x00fe;
+	// set stack pointer and put something in memory on the stack
+	*((uint16_t*) &cpu.memory[0x00fe]) = 0x0405;
+	cpu.sp				   = 0x00fe;
 
-	// No return should take 5 cycles and simply advance the program counter
-	// to the next address.
+	// Reset the parity flag and set all other flags. Call RPE and assert
+	// that RPE did not execute a return.
 	cpu.psw	   = ~flag;
 	int cycles = retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0001);
 	EXPECT_EQ(cycles, 5);
 
-	// Return case should pop 0x0504 off the stack and put it in the pc
-	// and takes 11 cycles
+	// Set the parity flag and reset all other cpu flags. Call RPE  and
+	// assert that RPE did execute a return.
 	cpu.psw = flag;
 	cycles	= retcond(opcode, &cpu);
-	EXPECT_EQ(cpu.pc, 0x0504);
+	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cycles, 11);
 }
 
 TEST(RM, ReturnAndNoReturn)
 {
+	// RM = "return minus" -- Return when sign flag is set.
 	// this test is for rm, 0xf8
 	uint8_t opcode = 0xf8;
 	uint8_t flag   = SIGN_FLAG;
@@ -687,31 +676,29 @@ TEST(RM, ReturnAndNoReturn)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set stack pointer and populate memory at stack pointer as if there
-	// with .. something. So that return has something testable to return
-	cpu.memory[0x00ff] = 0x05;
-	cpu.memory[0x00fe] = 0x04;
-	cpu.sp		   = 0x00fe;
+	// set stack pointer and put something in memory on the stack
+	*((uint16_t*) &cpu.memory[0x00fe]) = 0x0405;
+	cpu.sp				   = 0x00fe;
 
-	// No return should take 5 cycles and simply advance the program counter
-	// to the next address.
+	// Reset the sign flag and set all other flags. Call RM and assert
+	// that RM did not execute a return.
 	cpu.psw	   = ~flag;
 	int cycles = retcond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0001);
 	EXPECT_EQ(cycles, 5);
 
-	// Return case should pop 0x0504 off the stack and put it in the pc
-	// and takes 11 cycles
+	// Set the sign flag and reset all other cpu flags. Call RM  and
+	// assert that RM did execute a return.
 	cpu.psw = flag;
 	cycles	= retcond(opcode, &cpu);
-	EXPECT_EQ(cpu.pc, 0x0504);
+	EXPECT_EQ(cpu.pc, 0x0405);
 	EXPECT_EQ(cycles, 11);
 }
 
 /* 8 CCOND opcodes return and no return branches for each */
 TEST(CNZ, CallAndNoCall)
 {
-	// this test is for cnz, 0xc4
+	// CNZ = "Call not zero" -- execute call if zero flag is not set
 	uint8_t opcode = 0xc4;
 	uint8_t flag   = ZERO_FLAG;
 
@@ -725,34 +712,37 @@ TEST(CNZ, CallAndNoCall)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set a call location into memory that the stack pointer will be set
-	// to when the call is succesful. This will be at 0x04 and 0x05 since
-	// the first call which won't be executed will advance the pc by 3
-	cpu.memory[0x0004] = 0x05;
-	cpu.memory[0x0005] = 0x04;
+	// Put an argument for the second call to CNZ into memory at 0x0004.
+	// The first call which should not be executed will advance the PC to
+	// 0x0003
+	*((uint16_t*) &cpu.memory[0x0004]) = 0x8010;
 
-	// a no-call should take 11 cycles and simply advance the pc by 3
+	// Set the zero flag and reset all other flags. Call CNZ and assert
+	// that it advanced the program counter by 3 and nothing else.
 	cpu.psw	   = flag;
 	int cycles = ccond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 11);
+	EXPECT_EQ(cpu.sp, 0);
 
+	// Reset the zero flag and set all the ther flags and call CNZ. Assert
+	// that CNZ was executed by checking the following:
 	// Successful call should:
 	// 	1. place 0x0006 onto the stack
-	// 	2. move the pc to 0x0405 (the argument given to call),
+	// 	2. move the pc to 0x8010 (the argument given to call),
 	// 	3. decrement the sp by 2,
 	// 	4. take 17 cycles
 	cpu.psw = ~flag;
 	cycles	= ccond(opcode, &cpu);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x0006);
-	EXPECT_EQ(cpu.pc, 0x0405);
+	EXPECT_EQ(cpu.pc, 0x8010);
 	EXPECT_EQ(cpu.sp, 0Xfffe);
 	EXPECT_EQ(cycles, 17);
 }
 
 TEST(CNC, CallAndNoCall)
 {
-	// this test is for cnc, 0xd4
+	// CNC = "Call no carry" -- execute call if carry flag is not set
 	uint8_t opcode = 0xd4;
 	uint8_t flag   = CARRY_FLAG;
 
@@ -766,34 +756,37 @@ TEST(CNC, CallAndNoCall)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set a call location into memory that the stack pointer will be set
-	// to when the call is succesful. This will be at 0x04 and 0x05 since
-	// the first call which won't be executed will advance the pc by 3
-	cpu.memory[0x0004] = 0x05;
-	cpu.memory[0x0005] = 0x04;
+	// Put an argument for the second call to CNC into memory at 0x0004.
+	// The first call which should not be executed will advance the PC to
+	// 0x0003
+	*((uint16_t*) &cpu.memory[0x0004]) = 0x8010;
 
-	// a no-call should take 11 cycles and simply advance the pc by 3
+	// Set the carry flag and reset all other flags. Call CNC and assert
+	// that it advanced the program counter by 3 and nothing else.
 	cpu.psw	   = flag;
 	int cycles = ccond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 11);
+	EXPECT_EQ(cpu.sp, 0);
 
+	// Reset the carry flag and set all the ther flags and call CNC. Assert
+	// that CNC was executed by checking the following:
 	// Successful call should:
 	// 	1. place 0x0006 onto the stack
-	// 	2. move the pc to 0x0405 (the argument given to call),
+	// 	2. move the pc to 0x8010 (the argument given to call),
 	// 	3. decrement the sp by 2,
 	// 	4. take 17 cycles
 	cpu.psw = ~flag;
 	cycles	= ccond(opcode, &cpu);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x0006);
-	EXPECT_EQ(cpu.pc, 0x0405);
+	EXPECT_EQ(cpu.pc, 0x8010);
 	EXPECT_EQ(cpu.sp, 0Xfffe);
 	EXPECT_EQ(cycles, 17);
 }
 
 TEST(CPO, CallAndNoCall)
 {
-	// this test is for cpo, 0xe4
+	// CPO = "Call parity odd" -- execute call if parity flag is not set
 	uint8_t opcode = 0xe4;
 	uint8_t flag   = PARITY_FLAG;
 
@@ -807,34 +800,37 @@ TEST(CPO, CallAndNoCall)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set a call location into memory that the stack pointer will be set
-	// to when the call is succesful. This will be at 0x04 and 0x05 since
-	// the first call which won't be executed will advance the pc by 3
-	cpu.memory[0x0004] = 0x05;
-	cpu.memory[0x0005] = 0x04;
+	// Put an argument for the second call to CPO into memory at 0x0004.
+	// The first call which should not be executed will advance the PC to
+	// 0x0003
+	*((uint16_t*) &cpu.memory[0x0004]) = 0x8010;
 
-	// a no-call should take 11 cycles and simply advance the pc by 3
+	// Set the parity flag and reset all other flags. Call CPO and assert
+	// that it advanced the program counter by 3 and nothing else.
 	cpu.psw	   = flag;
 	int cycles = ccond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 11);
+	EXPECT_EQ(cpu.sp, 0);
 
+	// Reset the parity flag and set all the ther flags and call CPO. Assert
+	// that CPO was executed by checking the following:
 	// Successful call should:
 	// 	1. place 0x0006 onto the stack
-	// 	2. move the pc to 0x0405 (the argument given to call),
+	// 	2. move the pc to 0x8010 (the argument given to call),
 	// 	3. decrement the sp by 2,
 	// 	4. take 17 cycles
 	cpu.psw = ~flag;
 	cycles	= ccond(opcode, &cpu);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x0006);
-	EXPECT_EQ(cpu.pc, 0x0405);
+	EXPECT_EQ(cpu.pc, 0x8010);
 	EXPECT_EQ(cpu.sp, 0Xfffe);
 	EXPECT_EQ(cycles, 17);
 }
 
 TEST(CP, CallAndNoCall)
 {
-	// this test is for cp, 0xf4
+	// CP = "Call positive" -- execute call if sign flag is not set
 	uint8_t opcode = 0xf4;
 	uint8_t flag   = SIGN_FLAG;
 
@@ -848,34 +844,37 @@ TEST(CP, CallAndNoCall)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set a call location into memory that the stack pointer will be set
-	// to when the call is succesful. This will be at 0x04 and 0x05 since
-	// the first call which won't be executed will advance the pc by 3
-	cpu.memory[0x0004] = 0x05;
-	cpu.memory[0x0005] = 0x04;
+	// Put an argument for the second call to CP into memory at 0x0004.
+	// The first call which should not be executed will advance the PC to
+	// 0x0003
+	*((uint16_t*) &cpu.memory[0x0004]) = 0x8010;
 
-	// a no-call should take 11 cycles and simply advance the pc by 3
+	// Set the sign flag and reset all other flags. Call CP and assert
+	// that it advanced the program counter by 3 and nothing else.
 	cpu.psw	   = flag;
 	int cycles = ccond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 11);
+	EXPECT_EQ(cpu.sp, 0);
 
+	// Reset the sign flag and set all the ther flags and call CP. Assert
+	// that CP was executed by checking the following:
 	// Successful call should:
 	// 	1. place 0x0006 onto the stack
-	// 	2. move the pc to 0x0405 (the argument given to call),
+	// 	2. move the pc to 0x8010 (the argument given to call),
 	// 	3. decrement the sp by 2,
 	// 	4. take 17 cycles
 	cpu.psw = ~flag;
 	cycles	= ccond(opcode, &cpu);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x0006);
-	EXPECT_EQ(cpu.pc, 0x0405);
+	EXPECT_EQ(cpu.pc, 0x8010);
 	EXPECT_EQ(cpu.sp, 0Xfffe);
 	EXPECT_EQ(cycles, 17);
 }
 
 TEST(CZ, CallAndNoCall)
 {
-	// this test is for cnz, 0xcc
+	// CZ = "Call zero" -- execute call if zero flag is set
 	uint8_t opcode = 0xcc;
 	uint8_t flag   = ZERO_FLAG;
 
@@ -889,34 +888,37 @@ TEST(CZ, CallAndNoCall)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set a call location into memory that the stack pointer will be set
-	// to when the call is succesful. This will be at 0x04 and 0x05 since
-	// the first call which won't be executed will advance the pc by 3
-	cpu.memory[0x0004] = 0x05;
-	cpu.memory[0x0005] = 0x04;
+	// Put an argument for the second call to CZ into memory at 0x0004.
+	// The first call which should not be executed will advance the PC to
+	// 0x0003
+	*((uint16_t*) &cpu.memory[0x0004]) = 0x8010;
 
-	// a no-call should take 11 cycles and simply advance the pc by 3
+	// Reset the zero flag and set all other flags. Call CZ and assert
+	// that it advanced the program counter by 3 and nothing else.
 	cpu.psw	   = ~flag;
 	int cycles = ccond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 11);
+	EXPECT_EQ(cpu.sp, 0);
 
+	// Set the zero flag and reset all the ther flags and call CZ. Assert
+	// that CZ was executed by checking the following:
 	// Successful call should:
 	// 	1. place 0x0006 onto the stack
-	// 	2. move the pc to 0x0405 (the argument given to call),
+	// 	2. move the pc to 0x8010 (the argument given to call),
 	// 	3. decrement the sp by 2,
 	// 	4. take 17 cycles
 	cpu.psw = flag;
 	cycles	= ccond(opcode, &cpu);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x0006);
-	EXPECT_EQ(cpu.pc, 0x0405);
+	EXPECT_EQ(cpu.pc, 0x8010);
 	EXPECT_EQ(cpu.sp, 0Xfffe);
 	EXPECT_EQ(cycles, 17);
 }
 
 TEST(CC, CallAndNoCall)
 {
-	// this test is for cnz, 0xdc
+	// CC = "Call carry" -- execute call if carry flag is set
 	uint8_t opcode = 0xdc;
 	uint8_t flag   = CARRY_FLAG;
 
@@ -930,34 +932,37 @@ TEST(CC, CallAndNoCall)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set a call location into memory that the stack pointer will be set
-	// to when the call is succesful. This will be at 0x04 and 0x05 since
-	// the first call which won't be executed will advance the pc by 3
-	cpu.memory[0x0004] = 0x05;
-	cpu.memory[0x0005] = 0x04;
+	// Put an argument for the second call to CC into memory at 0x0004.
+	// The first call which should not be executed will advance the PC to
+	// 0x0003
+	*((uint16_t*) &cpu.memory[0x0004]) = 0x8010;
 
-	// a no-call should take 11 cycles and simply advance the pc by 3
+	// Reset the carry flag and set all other flags. Call CC and assert
+	// that it advanced the program counter by 3 and nothing else.
 	cpu.psw	   = ~flag;
 	int cycles = ccond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 11);
+	EXPECT_EQ(cpu.sp, 0);
 
+	// Set the carry flag and reset all the ther flags and call CC. Assert
+	// that CC was executed by checking the following:
 	// Successful call should:
 	// 	1. place 0x0006 onto the stack
-	// 	2. move the pc to 0x0405 (the argument given to call),
+	// 	2. move the pc to 0x8010 (the argument given to call),
 	// 	3. decrement the sp by 2,
 	// 	4. take 17 cycles
 	cpu.psw = flag;
 	cycles	= ccond(opcode, &cpu);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x0006);
-	EXPECT_EQ(cpu.pc, 0x0405);
+	EXPECT_EQ(cpu.pc, 0x8010);
 	EXPECT_EQ(cpu.sp, 0Xfffe);
 	EXPECT_EQ(cycles, 17);
 }
 
 TEST(CPE, CallAndNoCall)
 {
-	// this test is for cpe, 0xec
+	// CPE = "Call parity even" -- execute call if parity flag is set
 	uint8_t opcode = 0xec;
 	uint8_t flag   = PARITY_FLAG;
 
@@ -971,34 +976,37 @@ TEST(CPE, CallAndNoCall)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set a call location into memory that the stack pointer will be set
-	// to when the call is succesful. This will be at 0x04 and 0x05 since
-	// the first call which won't be executed will advance the pc by 3
-	cpu.memory[0x0004] = 0x05;
-	cpu.memory[0x0005] = 0x04;
+	// Put an argument for the second call to CPE into memory at 0x0004.
+	// The first call which should not be executed will advance the PC to
+	// 0x0003
+	*((uint16_t*) &cpu.memory[0x0004]) = 0x8010;
 
-	// a no-call should take 11 cycles and simply advance the pc by 3
+	// Reset the parity flag and set all other flags. Call CPE and assert
+	// that it advanced the program counter by 3 and nothing else.
 	cpu.psw	   = ~flag;
 	int cycles = ccond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 11);
+	EXPECT_EQ(cpu.sp, 0);
 
+	// Set the parity flag and reset all the ther flags and call CPE. Assert
+	// that CPE was executed by checking the following:
 	// Successful call should:
 	// 	1. place 0x0006 onto the stack
-	// 	2. move the pc to 0x0405 (the argument given to call),
+	// 	2. move the pc to 0x8010 (the argument given to call),
 	// 	3. decrement the sp by 2,
 	// 	4. take 17 cycles
 	cpu.psw = flag;
 	cycles	= ccond(opcode, &cpu);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x0006);
-	EXPECT_EQ(cpu.pc, 0x0405);
+	EXPECT_EQ(cpu.pc, 0x8010);
 	EXPECT_EQ(cpu.sp, 0Xfffe);
 	EXPECT_EQ(cycles, 17);
 }
 
 TEST(CM, CallAndNoCall)
 {
-	// this test is for cm, 0xfc
+	// CM = "Call minus" -- execute call if sign flag is set
 	uint8_t opcode = 0xfc;
 	uint8_t flag   = SIGN_FLAG;
 
@@ -1012,34 +1020,38 @@ TEST(CM, CallAndNoCall)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// set a call location into memory that the stack pointer will be set
-	// to when the call is succesful. This will be at 0x04 and 0x05 since
-	// the first call which won't be executed will advance the pc by 3
-	cpu.memory[0x0004] = 0x05;
-	cpu.memory[0x0005] = 0x04;
+	// Put an argument for the second call to CM into memory at 0x0004.
+	// The first call which should not be executed will advance the PC to
+	// 0x0003
+	*((uint16_t*) &cpu.memory[0x0004]) = 0x8010;
 
-	// a no-call should take 11 cycles and simply advance the pc by 3
+	// Reset the sign flag and set all other flags. Call CM and assert
+	// that it advanced the program counter by 3 and nothing else.
 	cpu.psw	   = ~flag;
 	int cycles = ccond(opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0003);
 	EXPECT_EQ(cycles, 11);
+	EXPECT_EQ(cpu.sp, 0);
 
+	// Set the sign flag and reset all the ther flags and call CM. Assert
+	// that CM was executed by checking the following:
 	// Successful call should:
 	// 	1. place 0x0006 onto the stack
-	// 	2. move the pc to 0x0405 (the argument given to call),
+	// 	2. move the pc to 0x8010 (the argument given to call),
 	// 	3. decrement the sp by 2,
 	// 	4. take 17 cycles
 	cpu.psw = flag;
 	cycles	= ccond(opcode, &cpu);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x0006);
-	EXPECT_EQ(cpu.pc, 0x0405);
+	EXPECT_EQ(cpu.pc, 0x8010);
 	EXPECT_EQ(cpu.sp, 0Xfffe);
 	EXPECT_EQ(cycles, 17);
 }
 
-TEST(JMP, All)
+TEST(JMP, AllOpcodes)
 {
 	unsigned char memory[(1 << 16)];
+	memset(memory, 0, 1 << 16);
 	struct cpu_state cpu
 	{
 		.int_cond = nullptr, .int_lock = nullptr, .memory = memory,
@@ -1048,17 +1060,14 @@ TEST(JMP, All)
 		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
 		.interrupt_enable_flag = 0
 	};
-	memset(memory, 0, 1 << 16);
 
-	// JMP <0x3412>
-	cpu.memory[cpu.pc + 1] = 0x12;
-	cpu.memory[cpu.pc + 2] = 0x34;
+	// JMP <0x1234>
+	*((uint16_t*) &cpu.memory[cpu.pc + 1]) = 0x1234;
 	jmp(0xc3, &cpu);
-	EXPECT_EQ(cpu.pc, 0x3412);
+	EXPECT_EQ(cpu.pc, 0x1234);
 
 	// JMP <0xbbaa>
-	cpu.memory[cpu.pc + 1] = 0xaa;
-	cpu.memory[cpu.pc + 2] = 0xbb;
+	*((uint16_t*) &cpu.memory[cpu.pc + 1]) = 0xbbaa;
 	jmp(0xcb, &cpu);
 	EXPECT_EQ(cpu.pc, 0xbbaa);
 }

@@ -64,7 +64,7 @@ int call(uint8_t opcode, struct cpu_state* cpu)
 	// push the next instruction onto the stack. This is 3 bytes past the
 	// current program counter to omit the CALL opcode and argument
 	cpu->sp -= 2;
-	cpu->memory[cpu->sp] = cpu->pc + 3;
+	*((uint16_t*) &cpu->memory[cpu->sp]) = cpu->pc + 3;
 
 	// set the program counter to the argument supplied to by call
 	cpu->pc = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
@@ -90,7 +90,7 @@ int ccond(uint8_t opcode, struct cpu_state* cpu)
 	if (conditionMet)
 	{
 		cpu->sp -= 2;
-		cpu->memory[cpu->sp] = cpu->pc + 3;
+		*((uint16_t*) &cpu->memory[cpu->sp]) = cpu->pc + 3;
 		// put CALL's argument which is at cpu->pc + 1 in memory
 		// into the program counter
 		cpu->pc = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
