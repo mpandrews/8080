@@ -48,29 +48,26 @@ int pop(uint8_t opcode, struct cpu_state* cpu)
 
 int xthl(uint8_t opcode, struct cpu_state* cpu)
 {
-	// asser that this is the correct opcode
+	// assert that this is the correct opcode
 	assert(opcode == 0b11100011);
 
-	// print debug info
 #ifdef VERBOSE
 	fprintf(stderr, "0x%4.4x: XTHL\n", opcode);
 #endif
 
 	// swap the contents of hl and memory[sp]
-	uint16_t temp		 = *((uint16_t*) &cpu->memory[cpu->sp]);
-	cpu->memory[cpu->sp]	 = cpu->l;
-	cpu->memory[cpu->sp + 1] = cpu->h;
-	cpu->hl			 = temp;
+	uint16_t temp = *((uint16_t*) &cpu->memory[cpu->sp]);
+	*((uint16_t*) &cpu->memory[cpu->sp]) = cpu->hl;
+	cpu->hl				     = temp;
 
 	return 18;
 }
 
 int sphl(uint8_t opcode, struct cpu_state* cpu)
 {
-	// asser that this is the correct opcode
+	// assert that this is the correct opcode
 	assert(opcode == 0b11111001);
 
-	// print debug info
 #ifdef VERBOSE
 	fprintf(stderr, "0x%4.4x: SPHL\n", opcode);
 #endif

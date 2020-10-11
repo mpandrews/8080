@@ -1,0 +1,227 @@
+Start testing: Oct 11 10:52 CDT
+----------------------------------------------------------
+1/8 Testing: MOV.RegisterToRegister
+1/8 Test: MOV.RegisterToRegister
+Command: "/home/jordan/Documents/schoolwork/CS467/8080/debug/Tests" "--gtest_filter=MOV.RegisterToRegister" "--gtest_also_run_disabled_tests"
+Directory: /home/jordan/Documents/schoolwork/CS467/8080/debug
+"MOV.RegisterToRegister" start time: Oct 11 10:52 CDT
+Output:
+----------------------------------------------------------
+Note: Google Test filter = MOV.RegisterToRegister
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from MOV
+[ RUN      ] MOV.RegisterToRegister
+0x0000: MOV B,D
+0x0001: MOV H,B
+0x0002: MOV L,B
+[       OK ] MOV.RegisterToRegister (0 ms)
+[----------] 1 test from MOV (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"MOV.RegisterToRegister" end time: Oct 11 10:52 CDT
+"MOV.RegisterToRegister" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/8 Testing: MOV.RegisterToMem
+2/8 Test: MOV.RegisterToMem
+Command: "/home/jordan/Documents/schoolwork/CS467/8080/debug/Tests" "--gtest_filter=MOV.RegisterToMem" "--gtest_also_run_disabled_tests"
+Directory: /home/jordan/Documents/schoolwork/CS467/8080/debug
+"MOV.RegisterToMem" start time: Oct 11 10:52 CDT
+Output:
+----------------------------------------------------------
+Note: Google Test filter = MOV.RegisterToMem
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from MOV
+[ RUN      ] MOV.RegisterToMem
+0x0000: MOV M,C
+0x0001: MOV A,M
+[       OK ] MOV.RegisterToMem (0 ms)
+[----------] 1 test from MOV (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"MOV.RegisterToMem" end time: Oct 11 10:52 CDT
+"MOV.RegisterToMem" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/8 Testing: XCHG.All
+3/8 Test: XCHG.All
+Command: "/home/jordan/Documents/schoolwork/CS467/8080/debug/Tests" "--gtest_filter=XCHG.All" "--gtest_also_run_disabled_tests"
+Directory: /home/jordan/Documents/schoolwork/CS467/8080/debug
+"XCHG.All" start time: Oct 11 10:52 CDT
+Output:
+----------------------------------------------------------
+Note: Google Test filter = XCHG.All
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from XCHG
+[ RUN      ] XCHG.All
+0x0000: XCHG
+[       OK ] XCHG.All (0 ms)
+[----------] 1 test from XCHG (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"XCHG.All" end time: Oct 11 10:52 CDT
+"XCHG.All" time elapsed: 00:00:00
+----------------------------------------------------------
+
+4/8 Testing: POP.B_D_H_PSW
+4/8 Test: POP.B_D_H_PSW
+Command: "/home/jordan/Documents/schoolwork/CS467/8080/debug/Tests" "--gtest_filter=POP.B_D_H_PSW" "--gtest_also_run_disabled_tests"
+Directory: /home/jordan/Documents/schoolwork/CS467/8080/debug
+"POP.B_D_H_PSW" start time: Oct 11 10:52 CDT
+Output:
+----------------------------------------------------------
+Note: Google Test filter = POP.B_D_H_PSW
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from POP
+[ RUN      ] POP.B_D_H_PSW
+0x0000: POP B
+0x0001: POP D
+0x0002: POP H
+0x0003: POP PSW
+[       OK ] POP.B_D_H_PSW (0 ms)
+[----------] 1 test from POP (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"POP.B_D_H_PSW" end time: Oct 11 10:52 CDT
+"POP.B_D_H_PSW" time elapsed: 00:00:00
+----------------------------------------------------------
+
+5/8 Testing: NOP.All
+5/8 Test: NOP.All
+Command: "/home/jordan/Documents/schoolwork/CS467/8080/debug/Tests" "--gtest_filter=NOP.All" "--gtest_also_run_disabled_tests"
+Directory: /home/jordan/Documents/schoolwork/CS467/8080/debug
+"NOP.All" start time: Oct 11 10:52 CDT
+Output:
+----------------------------------------------------------
+Note: Google Test filter = NOP.All
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from NOP
+[ RUN      ] NOP.All
+0x0000: NOP
+0x0001: NOP
+[       OK ] NOP.All (0 ms)
+[----------] 1 test from NOP (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"NOP.All" end time: Oct 11 10:52 CDT
+"NOP.All" time elapsed: 00:00:00
+----------------------------------------------------------
+
+6/8 Testing: XTHL.All
+6/8 Test: XTHL.All
+Command: "/home/jordan/Documents/schoolwork/CS467/8080/debug/Tests" "--gtest_filter=XTHL.All" "--gtest_also_run_disabled_tests"
+Directory: /home/jordan/Documents/schoolwork/CS467/8080/debug
+"XTHL.All" start time: Oct 11 10:52 CDT
+Output:
+----------------------------------------------------------
+Note: Google Test filter = XTHL.All
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from XTHL
+[ RUN      ] XTHL.All
+0x00e3: XTHL
+[       OK ] XTHL.All (0 ms)
+[----------] 1 test from XTHL (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"XTHL.All" end time: Oct 11 10:52 CDT
+"XTHL.All" time elapsed: 00:00:00
+----------------------------------------------------------
+
+7/8 Testing: SPHL.All
+7/8 Test: SPHL.All
+Command: "/home/jordan/Documents/schoolwork/CS467/8080/debug/Tests" "--gtest_filter=SPHL.All" "--gtest_also_run_disabled_tests"
+Directory: /home/jordan/Documents/schoolwork/CS467/8080/debug
+"SPHL.All" start time: Oct 11 10:52 CDT
+Output:
+----------------------------------------------------------
+Note: Google Test filter = SPHL.All
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from SPHL
+[ RUN      ] SPHL.All
+0x00f9: SPHL
+[       OK ] SPHL.All (0 ms)
+[----------] 1 test from SPHL (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"SPHL.All" end time: Oct 11 10:52 CDT
+"SPHL.All" time elapsed: 00:00:00
+----------------------------------------------------------
+
+8/8 Testing: JMP.All
+8/8 Test: JMP.All
+Command: "/home/jordan/Documents/schoolwork/CS467/8080/debug/Tests" "--gtest_filter=JMP.All" "--gtest_also_run_disabled_tests"
+Directory: /home/jordan/Documents/schoolwork/CS467/8080/debug
+"JMP.All" start time: Oct 11 10:52 CDT
+Output:
+----------------------------------------------------------
+Note: Google Test filter = JMP.All
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from JMP
+[ RUN      ] JMP.All
+0x0000: JMP 0x3412
+0x3412: JMP 0xbbaa
+[       OK ] JMP.All (0 ms)
+[----------] 1 test from JMP (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"JMP.All" end time: Oct 11 10:52 CDT
+"JMP.All" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Oct 11 10:52 CDT
