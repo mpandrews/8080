@@ -76,14 +76,40 @@ int lxi(uint8_t opcode, struct cpu_state* cpu)
 
 int lda(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	// LDA is opcode 0x3A
+	assert(opcode == 0b00111010);
+	(void) opcode;
+
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: LDA\n", cpu->pc);
+#endif
+
+	// Load content of the memory location specified in the instruction
+	// to register A
+	uint16_t address = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
+	cpu->a		 = cpu->memory[address];
+	cpu->pc += 3;
+
+	return 13;
 }
 
 int sta(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	// STA is opcode 0x32
+	assert(opcode == 0b00110010);
+	(void) opcode;
+
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: STA\n", cpu->pc);
+#endif
+
+	// Store the content of the accumulator to memory location specified
+	// in the instruction
+	uint16_t address     = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
+	cpu->memory[address] = cpu->a;
+	cpu->pc += 3;
+
+	return 13;
 }
 
 int lhld(uint8_t opcode, struct cpu_state* cpu)
