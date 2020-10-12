@@ -10,7 +10,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(FlagSettings "-Wall" "-Werror" "-Wextra" 
 	"$<$<CONFIG:RELEASE>:-O2>"
 	"$<$<CONFIG:DEBUG>:-DVERBOSE -DDEBUG>"
-	"$<$<CONFIG:RELWITHDEBINFO>:-DBENCHMARK>")
+)
 
 add_library(SourceFiles
 	OBJECT
