@@ -85,9 +85,7 @@ TEST(STAX, B_D)
 		.halt_flag = 0, .reset_flag = 0, .interrupt_enable_flag = 0
 	};
 	memset(memory, 0, 1 << 16);
-	cpu.a		   = 0xab;
-	cpu.memory[cpu.bc] = 0;
-	cpu.memory[cpu.de] = 0;
+	cpu.a = 0xab;
 
 	// STAX B
 	int cycles = stax(0x02, &cpu);
