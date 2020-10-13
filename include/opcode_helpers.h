@@ -82,7 +82,7 @@ static inline uint8_t check_parity(uint8_t value)
 	(flags = (value & (0x0100) ? flags | CARRY_FLAG : flags & ~CARRY_FLAG))
 // Subtraction operations use reverse the logic for setting carry.
 #define APPLY_CARRY_FLAG_INVERTED(value, flags) \
-	(flags = (value & (0xff00) ? flags & ~CARRY_FLAG : flags | CARRY_FLAG))
+	(flags = (value & (0x0100) ? flags & ~CARRY_FLAG : flags | CARRY_FLAG))
 
 /* Setting the aux carry flag is gnarly, unfortunately.
  * So here's what's happening.  We want to measure whether there was a carry
