@@ -76,9 +76,14 @@ static inline uint8_t check_parity(uint8_t value)
 #define APPLY_SIGN_FLAG(value, flags) \
 	(flags = (value & (1 << 7) ? flags | SIGN_FLAG : flags & ~SIGN_FLAG))
 // Because we use a 16-bit variable to hold our results, we can just
-// check to see if any bits in the second byte are set to check for a carry.
+// check to see if the least sig bit in the second byte is set to check for a
+// carry.
 #define APPLY_CARRY_FLAG(value, flags) \
-	(flags = (value & (0xff00) ? flags | CARRY_FLAG : flags & ~CARRY_FLAG))
+	(flags = (value & (0x0100) ? flags | CARRY_FLAG : flags & ~CARRY_FLAG))
+// Subtraction operations use reverse the logic for setting carry.
+#define APPLY_CARRY_FLAG_INVERTED(value, flags) \
+	(flags = (value & (0x0100) ? flags & ~CARRY_FLAG : flags | CARRY_FLAG))
+
 /* Setting the aux carry flag is gnarly, unfortunately.
  * So here's what's happening.  We want to measure whether there was a carry
  * OUT of bit 3 (0 indexed), which is the same as checking if there was a
@@ -258,7 +263,7 @@ static inline const char* get_register_name(const uint8_t opcode)
 	}
 }
 
-static inline uint16_t _add(uint8_t left, uint8_t right, uint8_t* flags)
+static inline uint16_t _add(uint16_t left, uint16_t right, uint8_t* flags)
 {
 	uint16_t result = left + right;
 	APPLY_AUX_CARRY_FLAG(left, right, result, *flags);
