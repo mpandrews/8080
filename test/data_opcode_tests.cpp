@@ -135,50 +135,50 @@ TEST(MVI, ToMem)
 
 TEST(LDA, All)
 {
-    unsigned char memory[(1 << 16)];
-    memset(memory, 0, 1 << 16);
+	unsigned char memory[(1 << 16)];
+	memset(memory, 0, 1 << 16);
 
-    struct cpu_state cpu
-            {
-                    .int_cond = nullptr, .int_lock = nullptr, .memory = memory,
-                    .interrupt_buffer = nullptr, .data_bus = nullptr,
-                    .address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
-                    .hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
-                    .interrupt_enable_flag = 0
-            };
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = memory,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
+		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
 
-    *((uint16_t*) &cpu.memory[cpu.pc + 1]) = 0xbbaa;
-    cpu.memory[0xbbaa]		       = 0x12;
+	*((uint16_t*) &cpu.memory[cpu.pc + 1]) = 0xbbaa;
+	cpu.memory[0xbbaa]		       = 0x12;
 
-    // LDA
-    int cycles = lda(0x3a, &cpu);
-    EXPECT_EQ(cycles, 13);
-    EXPECT_EQ(cpu.a, 0x12);
-    EXPECT_EQ(cpu.pc, 3);
+	// LDA
+	int cycles = lda(0x3a, &cpu);
+	EXPECT_EQ(cycles, 13);
+	EXPECT_EQ(cpu.a, 0x12);
+	EXPECT_EQ(cpu.pc, 3);
 }
 
 TEST(STA, All)
 {
-    unsigned char memory[(1 << 16)];
-    memset(memory, 0, 1 << 16);
+	unsigned char memory[(1 << 16)];
+	memset(memory, 0, 1 << 16);
 
-    struct cpu_state cpu
-            {
-                    .int_cond = nullptr, .int_lock = nullptr, .memory = memory,
-                    .interrupt_buffer = nullptr, .data_bus = nullptr,
-                    .address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
-                    .hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
-                    .interrupt_enable_flag = 0
-            };
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = memory,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
+		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
 
-    cpu.a				       = 0x12;
-    *((uint16_t*) &cpu.memory[cpu.pc + 1]) = 0xbbaa;
+	cpu.a				       = 0x12;
+	*((uint16_t*) &cpu.memory[cpu.pc + 1]) = 0xbbaa;
 
-    // STA
-    int cycles = sta(0x32, &cpu);
-    EXPECT_EQ(cycles, 13);
-    EXPECT_EQ(cpu.memory[0xbbaa], 0x12);
-    EXPECT_EQ(cpu.pc, 3);
+	// STA
+	int cycles = sta(0x32, &cpu);
+	EXPECT_EQ(cycles, 13);
+	EXPECT_EQ(cpu.memory[0xbbaa], 0x12);
+	EXPECT_EQ(cpu.pc, 3);
 }
 
 TEST(XCHG, All)
