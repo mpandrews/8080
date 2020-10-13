@@ -125,14 +125,42 @@ int shld(uint8_t opcode, struct cpu_state* cpu)
 
 int ldax(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	// LDAX opcodes are either 0x0A or 0x1A
+	assert(opcode == 0b00001010 || opcode == 0b00011010);
+
+#ifdef VERBOSE
+	fprintf(stderr,
+			"0x%4.4x: LDAX %s\n",
+			cpu->pc,
+			get_register_name(opcode));
+#endif
+
+	uint16_t* rp = get_register_pair(opcode, cpu);
+	// load content of the byte at the address found at RP to register A
+	cpu->a = cpu->memory[*rp];
+	cpu->pc++;
+
+	return 7;
 }
 
 int stax(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	// STAX opcodes are either 0x02 or 0x12
+	assert(opcode == 0b00000010 || opcode == 0b00010010);
+
+#ifdef VERBOSE
+	fprintf(stderr,
+			"0x%4.4x: STAX %s\n",
+			cpu->pc,
+			get_register_name(opcode));
+#endif
+
+	uint16_t* rp = get_register_pair(opcode, cpu);
+	// load register A to memory at the address found in RP
+	cpu->memory[*rp] = cpu->a;
+	cpu->pc++;
+
+	return 7;
 }
 
 int xchg(uint8_t opcode, struct cpu_state* cpu)
