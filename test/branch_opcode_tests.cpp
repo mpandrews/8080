@@ -33,16 +33,15 @@ TEST(CALL, All)
 
 	// execute CALL with opcode 0xcd
 	*((uint16_t*) &cpu.memory[1]) = 0x8000;
-	int cycles = call(0xcd, &cpu);
+	int cycles		      = call(0xcd, &cpu);
 	EXPECT_EQ(cycles, 17);
 	EXPECT_EQ(cpu.pc, 0x8000);
 	EXPECT_EQ(cpu.sp, 0xfffe);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x0003);
 
-
 	// execute CALL with opcode 0xdd
 	*((uint16_t*) &cpu.memory[0x8001]) = 0x8010;
-	cycles = call(0xdd, &cpu);
+	cycles				   = call(0xdd, &cpu);
 	EXPECT_EQ(cycles, 17);
 	EXPECT_EQ(cpu.pc, 0x8010);
 	EXPECT_EQ(cpu.sp, 0xfffc);
@@ -50,7 +49,7 @@ TEST(CALL, All)
 
 	// execute CALL with opcode 0xed
 	*((uint16_t*) &cpu.memory[0x8011]) = 0x8020;
-	cycles = call(0xed, &cpu);
+	cycles				   = call(0xed, &cpu);
 	EXPECT_EQ(cycles, 17);
 	EXPECT_EQ(cpu.pc, 0x8020);
 	EXPECT_EQ(cpu.sp, 0xfffa);
@@ -58,7 +57,7 @@ TEST(CALL, All)
 
 	// execute CALL with opcode 0xfd
 	*((uint16_t*) &cpu.memory[0x8021]) = 0x8030;
-	cycles = call(0xfd, &cpu);
+	cycles				   = call(0xfd, &cpu);
 	EXPECT_EQ(cycles, 17);
 	EXPECT_EQ(cpu.pc, 0x8030);
 	EXPECT_EQ(cpu.sp, 0xfff8);
