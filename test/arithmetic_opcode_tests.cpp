@@ -106,3 +106,92 @@ TEST(ADC, All)
 	add_adc(0x8f, &cpu);
 	EXPECT_EQ(cpu.a, 1);
 }
+
+TEST(SUB, All)
+{
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
+		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	// SUB A
+	sub_sbb(0x97, &cpu);
+	EXPECT_EQ(cpu.a, 0);
+	// SZ-A-P-C
+	// Zero and Parity should be set.
+	EXPECT_EQ(cpu.flags, 0b01000100);
+
+	cpu.a = 1;
+	cpu.b = 0;
+	// SUB B
+	sub_sbb(0x90, &cpu);
+	EXPECT_EQ(cpu.a, 1);
+	// No flags should be set.
+	EXPECT_EQ(cpu.flags, 0b00000000);
+
+	cpu.a = 0;
+	cpu.b = 1;
+	sub_sbb(0x90, &cpu);
+	EXPECT_EQ((signed char) cpu.a, -1);
+	// Sign, Parity, Carry.  See p. 28 of the programmer's manual.
+	EXPECT_EQ(cpu.flags, 0b10000101);
+
+	cpu.a = 16;
+	cpu.b = -23;
+	sub_sbb(0x90, &cpu);
+	EXPECT_EQ(cpu.a, 39);
+	// Parity and Carry.  It might seem like carry shouldn't be set,
+	// but operands are always treated as unsigned, so from the perspective
+	// of the ALU, -23 is 233.
+	EXPECT_EQ(cpu.flags, 0b00000101);
+
+	cpu.a = 8;
+	cpu.b = 8;
+	sub_sbb(0x90, &cpu);
+	EXPECT_EQ(cpu.a, 0);
+	/*Zero, Aux Carry, Parity.
+	 * This may also require some explanation.
+	 * 8      = 0000 1000
+	 * ~8 + 1 = 1111 1000
+	 * Note that bit 3 is set in both: that means the aux carry will
+	 * fire, since it does not behave differently for addition and
+	 * subtraction.  I think.  Different emulators do it differently,
+	 * Intel's documentation is ambiguous, and I don't have a real chip to
+	 * test on.
+	 */
+	EXPECT_EQ(cpu.flags, 0b01010100);
+}
+
+TEST(SBB, All)
+{
+	// To test this, we'll perform one an example from the programming
+	// manual: 0x1301 - 0x0503.  It's on page 56.
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
+		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	cpu.a = 0x01;
+	cpu.b = 0x03;
+	// SBB B
+	sub_sbb(0x98, &cpu);
+	EXPECT_EQ(cpu.a, 0xfe);
+	// SZ-A-P-C
+	// Sign, Carry.
+	EXPECT_EQ(cpu.flags, 0b10000001);
+	cpu.a = 0x13;
+	cpu.b = 0x05;
+	// Now because the borrow is set, we should get 0x0d.
+	sub_sbb(0x98, &cpu);
+	EXPECT_EQ(cpu.a, 0x0d);
+	// No flags set.
+	EXPECT_EQ(cpu.flags, 0b00000000);
+}

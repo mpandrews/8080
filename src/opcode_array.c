@@ -181,22 +181,22 @@ int (*const opcodes[256])(uint8_t opcode, struct cpu_state* cpu) = {
 		add_adc, // 0x8D 	ADC	L
 		add_adc, // 0x8E 	ADC	M
 		add_adc, // 0x8F 	ADC	A
-		sub,	 // 0x90	SUB	B
-		sub,	 // 0x91	SUB	C
-		sub,	 // 0x92	SUB	D
-		sub,	 // 0x93	SUB	E
-		sub,	 // 0x94	SUB	H
-		sub,	 // 0x95	SUB	L
-		sub,	 // 0x96	SUB	M
-		sub,	 // 0x97	SUB	A
-		sbb,	 // 0x98	SBB	B
-		sbb,	 // 0x99	SBB	C
-		sbb,	 // 0x9A	SBB	D
-		sbb,	 // 0x9B	SBB	E
-		sbb,	 // 0x9C	SBB	H
-		sbb,	 // 0x9D	SBB	L
-		sbb,	 // 0x9E	SBB	M
-		sbb,	 // 0x9F	SBB	A
+		sub_sbb, // 0x90	SUB	B
+		sub_sbb, // 0x91	SUB	C
+		sub_sbb, // 0x92	SUB	D
+		sub_sbb, // 0x93	SUB	E
+		sub_sbb, // 0x94	SUB	H
+		sub_sbb, // 0x95	SUB	L
+		sub_sbb, // 0x96	SUB	M
+		sub_sbb, // 0x97	SUB	A
+		sub_sbb, // 0x98	SBB	B
+		sub_sbb, // 0x99	SBB	C
+		sub_sbb, // 0x9A	SBB	D
+		sub_sbb, // 0x9B	SBB	E
+		sub_sbb, // 0x9C	SBB	H
+		sub_sbb, // 0x9D	SBB	L
+		sub_sbb, // 0x9E	SBB	M
+		sub_sbb, // 0x9F	SBB	A
 		ana,	 // 0xA0	ANA	B
 		ana,	 // 0xA1	ANA	C
 		ana,	 // 0xA2	ANA	D
