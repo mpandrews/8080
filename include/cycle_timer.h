@@ -5,14 +5,25 @@
 // measures time in nanoseconds, we define one clock pulse of the
 // CPU in number of nanoseconds elapsed.  At 2MHz, one clock cycle
 // is .5 microseconds, which is 500 nanoseconds.
-#define CYCLE_TIME (500l)
+#ifndef CYCLE_TIME
+#	define CYCLE_TIME (500l)
+#endif
 
 // Because there's considerable overhead in calling sleep,
 // we don't want to try to sleep after every opcode.  Instead, we'll
 // keep track of how many system cycles *should* have elapsed, and just
 // rest in chunks.  A chunk here is how many clock cycles we're allowing
 // to elapse before we force a sleep.
-#define CYCLE_CHUNK (512)
+#ifndef CYCLE_CHUNK
+#	define CYCLE_CHUNK (512)
+#endif
+
+// BENCH_INTERVAL determines, when benchmarking, what periodicity the
+// benchmarking reports should have.  By default, it will calculate effective
+// speed every ~8 million cycles.  Override it during compilation if needed.
+#ifndef BENCH_INTERVAL
+#	define BENCH_INTERVAL (1 << 23)
+#endif
 
 /*
  * cycle_wait takes as its only argument the number of cycles to be waited.

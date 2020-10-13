@@ -4,28 +4,35 @@
 #include <stdio.h>
 #include <time.h>
 
-#ifndef BENCHMARK
 void cycle_wait(int cycles)
 {
 	static int count;
 	static struct timespec target;
+#ifdef BENCHMARK
+	static int bench_count;
+	static struct timespec bench_last;
+#endif
 	// If we haven't yet initialized the timer, we need to.
 	if (target.tv_sec == 0 && target.tv_nsec == 0)
 	{ clock_gettime(CLOCK_MONOTONIC, &target); }
-
 	count += cycles;
+#ifdef BENCHMARK
+	if (bench_last.tv_sec == 0 && bench_last.tv_nsec == 0)
+	{ clock_gettime(CLOCK_MONOTONIC, &bench_last); }
+	bench_count += cycles;
+#endif
 	// If a chunk's worth of cycles have elapsed, it's time to sleep.
 	if (count >= CYCLE_CHUNK)
 	{
 		// Adjust the target time upward by the amount of time
 		// the elapsed cycle count should have taken.
 		target.tv_nsec += count * CYCLE_TIME;
-#	ifdef VERBOSE
+#ifdef VERBOSE
 		fprintf(stderr,
 				"t sec: %ld\nt nsec: %ld\n",
 				target.tv_sec,
 				target.tv_nsec);
-#	endif
+#endif
 		if (target.tv_nsec > 999999999)
 		{
 			target.tv_nsec -= 999999999;
@@ -44,28 +51,20 @@ void cycle_wait(int cycles)
 				&& errno == EINTR)
 			;
 	}
-}
-#else // BENCHMARK is defined
-/*
- * This version of cycle_wait() just lets the program run unthrottled
- * and calculates its effective spead in hertz.  Note that it only looks at CPU
- * time for the thread, however, so elides real delays.
- */
-void cycle_wait(int cycles)
-{
-	static size_t count;
-	static clock_t last;
-	if (!last) { last = clock(); }
-	count += cycles;
-	if (count >= (1 << 30))
+#ifdef BENCHMARK
+	if (bench_count >= BENCH_INTERVAL) //~8 million unless overridden
 	{
-		clock_t new = clock();
-		printf("%lf cycles per second.\n",
-				(double) count
-						/ ((double) (new - last)
-								/ CLOCKS_PER_SEC));
-		last  = new;
-		count = 0;
+		struct timespec new;
+		clock_gettime(CLOCK_MONOTONIC, &new);
+		double elapsed = new.tv_sec;
+		elapsed += (double) new.tv_nsec / 1000000000.0;
+		elapsed -= bench_last.tv_sec;
+		elapsed -= (double) bench_last.tv_nsec / 1000000000.0;
+		fprintf(stderr,
+				"Effective speed: %lfMHz\n",
+				(double) bench_count / elapsed / 1000000.0);
+		bench_count = 0;
+		bench_last  = new;
 	}
-}
 #endif
+}

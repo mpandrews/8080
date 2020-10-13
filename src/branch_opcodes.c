@@ -56,6 +56,7 @@ int call(uint8_t opcode, struct cpu_state* cpu)
 	// The 'proper' CALL opcode is 0xcd, but 0xdd, 0xed, 0xfd are also
 	// CALL opcodes, though they aren't supposed to be used
 	assert((opcode & 0b11001111) == 0b11001101);
+	(void) opcode;
 #ifdef VERBOSE
 	fprintf(stderr, "0x%4.4x: CALL\n", cpu->pc);
 #endif
@@ -111,6 +112,7 @@ int ret(uint8_t opcode, struct cpu_state* cpu)
 	// Assert that this is the correct opcode. RET should be 0xc9, but
 	// 0xd9 can also be RET
 	assert((opcode & 0b11101111) == 0b11001001);
+	(void) opcode;
 	// print debugging info
 #ifdef VERBOSE
 	fprintf(stderr, "0x%4.4x: RET\n", cpu->pc);

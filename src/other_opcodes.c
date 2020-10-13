@@ -50,7 +50,7 @@ int xthl(uint8_t opcode, struct cpu_state* cpu)
 {
 	// assert that this is the correct opcode
 	assert(opcode == 0b11100011);
-
+	(void) opcode;
 #ifdef VERBOSE
 	fprintf(stderr, "0x%4.4x: XTHL\n", opcode);
 #endif
@@ -67,7 +67,7 @@ int sphl(uint8_t opcode, struct cpu_state* cpu)
 {
 	// assert that this is the correct opcode
 	assert(opcode == 0b11111001);
-
+	(void) opcode;
 #ifdef VERBOSE
 	fprintf(stderr, "0x%4.4x: SPHL\n", opcode);
 #endif
