@@ -60,7 +60,6 @@ int sub_sbb(uint8_t opcode, struct cpu_state* cpu)
 	// Per the manual, the carry flag is applied (if appropriate)
 	// prior to taking the two's complement.
 	if (opcode & (1 << 3) && cpu->flags & CARRY_FLAG) ++operand;
-	operand = (uint8_t) ~operand;
 	/* Find two's complement.  This is a little hairy: first we need
 	 * to invert the bits, and cast the inverted version to char length.
 	 * The reason is that without the cast, we'd get all the high bits,
@@ -75,8 +74,8 @@ int sub_sbb(uint8_t opcode, struct cpu_state* cpu)
 	 * because we need to be able to roll over into the ninth bit
 	 * when we do the +1, otherwise 0 becomes -1, which is ungood.
 	 */
+	operand = (uint8_t) ~operand;
 	++operand;
-	// Add carry flag if this is SBB.
 	// Add exactly as we would if this were an addition.
 	uint16_t result = _add(cpu->a, operand, &cpu->flags);
 	APPLY_CARRY_FLAG_INVERTED(result, cpu->flags);
