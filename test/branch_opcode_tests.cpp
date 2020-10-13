@@ -1068,3 +1068,20 @@ TEST(JMP, AllOpcodes)
 	jmp(0xcb, &cpu);
 	EXPECT_EQ(cpu.pc, 0xbbaa);
 }
+
+TEST(PCHL, All)
+{
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
+		.hl = 0xabcd, .psw = 0, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	// PCHL
+	int cycles = pchl(0xe9, &cpu);
+	EXPECT_EQ(cycles, 5);
+	EXPECT_EQ(cpu.pc, 0xabcd);
+}

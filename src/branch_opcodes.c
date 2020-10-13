@@ -165,6 +165,16 @@ int rst(uint8_t opcode, struct cpu_state* cpu)
 
 int pchl(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	// PCHL opcode should be 0xE9
+	assert(opcode == 0b11101001);
+	(void) opcode;
+
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: PCHL\n", cpu->pc);
+#endif
+
+	// The contents of register pair HL are copied to the PC
+	cpu->pc = cpu->hl;
+
+	return 5;
 }
