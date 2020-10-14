@@ -121,11 +121,11 @@ int lhld(uint8_t opcode, struct cpu_state* cpu)
 	fprintf(stderr, "0x%4.4x: LHLD\n", cpu->pc);
 #endif
 
-	// Load accumulator direct
+	// Load H and L direct
 	// The content of the memory location specified by the next 2 bytes of
-	// the instruction is loaded to register A.
-	uint16_t address = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
-	cpu->a		 = cpu->memory[address];
+	// the instruction is loaded to register HL.
+	uint16_t address	= *((uint16_t*) &cpu->memory[cpu->pc + 1]);
+	cpu->hl = *((uint16_t*) &cpu->memory[address]);
 
 	cpu->pc += 3;
 	return 16;
@@ -142,9 +142,8 @@ int shld(uint8_t opcode, struct cpu_state* cpu)
 	// Store H and L direct
 	// The content of register HL is moved to the memory location
 	// specified in the next 2 bytes of the instruction.
-	uint16_t address	 = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
-	cpu->memory[address]	 = cpu->l;
-	cpu->memory[address + 1] = cpu->h;
+	uint16_t address = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
+	*((uint16_t*) &cpu->memory[address]) = cpu->hl;
 
 	cpu->pc += 3;
 	return 16;

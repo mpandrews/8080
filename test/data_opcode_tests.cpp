@@ -195,13 +195,13 @@ TEST(LHLD, All)
 	};
 
 	*((uint16_t*) &cpu.memory[cpu.pc + 1]) = 0xbbaa;
-	cpu.memory[0xbbaa]		       = 0x12;
+	*((uint16_t*) &cpu.memory[0xbbaa])     = 0x1234;
 
 	// LHLD
 	int cycles = lhld(0x2a, &cpu);
 	EXPECT_EQ(cycles, 16);
 	EXPECT_EQ(cpu.pc, 3);
-	EXPECT_EQ(cpu.a, 0x12);
+	EXPECT_EQ(cpu.hl, 0x1234);
 }
 
 TEST(SHLD, All)
@@ -223,8 +223,7 @@ TEST(SHLD, All)
 	int cycles = shld(0x22, &cpu);
 	EXPECT_EQ(cycles, 16);
 	EXPECT_EQ(cpu.pc, 3);
-	EXPECT_EQ(cpu.memory[0xbbaa], 0x34);
-	EXPECT_EQ(cpu.memory[0xbbaa + 1], 0x12);
+	EXPECT_EQ(*((uint16_t*) &cpu.memory[0xbbaa]), 0x1234);
 }
 
 TEST(LDAX, B_D)
