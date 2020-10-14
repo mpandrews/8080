@@ -18,9 +18,8 @@ int add_adc(uint8_t opcode, struct cpu_state* cpu)
 			!(opcode & (1 << 3)) + 'C',
 			get_operand_name(GET_SOURCE_OPERAND(opcode)));
 #endif
-	uint8_t operand = fetch_operand_val(GET_SOURCE_OPERAND(opcode), cpu);
+	uint16_t operand = fetch_operand_val(GET_SOURCE_OPERAND(opcode), cpu);
 	if (opcode & (1 << 3) && cpu->flags & CARRY_FLAG) ++operand;
-
 	uint16_t result = _add(cpu->a, operand, &cpu->flags);
 	APPLY_CARRY_FLAG(result, cpu->flags);
 	cpu->a = result;
