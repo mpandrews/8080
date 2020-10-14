@@ -52,8 +52,8 @@ TEST(ANA, All)
 	EXPECT_EQ(cpu.flags, 0b10000100);
 	//                     SZ-A-P-C
 
-	// Lastly, we'll zero-out the a register, set the c register to 0xff,
-	// and the two and assert that a remains zero and the zero bit is set by
+	// Lastly, we'll zero-out the C register, set the A register to 0xff,
+	// AND the two, and assert that A == 0 and the zero bit is set by
 	// ANA. The parity and aux carry flags should also be set by this
 	// operation.
 	cpu.c = 0x00;
