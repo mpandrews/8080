@@ -21,22 +21,29 @@ int ana(uint8_t opcode, struct cpu_state* cpu)
 #endif
 
 	uint8_t operand = fetch_operand_val(source_operand, cpu);
+	// The Aux Carry flag is set by this operation if either operand has a
+	// high-set bit 3. This must be done before assigning cpu->a.
+	cpu->flags = ((1 << 3) & (cpu->a | operand)
+					? cpu->flags | AUX_CARRY_FLAG
+					: cpu->flags & ~AUX_CARRY_FLAG);
+
 	cpu->a &= operand;
 
-	/* according to the manual ANA affects the carry, zero, sign and parity
-	 * flags depending on the result. The carry flag is always reset by this
-	 * operation. The manual does not mention the aux carry flag, but the
-	 * opcodes chart says it is affected. Defaulting to resetting it for now
+	/* ANA affects the carry, aux carry, zero, sign, and parity
+	 * flags depending on the result. The carry flag is always reset. the
+	 * Aux carry flag was already taken care of before overwriting the
+	 * contents of cpu->a.
 	 */
 	APPLY_ZERO_FLAG(cpu->a, cpu->flags);
 	APPLY_SIGN_FLAG(cpu->a, cpu->flags);
 	APPLY_PARITY_FLAG(cpu->a, cpu->flags);
-	// unconditionally reset the CARRY and AUX CARRY flags
-	cpu->flags &= (~CARRY_FLAG & ~AUX_CARRY_FLAG);
+	// unconditionally reset the CARRY flags
+	cpu->flags &= ~CARRY_FLAG;
 
-	// getting an operand from memory takes 7 cycles, using register
-	// operands takes 4 cycles and all are 1-byte instructions
+	// Advance PC by one byte
 	++cpu->pc;
+	// Performing this operation using OPERAND MEM requires 7 cycles, and
+	// it takes 4 cycles when using register operands.
 	if (source_operand == OPERAND_MEM)
 		return 7;
 	else
@@ -78,10 +85,8 @@ int ora(uint8_t opcode, struct cpu_state* cpu)
 	uint8_t operand = fetch_operand_val(source_operand, cpu);
 	cpu->a |= operand;
 
-	/* according to the manual ORA affects the carry, zero, sign and parity
-	 * flags depending on the result. The carry flag is always reset by this
-	 * operation. The manual does not mention the aux carry flag, but the
-	 * opcodes chart says it is affected. Defaulting to resetting it for now
+	/* ORA affects the carry, zero, sign and parity flags depending on the
+	 * result. The carry and aux carry flags are always reset.
 	 */
 	APPLY_ZERO_FLAG(cpu->a, cpu->flags);
 	APPLY_SIGN_FLAG(cpu->a, cpu->flags);
