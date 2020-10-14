@@ -214,7 +214,7 @@ TEST(SBB, All)
 	EXPECT_EQ(cpu.flags, 0b00000000);
 }
 
-TEST(SUI, All)
+TEST(SBI, All)
 {
 
 	unsigned char memory[(1 << 16)];
@@ -258,7 +258,7 @@ TEST(SUI, All)
 	//                     SZ-A-P-C
 }
 
-TEST(SBI, All)
+TEST(SUI, All)
 {
 	unsigned char memory[(1 << 16)];
 	memset(memory, 0, 1 << 16);

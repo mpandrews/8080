@@ -124,8 +124,8 @@ int lhld(uint8_t opcode, struct cpu_state* cpu)
 	// Load H and L direct
 	// The content of the memory location specified by the next 2 bytes of
 	// the instruction is loaded to register HL.
-	uint16_t address	= *((uint16_t*) &cpu->memory[cpu->pc + 1]);
-	cpu->hl = *((uint16_t*) &cpu->memory[address]);
+	uint16_t address = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
+	cpu->hl		 = *((uint16_t*) &cpu->memory[address]);
 
 	cpu->pc += 3;
 	return 16;
