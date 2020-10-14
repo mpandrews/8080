@@ -105,23 +105,23 @@ TEST(ADC, All)
 	// ADC A;
 	add_adc(0x8f, &cpu);
 	EXPECT_EQ(cpu.a, 1);
-	//This test is to make sure we're handling situations where the
-	//carry bit causes an overflow in the operand itself:
-	//we'll use 255/-1, and work with the carry bit set.
+	// This test is to make sure we're handling situations where the
+	// carry bit causes an overflow in the operand itself:
+	// we'll use 255/-1, and work with the carry bit set.
 	cpu.flags = 1;
-	cpu.a = 1;
-	cpu.b = 255;
+	cpu.a	  = 1;
+	cpu.b	  = 255;
 	add_adc(0x88, &cpu);
-	//1 + -1 + 1 from carry == 1
+	// 1 + -1 + 1 from carry == 1
 	EXPECT_EQ(cpu.a, 1);
 	EXPECT_EQ(cpu.flags, 0b00000001);
-	//And now we make sure we're not spuriously adding in the carry bit
-	//when it's not set.
-	//A is still 1, B is still 255/-1
+	// And now we make sure we're not spuriously adding in the carry bit
+	// when it's not set.
+	// A is still 1, B is still 255/-1
 	cpu.flags = 0;
 	add_adc(0x88, &cpu);
 	EXPECT_EQ(cpu.a, 0);
-	//Zero, parity, aux carry, carry.
+	// Zero, parity, aux carry, carry.
 	EXPECT_EQ(cpu.flags, 0b01010101);
 }
 

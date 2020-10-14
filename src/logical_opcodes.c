@@ -92,6 +92,17 @@ int cmc(uint8_t opcode, struct cpu_state* cpu)
 
 int stc(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	// Check STC opcode is 0x37
+	assert(opcode == 0b00110111);
+	(void) opcode;
+
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: STC\n", cpu->pc);
+#endif
+
+	// Set the carry flag
+	cpu->flags |= CARRY_FLAG;
+	cpu->pc++;
+
+	return 4;
 }
