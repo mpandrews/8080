@@ -80,6 +80,7 @@ int rar(uint8_t opcode, struct cpu_state* cpu)
 
 int cma(uint8_t opcode, struct cpu_state* cpu)
 {
+	(void)opcode;
 	assert(opcode == 0x2f);
 #ifdef VERBOSE
 	fprintf(stderr, "0x%4.4x: CMA\n", cpu->pc);
@@ -92,6 +93,7 @@ int cma(uint8_t opcode, struct cpu_state* cpu)
 
 int cmc(uint8_t opcode, struct cpu_state* cpu)
 {
+	(void)opcode;
 	assert(opcode == 0x3f);
 #ifdef VERBOSE
 	fprintf(stderr, "0x%4.4x: CMC\n", cpu->pc);
