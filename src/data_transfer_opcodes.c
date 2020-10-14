@@ -114,13 +114,39 @@ int sta(uint8_t opcode, struct cpu_state* cpu)
 
 int lhld(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	assert(opcode == 0x2a);
+	(void) opcode;
+
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: LHLD\n", cpu->pc);
+#endif
+
+	// Load H and L direct
+	// The content of the memory location specified by the next 2 bytes of
+	// the instruction is loaded to register HL.
+	uint16_t address	= *((uint16_t*) &cpu->memory[cpu->pc + 1]);
+	cpu->hl = *((uint16_t*) &cpu->memory[address]);
+
+	cpu->pc += 3;
+	return 16;
 }
 int shld(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	assert(opcode == 0x22);
+	(void) opcode;
+
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: SHLD\n", cpu->pc);
+#endif
+
+	// Store H and L direct
+	// The content of register HL is moved to the memory location
+	// specified in the next 2 bytes of the instruction.
+	uint16_t address = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
+	*((uint16_t*) &cpu->memory[address]) = cpu->hl;
+
+	cpu->pc += 3;
+	return 16;
 }
 
 int ldax(uint8_t opcode, struct cpu_state* cpu)
