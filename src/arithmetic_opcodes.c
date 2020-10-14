@@ -96,10 +96,34 @@ int sbb(uint8_t opcode, struct cpu_state* cpu)
 	return placeholder(opcode, cpu);
 }
 
-int sbi(uint8_t opcode, struct cpu_state* cpu)
+int sui_sbi(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	// SUI is 0xd6 and SBI is 0xde
+	assert((opcode & 0b11110111) == 0b11010110);
+#ifdef VERBOSE
+	fprintf(stderr,
+			"0x%4.4x: S%cI\n",
+			cpu->pc,
+			(opcode & 0b00001000 ? 'B' : 'U'));
+#endif
+	uint16_t operand = cpu->memory[cpu->pc + 1];
+	// Per the manual, the carry flag is applied (if appropriate)
+	// prior to taking the two's complement.
+	if (opcode & (1 << 3) && cpu->flags & CARRY_FLAG) ++operand;
+	/* Find two's complement.  See sub_sbb() function comments for a
+	 * detailed description about the nit-picky and many-faceted details
+	 * of this process in C that result in the following two lines of code.
+	 */
+	operand = (uint8_t) ~operand;
+	++operand;
+	// Add exactly as we would if this were an addition.
+	uint16_t result = _add(cpu->a, operand, &cpu->flags);
+	APPLY_CARRY_FLAG_INVERTED(result, cpu->flags);
+
+	// apply the lower 8-bits of result to register A
+	cpu->a = result;
+	cpu->pc += 2;
+	return 7;
 }
 
 int inr(uint8_t opcode, struct cpu_state* cpu)

@@ -251,7 +251,7 @@ int (*const opcodes[256])(uint8_t opcode, struct cpu_state* cpu) = {
 		out,	 // 0xD3	OUT
 		ccond,	 // 0xD4	CNC
 		push,	 // 0xD5	PUSH	D
-		sui,	 // 0xD6	SUI
+		sui_sbi, // 0xD6	SUI
 		rst,	 // 0xD7	RST	2
 		retcond, // 0xD8	RC
 		ret,	 // 0xD9	RET
@@ -259,7 +259,7 @@ int (*const opcodes[256])(uint8_t opcode, struct cpu_state* cpu) = {
 		in,	 // 0xDB	IN
 		ccond,	 // 0xDC	CC
 		call,	 // 0xDD	CALL
-		sbi,	 // 0xDE	SBI
+		sui_sbi, // 0xDE	SBI
 		rst,	 // 0xDF	RST	3
 		retcond, // 0xE0	RPO
 		pop,	 // 0xE1	POP	H
