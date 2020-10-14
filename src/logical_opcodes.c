@@ -85,7 +85,7 @@ int cma(uint8_t opcode, struct cpu_state* cpu)
 	fprintf(stderr, "0x%4.4x: CMA\n", cpu->pc);
 #endif
 
-	// XOR the accumulator register to complement each bit
+	// XOR the accumulator register with 0xff to complement each bit
 	cpu->a ^= 0xff;
 	return 1;
 }
