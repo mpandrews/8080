@@ -17,16 +17,16 @@ TEST(CMC, All)
 		.halt_flag = 0, .reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	// with all the flags set, call cmc and assert that just the carry flag
+	// With all the flags set, call CMC and assert that just the Carry flag
 	// was reset and all other flags were unaffected
 	int cycles = cmc(0x3f, &cpu);
-	EXPECT_EQ(cycles, 1);
-	EXPECT_EQ(cpu.flags, (uint8_t) ~CARRY_FLAG);
+	EXPECT_EQ(cycles, 4);
+	EXPECT_EQ(cpu.flags, 0xfe);
 
-	// now that the carry flag is reset, call it again and asser that the
-	// flags register is now all set again and all other flags are still set
+	// Now that the carry flag is reset, call CMC again and assert that the
+	// flags register is now 0xff again
 	cycles = cmc(0X3f, &cpu);
-	EXPECT_EQ(cycles, 1);
+	EXPECT_EQ(cycles, 4);
 	EXPECT_EQ(cpu.flags, 0xff);
 }
 
@@ -42,13 +42,13 @@ TEST(CMA, All)
 
 	// cpu.a is set to 0 to start, assert that it is complemented to 0xff
 	int cycles = cma(0x2f, &cpu);
-	EXPECT_EQ(cycles, 1);
+	EXPECT_EQ(cycles, 4);
 	EXPECT_EQ(cpu.a, 0xff);
 
 	// now that it is 0xff, complement it again and asser that it has been
 	// reset to 0x00
 	cycles = cma(0X2f, &cpu);
-	EXPECT_EQ(cycles, 1);
+	EXPECT_EQ(cycles, 4);
 	EXPECT_EQ(cpu.a, 0);
 }
 

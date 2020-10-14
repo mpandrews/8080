@@ -80,7 +80,7 @@ int rar(uint8_t opcode, struct cpu_state* cpu)
 
 int cma(uint8_t opcode, struct cpu_state* cpu)
 {
-	(void)opcode;
+	(void) opcode;
 	assert(opcode == 0x2f);
 #ifdef VERBOSE
 	fprintf(stderr, "0x%4.4x: CMA\n", cpu->pc);
@@ -88,12 +88,12 @@ int cma(uint8_t opcode, struct cpu_state* cpu)
 
 	// XOR the accumulator register with 0xff to complement each bit
 	cpu->a ^= 0xff;
-	return 1;
+	return 4;
 }
 
 int cmc(uint8_t opcode, struct cpu_state* cpu)
 {
-	(void)opcode;
+	(void) opcode;
 	assert(opcode == 0x3f);
 #ifdef VERBOSE
 	fprintf(stderr, "0x%4.4x: CMC\n", cpu->pc);
@@ -102,7 +102,7 @@ int cmc(uint8_t opcode, struct cpu_state* cpu)
 	// XOR the flags register with the carry flag bit to toggle
 	// just that one bit
 	cpu->flags ^= CARRY_FLAG;
-	return 1;
+	return 4;
 }
 
 int stc(uint8_t opcode, struct cpu_state* cpu)
