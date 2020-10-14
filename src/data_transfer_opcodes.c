@@ -128,7 +128,6 @@ int lhld(uint8_t opcode, struct cpu_state* cpu)
 	cpu->a		 = cpu->memory[address];
 
 	cpu->pc += 3;
-
 	return 16;
 }
 int shld(uint8_t opcode, struct cpu_state* cpu)
