@@ -181,6 +181,51 @@ TEST(STA, All)
 	EXPECT_EQ(cpu.pc, 3);
 }
 
+TEST(LHLD, All)
+{
+
+	unsigned char memory[MAX_MEMORY];
+	memset(memory, 0, MAX_MEMORY);
+	struct cpu_state cpu
+	{
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
+	};
+
+	*((uint16_t*) &cpu.memory[cpu.pc + 1]) = 0xbbaa;
+	*((uint16_t*) &cpu.memory[0xbbaa])     = 0x1234;
+
+	// LHLD
+	int cycles = lhld(0x2a, &cpu);
+	EXPECT_EQ(cycles, 16);
+	EXPECT_EQ(cpu.pc, 3);
+	EXPECT_EQ(cpu.hl, 0x1234);
+}
+
+TEST(SHLD, All)
+{
+
+	unsigned char memory[MAX_MEMORY];
+	memset(memory, 0, MAX_MEMORY);
+	struct cpu_state cpu
+	{
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0x1234, .psw = 0,
+		.halt_flag = 0, .reset_flag = 0, .interrupt_enable_flag = 0
+	};
+
+	*((uint16_t*) &cpu.memory[cpu.pc + 1]) = 0xbbaa;
+
+	// SHLD
+	int cycles = shld(0x22, &cpu);
+	EXPECT_EQ(cycles, 16);
+	EXPECT_EQ(cpu.pc, 3);
+	EXPECT_EQ(*((uint16_t*) &cpu.memory[0xbbaa]), 0x1234);
+}
+
 TEST(LDAX, B_D)
 {
 

@@ -8,6 +8,7 @@
     - `cmake -DCMAKE_BUILD_TYPE=Debug ..`
 - The Debug build target will add realtime disassembly and CPU state output on `stderr`.  
 - Run `make`.  Once a build tree is established for a build type, any changes to the actual source files will be picked up by make.
+<<<<<<< HEAD
 - Run `make test` to run unit tests, if desired.
 ### Running the Emulator
 `make` will produce an executable called `8080`, and some shared library files which define external hardware sets.  (An 8080 not hooked into anything is of limited use!)
@@ -27,6 +28,11 @@
     - HLT
   
   This will leave the CPU in an (emulated) halt state, during which it will continue to check to see if a hardware reset has been requested; effectively a low-CPU usage spinlock.  With the empty hardware set, there is no way to send such a reset.
+=======
+- To run the emulator, run `8080 <ROM>` where ROM is the name of the rom file you want the emulator to execute.
+- You can create a test ROM file like this: `echo -e -n \\x26\\x01\\x2e\\x01\\x36 > rom`
+- Run `make test` to run unit tests.
+>>>>>>> master
 ### Speed Benchmarking and Speed Adjustment
 To get CPU speed benchmarking output on `stderr`, define `BENCHMARK`:
 - `make C_FLAGS="-DBENCHMARK"`
@@ -54,8 +60,7 @@ To actually run the benchmark, simply run the emulator as normal.  Do note that 
 
 ### Contributing Guidelines
 - Branch from master and make a pull request when ready to review.
-- Make sure to run `clang-format` to format the files.
-- Make sure to add unit tests to your PR.
+- Make sure to run `clang-format --style=file -i include/* src/* test/*`
 - Tag reviewers and get approval from at least one reviewer.
 - Squash and merge to master (one commit message per branch/PR)
 

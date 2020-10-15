@@ -9,3 +9,4 @@ bin/
 rom
 build/
 cmake-build-debug/
+release
