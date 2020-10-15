@@ -79,7 +79,6 @@ SET(hw_sets "")
 #Iterate over the files we found: if it's a directory, add it to the list.
 FOREACH(item ${children})
 	IF(IS_DIRECTORY ${item})
-		message("CHILD: ${item}")
 		LIST(APPEND hw_sets ${item})
 	ENDIF()
 ENDFOREACH()
@@ -88,7 +87,6 @@ ENDFOREACH()
 FOREACH(item ${hw_sets})
 	#Get just the final element of the path we found.
 	get_filename_component(name ${item} NAME)
-	message("${name}")
 	#Create a shared library target with that name.
 	add_library(${name} SHARED)
 	#Add the source file to its source list.
