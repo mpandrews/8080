@@ -24,7 +24,6 @@ add_library(SourceFiles
 		src/other_opcodes.c
 )
 
-
 target_compile_options(SourceFiles PRIVATE ${FlagSettings})
 
 target_include_directories(SourceFiles PRIVATE include)
@@ -67,3 +66,36 @@ target_sources(Tests
 )
 
 gtest_discover_tests(Tests)
+
+#Hardware libraries
+
+#Find every file contained in the hardware subdirectory.
+file(GLOB children 
+	LIST_DIRECTORIES true 
+	CONFIGURE_DEPENDS
+	${CMAKE_CURRENT_LIST_DIR}/hardware/*)
+#Create an empty list.
+SET(hw_sets "")
+#Iterate over the files we found: if it's a directory, add it to the list.
+FOREACH(item ${children})
+	IF(IS_DIRECTORY ${item})
+		message("CHILD: ${item}")
+		LIST(APPEND hw_sets ${item})
+	ENDIF()
+ENDFOREACH()
+
+#Create a target for the library.
+FOREACH(item ${hw_sets})
+	#Get just the final element of the path we found.
+	get_filename_component(name ${item} NAME)
+	message("${name}")
+	#Create a shared library target with that name.
+	add_library(${name} SHARED)
+	#Add the source file to its source list.
+	target_sources(${name} PRIVATE ${item}/src/hw_funcs.c)
+	#Give it the compiler flags we're using, whatever those are.
+	target_compile_options(${name} PRIVATE ${FlagSettings})
+	target_include_directories(${name} PRIVATE 
+		include
+		${item}/include)
+ENDFOREACH()
