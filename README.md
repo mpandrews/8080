@@ -8,9 +8,25 @@
     - `cmake -DCMAKE_BUILD_TYPE=Debug ..`
 - The Debug build target will add realtime disassembly and CPU state output on `stderr`.  
 - Run `make`.  Once a build tree is established for a build type, any changes to the actual source files will be picked up by make.
-- To run the emulator, run `8080 <ROM>` where ROM is the name of the rom file you want the emulator to execute.
-- You can create a test ROM file like this: `echo -e -n \\x26\\x01\\x2e\\x01\\x36\\xff\\x46 > rom`
-- Run `make test` to run unit tests.
+- Run `make test` to run unit tests, if desired.
+### Running the Emulator
+`make` will produce an executable called `8080`, and some shared library files which define external hardware sets.  (An 8080 not hooked into anything is of limited use!)
+`8080` has the following options:
+- `-r FILE`, `--rom FILE`
+  - Required.  Specifies the ROM file to load into the 8080's memory.
+- `--hw FILE`, `--hardware FILE` 
+  - Optional.  Specifies the name of the hardware library to load.  If omitted, an empty hardware set will be loaded in which no front-end is launched, and the `IN` and `OUT` opcodes will do nothing except burn cycles.  Specifying `none` here will explicitly load the empty hardware set.
+- `-h`, `--help`
+  - Print usage instructions and exit.
+- You can create a test ROM file like this, if you lack access to an assembler: `echo -e -n \\x26\\x01\\x2e\\x01\\x36\\xff\\x46\\x76 > rom`
+  - This example ROM will run the following:
+    - MVI H 0x01
+    - MVI L 0x01
+    - MVI M 0xff
+    - MOV B, M
+    - HLT
+  
+  This will leave the CPU in an (emulated) halt state, during which it will continue to check to see if a hardware reset has been requested; effectively a low-CPU usage spinlock.  With the empty hardware set, there is no way to send such a reset.
 ### Speed Benchmarking and Speed Adjustment
 To get CPU speed benchmarking output on `stderr`, define `BENCHMARK`:
 - `make C_FLAGS="-DBENCHMARK"`
@@ -33,6 +49,8 @@ Defines can, of course, be mixed:
 Do note that (by far) the most expensive portion of the normal CPU loop is the timing portion.  Even with a `CYCLE_TIME` of zero, the timing logic will still be traversed.  The main use of the benchmarking is to gauge the accuracy of the emulated speed, not to maximize it.  We may add a true unthrottled mode later; experimentation has shown a ~4x speed increase which may have its uses.
 
 Note also that if `VERBOSE` is set while benchmarking, the overhead of all the printing calls could well drive effective emulation speed below 2MHz on slower systems.
+
+To actually run the benchmark, simply run the emulator as normal.  Do note that for benchmarking to be of any use, the ROM you choose to run will have to execute for at least `BENCH_INTERVAL` cycles of the 8080.  A simple looping ROM is recommended.
 
 ### Contributing Guidelines
 - Branch from master and make a pull request when ready to review.

@@ -54,7 +54,8 @@ void* cpu_thread_routine(void* resources)
 			.int_cond	  = res->interrupt_cond,
 			.interrupt_buffer = res->interrupt_buffer,
 			.address_bus	  = res->address_bus,
-			.data_bus	  = res->data_bus};
+			.data_bus	  = res->data_bus,
+			.hw_struct	  = res->hw_struct};
 
 	uint8_t opcode;
 

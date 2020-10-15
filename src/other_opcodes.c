@@ -77,18 +77,6 @@ int sphl(uint8_t opcode, struct cpu_state* cpu)
 	return 5;
 }
 
-int in(uint8_t opcode, struct cpu_state* cpu)
-{
-	// TODO
-	return placeholder(opcode, cpu);
-}
-
-int out(uint8_t opcode, struct cpu_state* cpu)
-{
-	// TODO
-	return placeholder(opcode, cpu);
-}
-
 int ei(uint8_t opcode, struct cpu_state* cpu)
 {
 	// TODO

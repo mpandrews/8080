@@ -8,7 +8,6 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(FlagSettings "-Wall" "-Werror" "-Wextra" 
-	"$<$<CONFIG:RELEASE>:-O2>"
 	"$<$<CONFIG:DEBUG>:-DVERBOSE -DDEBUG>"
 )
 
@@ -34,7 +33,9 @@ add_executable(8080
 )
 
 find_package(Threads)
-target_link_libraries(8080 ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(8080 
+	${CMAKE_THREAD_LIBS_INIT}
+	${CMAKE_DL_LIBS})
 target_include_directories(8080 PRIVATE include)
 
 target_compile_options(8080 PRIVATE ${FlagSettings})
