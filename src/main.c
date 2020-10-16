@@ -9,10 +9,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <string.h>
-
 
 void parse_arguments(int argc, char** argv, char* rom_name, char* hw_lib_name);
 
@@ -45,45 +44,63 @@ int main(int argc, char** argv)
 	}
 
 	hw_lib_handle = dlopen(hw_lib_name, RTLD_NOW);
-	//dlopen returns NULL on failure.
+	// dlopen returns NULL on failure.
 	if (!hw_lib_handle)
 	{
-		fprintf(stderr, "Error opening hardware library:\n\t%s\n", dlerror());
+		fprintf(stderr,
+				"Error opening hardware library:\n\t%s\n",
+				dlerror());
 		exit(1);
 	}
-	//Assign the OUT opcode function defined in the HW lib.
+	// Assign the OUT opcode function defined in the HW lib.
 	opcodes[0xd3] = dlsym(hw_lib_handle, "hw_out");
 	if (!opcodes[0xd3])
 	{
-		fprintf(stderr, "Error finding function 'hw_out' in hardware"
-				" library %s:\n\t%s\n", hw_lib_name, dlerror());
+		fprintf(stderr,
+				"Error finding function 'hw_out' in hardware"
+				" library %s:\n\t%s\n",
+				hw_lib_name,
+				dlerror());
 		exit(1);
 	}
-	//Assign the IN opcode function.
+	// Assign the IN opcode function.
 	opcodes[0xdb] = dlsym(hw_lib_handle, "hw_in");
 	if (!opcodes[0xdb])
 	{
-		fprintf(stderr, "Error finding function 'hw_in' in hardware"
-				" library %s:\n\t%s\n", hw_lib_name, dlerror());
+		fprintf(stderr,
+				"Error finding function 'hw_in' in hardware"
+				" library %s:\n\t%s\n",
+				hw_lib_name,
+				dlerror());
 		exit(1);
 	}
 
-	//Hardware-defined function to initialize whatever data parcel
-	//the hardware wants the CPU to carry around: returns a void*,
-	//which the HW-specific functions can then cast to whatever it really is.
+	// Hardware-defined function to initialize whatever data parcel
+	// the hardware wants the CPU to carry around: returns a void*,
+	// which the HW-specific functions can then cast to whatever it really
+	// is.
 	void* (*hw_init_struct)() = dlsym(hw_lib_handle, "hw_init_struct");
 	if (!hw_init_struct)
 	{
-		fprintf(stderr, "Error finding function 'hw_init_struct' in hardware"
-				" library %s:\n\t%s\n", hw_lib_name, dlerror());
+		fprintf(stderr,
+				"Error finding function 'hw_init_struct' in "
+				"hardware"
+				" library %s:\n\t%s\n",
+				hw_lib_name,
+				dlerror());
 		exit(1);
 	}
-	//HW-defined function to clean up its struct.
-	void (*hw_destroy_struct)(void*) = dlsym(hw_lib_handle, "hw_destroy_struct");
+	// HW-defined function to clean up its struct.
+	void (*hw_destroy_struct)(void*) =
+			dlsym(hw_lib_handle, "hw_destroy_struct");
 	if (!hw_destroy_struct)
 	{
-		fprintf(stderr, "Error finding function 'hw_destroy_struct' in hardware"
-				" library %s:\n\t%s\n", hw_lib_name, dlerror());
+		fprintf(stderr,
+				"Error finding function 'hw_destroy_struct' in "
+				"hardware"
+				" library %s:\n\t%s\n",
+				hw_lib_name,
+				dlerror());
 		exit(1);
 	}
 
@@ -125,106 +142,104 @@ int main(int argc, char** argv)
 			.interrupt_buffer	       = &interrupt_buffer,
 			.data_bus		       = &data_bus,
 			.address_bus		       = &address_bus,
-			.hw_struct = hw_struct};
+			.hw_struct		       = hw_struct};
 
 	pthread_t cpu_thread, front_end_thread;
-	//We always create a CPU thread.
+	// We always create a CPU thread.
 	pthread_create(&cpu_thread, NULL, cpu_thread_routine, (void*) &res);
 
-	//We check to see if the hardware library defines a front_end function:
-	//if we do, we spin it up in a second thread.  If not, there's
-	//nothing to do here.
+	// We check to see if the hardware library defines a front_end function:
+	// if we do, we spin it up in a second thread.  If not, there's
+	// nothing to do here.
 	void* (*front_end)(void*) = dlsym(hw_lib_handle, "front_end");
 	if (front_end)
-	{
-		pthread_create(&front_end_thread, NULL, front_end, (void*) &res);
-	}
+	{ pthread_create(&front_end_thread, NULL, front_end, (void*) &res); }
 	pthread_join(cpu_thread, NULL);
-	//pthread_join returns with an error if there is no such thread,
-	//as in the case of a hardware set that didn't define front_end().
+	// pthread_join returns with an error if there is no such thread,
+	// as in the case of a hardware set that didn't define front_end().
 	pthread_join(front_end_thread, NULL);
 
-	//Cleanup.
+	// Cleanup.
 	free(memory_space);
 	hw_destroy_struct(hw_struct);
 	dlclose(hw_lib_handle);
 	exit(0);
 }
 
-const char* const USAGE =
-		"Usage: %s\n"
-		"\t{-r ROM_FILE|--rom ROM_FILE}\n"
-	        "\t [--hw HARDWARE_NAME|--hardware HARDWARE_NAME]\n"
-		"\t[-h|--help]\n\n"
-		"Options:\n"
-		"\t-r, --rom\n"
-		"\t\tThe name of the 8080 rom file to execute.\n"
-		"\t\tRequired.\n"
-		"\t--hw --hardware\n"
-		"\t\tThe name of the hardware library to use.\n"
-		"\t\tAvailable options are: 'si', 'none'.\n"
-		"\t\tDefaults to 'none' if not specified.\n"
-		"\t-h, --help\n"
-		"\t\tPrint this message.\n";
+const char* const USAGE = "Usage: %s\n"
+			  "\t{-r ROM_FILE|--rom ROM_FILE}\n"
+			  "\t [--hw HARDWARE_NAME|--hardware HARDWARE_NAME]\n"
+			  "\t[-h|--help]\n\n"
+			  "Options:\n"
+			  "\t-r, --rom\n"
+			  "\t\tThe name of the 8080 rom file to execute.\n"
+			  "\t\tRequired.\n"
+			  "\t--hw --hardware\n"
+			  "\t\tThe name of the hardware library to use.\n"
+			  "\t\tAvailable options are: 'si', 'none'.\n"
+			  "\t\tDefaults to 'none' if not specified.\n"
+			  "\t-h, --help\n"
+			  "\t\tPrint this message.\n";
 
 void parse_arguments(int argc, char** argv, char* rom_name, char* hw_lib_name)
 {
-		char rom_found		   = 0;
-		char hw_found		   = 0;
-		int opt_return		   = 0;
-		int option_index	   = 0;
-		struct option long_opts[5] = {{"rom", required_argument, 0, 'r'},
-				{"hardware", required_argument, 0, 'H'},
-				{"hw", required_argument, 0, 'H'},
-				{"help", no_argument, 0, 'h'},
-				{0}};
-		while ((opt_return = getopt_long(argc,
-					argv,
-					"r:h",
-					long_opts,
-					&option_index))
-				!= -1)
+	char rom_found		   = 0;
+	char hw_found		   = 0;
+	int opt_return		   = 0;
+	int option_index	   = 0;
+	struct option long_opts[5] = {{"rom", required_argument, 0, 'r'},
+			{"hardware", required_argument, 0, 'H'},
+			{"hw", required_argument, 0, 'H'},
+			{"help", no_argument, 0, 'h'},
+			{0}};
+	while ((opt_return = getopt_long(
+				argc, argv, "r:h", long_opts, &option_index))
+			!= -1)
+	{
+		switch (opt_return)
 		{
-			switch (opt_return)
+		case 'r':
+			if (rom_found)
 			{
-			case 'r':
-				if (rom_found)
-				{
-					fprintf(stderr, "Only one ROM file can be specified.\n");
-					fprintf(stderr, USAGE, *argv);
-					exit(1);
-				}
-				rom_found = 1;
-				rom_name[0] = 0;
-				strncpy(rom_name, optarg, 49); 
-				break;
-			case 'h': printf(USAGE, *argv); exit(0);
-			case 'H':
-				if (hw_found)
-				{
-					fprintf(stderr, "Only one hardware set can be specified.\n");
-					fprintf(stderr, USAGE, *argv);
-					exit(1);
-				}
-				hw_found = 1;
-				hw_lib_name[0] = 0;
-				strcpy(hw_lib_name, "./lib");
-				strncat(hw_lib_name, optarg, 10);
-				strcat(hw_lib_name, ".so");
-				break;
-			case '?': // FALLTHRU
-			default: fprintf(stderr, USAGE, *argv); exit(1);
+				fprintf(stderr,
+						"Only one ROM file can be "
+						"specified.\n");
+				fprintf(stderr, USAGE, *argv);
+				exit(1);
 			}
-		}
-		if (!rom_found)
-		{
-			fprintf(stderr, "No ROM file specified!\n");
-			fprintf(stderr, USAGE, *argv);
-			exit(1);
-		}
-		if (!hw_found)
-		{
+			rom_found   = 1;
+			rom_name[0] = 0;
+			strncpy(rom_name, optarg, 49);
+			break;
+		case 'h': printf(USAGE, *argv); exit(0);
+		case 'H':
+			if (hw_found)
+			{
+				fprintf(stderr,
+						"Only one hardware set can be "
+						"specified.\n");
+				fprintf(stderr, USAGE, *argv);
+				exit(1);
+			}
+			hw_found       = 1;
 			hw_lib_name[0] = 0;
-			strcpy(hw_lib_name, "./libnone.so");
+			strcpy(hw_lib_name, "./lib");
+			strncat(hw_lib_name, optarg, 10);
+			strcat(hw_lib_name, ".so");
+			break;
+		case '?': // FALLTHRU
+		default: fprintf(stderr, USAGE, *argv); exit(1);
 		}
 	}
+	if (!rom_found)
+	{
+		fprintf(stderr, "No ROM file specified!\n");
+		fprintf(stderr, USAGE, *argv);
+		exit(1);
+	}
+	if (!hw_found)
+	{
+		hw_lib_name[0] = 0;
+		strcpy(hw_lib_name, "./libnone.so");
+	}
+}

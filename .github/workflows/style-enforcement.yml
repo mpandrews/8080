@@ -15,9 +15,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: DoozyX/clang-format-lint-action@v0.10
+    - uses: DoozyX/clang-format-lint-action@v0.9
       with:
-        source: './src ./include ./test'
+        source: './src ./include ./test ./hardware/*/src ./hardware/*/include'
         exclude: ''
         extensions: 'h,cpp,c'
         clangFormatVersion: 11
