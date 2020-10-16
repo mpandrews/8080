@@ -31,7 +31,7 @@ int add_adc(uint8_t, struct cpu_state*);
 int adi(uint8_t, struct cpu_state*);
 int aci(uint8_t, struct cpu_state*);
 int sub_sbb(uint8_t, struct cpu_state*);
-int sui(uint8_t, struct cpu_state*);
+int sui_sbi(uint8_t, struct cpu_state*);
 int sbi(uint8_t, struct cpu_state*);
 int inr(uint8_t, struct cpu_state*);
 int dcr(uint8_t, struct cpu_state*);
