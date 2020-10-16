@@ -213,3 +213,90 @@ TEST(SBB, All)
 	// No flags set.
 	EXPECT_EQ(cpu.flags, 0b00000000);
 }
+
+TEST(SBI, All)
+{
+
+	unsigned char memory[(1 << 16)];
+	memset(memory, 0, 1 << 16);
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = memory,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0x1111,
+		.hl = 0, .psw = 0xff00, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	// give sbi an argument of 0xff to subtract from the accumulator which
+	// is set to 0xff. This should result cpu->a being set to 0x00.
+	// Additionally the Zero, Parity, and Aux Carry flags should be set, and
+	// the Sign and Carry flags should be reset.
+	cpu.memory[0x0001] = 0xff;
+	int cycles	   = sui_sbi(0xde, &cpu);
+	EXPECT_EQ(cycles, 7);
+	EXPECT_EQ(cpu.pc, 2);
+	EXPECT_EQ(cpu.a, 0);
+	EXPECT_EQ(cpu.flags, 0b01010100);
+	//                     SZ-A-P-C
+
+	// Now set the carry flag and perform subtraction that will result in
+	// a borrow when the carry flag is added to the subtrahend. Apparently
+	// subtrahend is the proper term.
+	// subtracting (1(subtrahend) + 1(carry flag)) from 1(contents of cpu->a
+	// should result in the accumulator containing 0xff. Additionally
+	// the sign and carry flags should be set, and the aux carry, parity,
+	// and zero flags should be reset after this operation.
+	cpu.a		   = 0x01;
+	cpu.memory[0x0003] = 0x01;
+	cpu.flags	   = CARRY_FLAG;
+	cycles		   = sui_sbi(0xde, &cpu);
+	EXPECT_EQ(cycles, 7);
+	EXPECT_EQ(cpu.pc, 4);
+	EXPECT_EQ(cpu.a, 0xff);
+	EXPECT_EQ(cpu.flags, 0b10000101);
+	//                     SZ-A-P-C
+}
+
+TEST(SUI, All)
+{
+	unsigned char memory[(1 << 16)];
+	memset(memory, 0, 1 << 16);
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = memory,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0x1111,
+		.hl = 0, .psw = 0xff00, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	// give sui an argument of 0xfe to subtract from the accumulator which
+	// is set to 0xff. This should result in cpu->a being set to 0x01.
+	// Additionally the Aux Carry flag should be set, and
+	// the Sign, Zero, Parity, and Carry flags should be reset.
+	cpu.a		   = 0xff;
+	cpu.memory[0x0001] = 0xfe;
+	int cycles	   = sui_sbi(0xd6, &cpu);
+	EXPECT_EQ(cycles, 7);
+	EXPECT_EQ(cpu.pc, 2);
+	EXPECT_EQ(cpu.a, 1);
+	EXPECT_EQ(cpu.flags, 0b00010000);
+	//                     SZ-A-P-C
+
+	// Now set the carry flag and perform subtraction that would result in
+	// a borrow when the carry flag is added to the subtrahend, but won't
+	// if it isn't included. SBI doesn't include the carry flag. After this
+	// operation, the accumulator should contain 0x00. Additionally the
+	// Zero, Parity, and Aux Carry flags should be set while the Sign and
+	// Carry flags should be reset.
+	cpu.a		   = 0x01;
+	cpu.memory[0x0003] = 0x01;
+	cpu.flags	   = CARRY_FLAG;
+	cycles		   = sui_sbi(0xd6, &cpu);
+	EXPECT_EQ(cycles, 7);
+	EXPECT_EQ(cpu.pc, 4);
+	EXPECT_EQ(cpu.a, 0x00);
+	EXPECT_EQ(cpu.flags, 0b01010100);
+	//                     SZ-A-P-C
+}
