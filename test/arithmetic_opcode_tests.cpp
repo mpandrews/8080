@@ -125,6 +125,56 @@ TEST(ADC, All)
 	EXPECT_EQ(cpu.flags, 0b01010101);
 }
 
+TEST(ADI, All)
+{
+	unsigned char memory[MAX_MEMORY];
+	memset(memory, 0, MAX_MEMORY);
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = memory,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
+		.hl = 0, .psw = 0x1200, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	cpu.memory[cpu.pc + 1] = 0xab;
+
+	// ADI
+	int cycles = adi(0xc6, &cpu);
+	EXPECT_EQ(cycles, 7);
+	EXPECT_EQ(cpu.pc, 2);
+	EXPECT_EQ(cpu.a, 0xbd);
+	// SZ-A-P-C
+	// Sign and parity flags are set
+	EXPECT_EQ(cpu.flags, 0b10000100);
+}
+
+TEST(ACI, All)
+{
+	unsigned char memory[MAX_MEMORY];
+	memset(memory, 0, MAX_MEMORY);
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = memory,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
+		.hl = 0, .psw = 0x1a01, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	cpu.memory[cpu.pc + 1] = 0xab;
+
+	// ACI
+	int cycles = aci(0xce, &cpu);
+	EXPECT_EQ(cycles, 7);
+	EXPECT_EQ(cpu.pc, 2);
+	EXPECT_EQ(cpu.a, 0xc6);
+	// SZ-A-P-C
+	// Sign, AC, and parity flags are set
+	EXPECT_EQ(cpu.flags, 0b10010100);
+}
+
 TEST(SUB, All)
 {
 	struct cpu_state cpu
