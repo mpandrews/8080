@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include "cycle_timer.h"
 #include "opcode_decls.h"
 #include "opcode_helpers.h"
 
@@ -33,15 +34,15 @@ int mov(uint8_t opcode, struct cpu_state* cpu)
 	*dest = source;
 	// Increment the program counter, since this is a one-byte
 	// instruction.
-	++cpu->pc;
 
 	// If either operand is memory, the instruction takes
 	// an additional two cycles.
 	if (GET_SOURCE_OPERAND(opcode) == OPERAND_MEM
 			|| GET_DESTINATION_OPERAND(opcode) == OPERAND_MEM)
-		return 7;
+		cycle_wait(7);
 	else
-		return 5;
+		cycle_wait(5);
+	return 1;
 }
 
 int mvi(uint8_t opcode, struct cpu_state* cpu)
@@ -60,12 +61,13 @@ int mvi(uint8_t opcode, struct cpu_state* cpu)
 			cpu->memory[cpu->pc + 1];
 
 	// Two-byte opcode, counting the immediate value.
-	cpu->pc += 2;
 	// Takes longer if writing to memory.
 	if (GET_DESTINATION_OPERAND(opcode) == OPERAND_MEM)
-		return 10;
+		cycle_wait(10);
 	else
-		return 7;
+		cycle_wait(7);
+
+	return 2;
 }
 
 int lxi(uint8_t opcode, struct cpu_state* cpu)
@@ -88,9 +90,9 @@ int lda(uint8_t opcode, struct cpu_state* cpu)
 	// to register A
 	uint16_t address = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
 	cpu->a		 = cpu->memory[address];
-	cpu->pc += 3;
 
-	return 13;
+	cycle_wait(13);
+	return 3;
 }
 
 int sta(uint8_t opcode, struct cpu_state* cpu)
@@ -107,9 +109,9 @@ int sta(uint8_t opcode, struct cpu_state* cpu)
 	// in the instruction
 	uint16_t address     = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
 	cpu->memory[address] = cpu->a;
-	cpu->pc += 3;
 
-	return 13;
+	cycle_wait(13);
+	return 3;
 }
 
 int lhld(uint8_t opcode, struct cpu_state* cpu)
@@ -127,8 +129,8 @@ int lhld(uint8_t opcode, struct cpu_state* cpu)
 	uint16_t address = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
 	cpu->hl		 = *((uint16_t*) &cpu->memory[address]);
 
-	cpu->pc += 3;
-	return 16;
+	cycle_wait(16);
+	return 3;
 }
 int shld(uint8_t opcode, struct cpu_state* cpu)
 {
@@ -145,8 +147,8 @@ int shld(uint8_t opcode, struct cpu_state* cpu)
 	uint16_t address = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
 	*((uint16_t*) &cpu->memory[address]) = cpu->hl;
 
-	cpu->pc += 3;
-	return 16;
+	cycle_wait(16);
+	return 3;
 }
 
 int ldax(uint8_t opcode, struct cpu_state* cpu)
@@ -164,9 +166,9 @@ int ldax(uint8_t opcode, struct cpu_state* cpu)
 	uint16_t* rp = get_register_pair(opcode, cpu);
 	// load content of the byte at the address found at RP to register A
 	cpu->a = cpu->memory[*rp];
-	cpu->pc++;
 
-	return 7;
+	cycle_wait(7);
+	return 1;
 }
 
 int stax(uint8_t opcode, struct cpu_state* cpu)
@@ -184,9 +186,9 @@ int stax(uint8_t opcode, struct cpu_state* cpu)
 	uint16_t* rp = get_register_pair(opcode, cpu);
 	// load register A to memory at the address found in RP
 	cpu->memory[*rp] = cpu->a;
-	cpu->pc++;
 
-	return 7;
+	cycle_wait(7);
+	return 1;
 }
 
 int xchg(uint8_t opcode, struct cpu_state* cpu)
@@ -203,7 +205,6 @@ int xchg(uint8_t opcode, struct cpu_state* cpu)
 	cpu->de	      = cpu->hl;
 	cpu->hl	      = temp;
 
-	cpu->pc++;
-
-	return 4;
+	cycle_wait(4);
+	return 1;
 }
