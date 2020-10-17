@@ -38,7 +38,11 @@ target_link_libraries(8080
 	${CMAKE_DL_LIBS})
 target_include_directories(8080 PRIVATE include)
 
-target_compile_options(8080 PRIVATE ${FlagSettings})
+target_compile_options(8080 PRIVATE 
+	${FlagSettings}
+)
+set_target_properties(8080 PROPERTIES
+	ENABLE_EXPORTS TRUE)
 
 enable_testing()
 find_package(GTest)

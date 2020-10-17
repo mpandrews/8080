@@ -3,6 +3,8 @@
 #include <assert.h>
 #include <stdio.h>
 
+extern void cycle_wait(int);
+
 // IN
 int hw_in(uint8_t opcode, struct cpu_state* cpu)
 {
@@ -12,8 +14,8 @@ int hw_in(uint8_t opcode, struct cpu_state* cpu)
 #ifdef VERBOSE
 	fprintf(stderr, "0x%4.4x: IN (Hardware: none)\n", cpu->pc);
 #endif
-	++cpu->pc;
-	return 10;
+	cycle_wait(10);
+	return 1;
 }
 
 // OUT
@@ -25,8 +27,8 @@ int hw_out(uint8_t opcode, struct cpu_state* cpu)
 #ifdef VERBOSE
 	fprintf(stderr, "0x%4.4x: OUT (Hardware: none)\n", cpu->pc);
 #endif
-	++cpu->pc;
-	return 10;
+	cycle_wait(10);
+	return 1;
 }
 
 // Interrupt Hook
