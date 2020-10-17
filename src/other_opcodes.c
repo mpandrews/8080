@@ -124,6 +124,7 @@ int nop(uint8_t opcode, struct cpu_state* cpu)
 	// 0x00, 0x10, 0x20, 0x30, 0x08, 0x18 0x28, 0x38
 	assert((opcode & 0b11000111) == 0b00000000);
 	(void) opcode;
+	(void) cpu;
 
 #ifdef VERBOSE
 	fprintf(stderr, "0x%4.4x: NOP\n", cpu->pc);
