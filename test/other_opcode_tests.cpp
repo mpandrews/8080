@@ -134,3 +134,43 @@ TEST(SPHL, All)
 	EXPECT_EQ(cpu.sp, 0x0b3c);
 	EXPECT_EQ(cpu.hl, 0x0b3c);
 }
+
+TEST(PUSH, All)
+{
+
+	unsigned char memory[MAX_MEMORY];
+	memset(memory, 0, MAX_MEMORY);
+	struct cpu_state cpu
+	{
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0,
+		.sp = 0x1010, .pc = 0, .bc = 0x0102, .de = 0x0304, .hl = 0x0506,
+		.psw = 0xfffd, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+	// PUSH B
+	int cycles = push(0xc5, &cpu);
+	EXPECT_EQ(cycles, 11);
+	EXPECT_EQ(cpu.pc, 1);
+	EXPECT_EQ(cpu.sp, 0x100e); // 0x1010 - 2
+	EXPECT_EQ(cpu.memory[cpu.sp], 0x02);
+	EXPECT_EQ(cpu.memory[cpu.sp + 1], 0x01);
+
+	// PUSH D
+	push(0xd5, &cpu);
+	EXPECT_EQ(cpu.sp, 0x100c);
+	EXPECT_EQ(*(uint16_t*) (cpu.memory + cpu.sp), 0x0304);
+
+	// PUSH H
+	push(0xe5, &cpu);
+	EXPECT_EQ(cpu.sp, 0x100a);
+	EXPECT_EQ(*(uint16_t*) (cpu.memory + cpu.sp), 0x0506);
+
+	// PUSH PSW
+	push(0xf5, &cpu);
+	EXPECT_EQ(cpu.sp, 0x1008);
+	// Bits 1, 3 and 5 of PSW always push to the same values: 1, 0, and 0.
+	// The value we currently have in PSW has those flipped: the flag byte
+	// is 0xfd.  The value pushed should be 0xd7.
+	EXPECT_EQ(*(uint16_t*) (cpu.memory + cpu.sp), 0xffd7);
+}
