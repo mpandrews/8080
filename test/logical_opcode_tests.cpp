@@ -28,8 +28,7 @@ TEST(ANA, All)
 	cpu.a = 0xfd;
 	cpu.c = 0x0f;
 	// ANA C
-	int cycles = ana(0xa1, &cpu);
-	EXPECT_EQ(cycles, 4);
+	cpu.pc += ana(0xa1, &cpu);
 	EXPECT_EQ(cpu.a, 0x0d);
 	EXPECT_EQ(cpu.pc, 1);
 	// only the aux carry bit should be set because either (in this case
@@ -45,8 +44,7 @@ TEST(ANA, All)
 	// reset because neither 0xf7 or 0x81 sets bit 3 high.
 	cpu.a		   = 0xf7;
 	cpu.memory[0x8222] = 0x81;
-	cycles		   = ana(0xa6, &cpu);
-	EXPECT_EQ(cycles, 7);
+	cpu.pc += ana(0xa6, &cpu);
 	EXPECT_EQ(cpu.a, 0x81);
 	EXPECT_EQ(cpu.pc, 2);
 	EXPECT_EQ(cpu.flags, 0b10000100);
@@ -58,7 +56,7 @@ TEST(ANA, All)
 	// operation.
 	cpu.c = 0x00;
 	cpu.a = 0xff;
-	ana(0xa1, &cpu);
+	cpu.pc += ana(0xa1, &cpu);
 	EXPECT_EQ(cpu.a, 0x00);
 	EXPECT_EQ(cpu.flags, 0b01010100);
 	//                     SZ-A-P-C
@@ -80,10 +78,9 @@ TEST(ORA, All)
 	// ORA against C register. This should set all 4 low bits of the A
 	// register and leave the high 4 bits unaltered. All flags shouild be
 	// cleared (all were set high in the struct_cpu instantiation above),
-	cpu.a	   = 0x23;
-	cpu.c	   = 0x0f;
-	int cycles = ora(0xb1, &cpu);
-	EXPECT_EQ(cycles, 4);
+	cpu.a = 0x23;
+	cpu.c = 0x0f;
+	cpu.pc += ora(0xb1, &cpu);
 	EXPECT_EQ(cpu.a, 0x2f);
 	EXPECT_EQ(cpu.pc, 1);
 	EXPECT_EQ(cpu.flags, 0b00000000);
@@ -96,8 +93,7 @@ TEST(ORA, All)
 	// should be set after this operation. Other flags should be reset.
 	cpu.a		   = 0x00;
 	cpu.memory[0x8222] = 0xed;
-	cycles		   = ora(0xb6, &cpu);
-	EXPECT_EQ(cycles, 7);
+	cpu.pc += ora(0xb6, &cpu);
 	EXPECT_EQ(cpu.a, 0xed);
 	EXPECT_EQ(cpu.pc, 2);
 	EXPECT_EQ(cpu.flags, 0b10000100);
@@ -107,7 +103,7 @@ TEST(ORA, All)
 	// two and assert that A is set to 0xff
 	cpu.a = 0x00;
 	cpu.c = 0xff;
-	ora(0xb1, &cpu);
+	cpu.pc += ora(0xb1, &cpu);
 	EXPECT_EQ(cpu.a, 0xff);
 	EXPECT_EQ(cpu.pc, 3);
 	EXPECT_EQ(cpu.flags, 0b10000100);
@@ -117,7 +113,7 @@ TEST(ORA, All)
 	// when it ought to be set by ORA
 	cpu.a = 0x00;
 	cpu.c = 0x00;
-	ora(0xb1, &cpu);
+	cpu.pc += ora(0xb1, &cpu);
 	EXPECT_EQ(cpu.a, 0x00);
 	EXPECT_EQ(cpu.pc, 4);
 	EXPECT_EQ(cpu.flags, 0b01000100);
@@ -136,8 +132,8 @@ TEST(STC, All)
 	};
 
 	// STC should set the carry flag if it's not set
-	int cycles = stc(0x37, &cpu);
-	EXPECT_EQ(cycles, 4);
+	cpu.pc += stc(0x37, &cpu);
+	EXPECT_EQ(cpu.pc, 1);
 	EXPECT_EQ(cpu.flags, 0x00000001);
 
 	// Call STC again and check that carry flag is still set
