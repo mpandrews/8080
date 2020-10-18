@@ -71,7 +71,7 @@ struct cpu_state
 	// interrupts are stored.
 	uint8_t* const data_bus;
 	uint16_t* const address_bus;
-
+	void* hw_struct;
 	// Registers!
 	uint16_t sp; // Stack pointer
 	uint16_t pc; // Program counter.
@@ -143,6 +143,7 @@ struct system_resources
 	uint8_t* interrupt_buffer; // Points to the buffer where pending
 	uint8_t* data_bus;
 	uint16_t* address_bus;
+	void* hw_struct;
 };
 
 // Declaration of the CPU thread.
