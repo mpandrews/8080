@@ -141,8 +141,7 @@ TEST(ADI, All)
 	cpu.memory[cpu.pc + 1] = 0xab;
 
 	// ADI
-	int cycles = adi(0xc6, &cpu);
-	EXPECT_EQ(cycles, 7);
+	cpu.pc += adi(0xc6, &cpu);
 	EXPECT_EQ(cpu.pc, 2);
 	EXPECT_EQ(cpu.a, 0xbd);
 	// SZ-A-P-C
@@ -166,8 +165,7 @@ TEST(ACI, All)
 	cpu.memory[cpu.pc + 1] = 0xab;
 
 	// ACI
-	int cycles = aci(0xce, &cpu);
-	EXPECT_EQ(cycles, 7);
+	cpu.pc += aci(0xce, &cpu);
 	EXPECT_EQ(cpu.pc, 2);
 	EXPECT_EQ(cpu.a, 0xc6);
 	// SZ-A-P-C

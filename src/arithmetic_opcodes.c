@@ -45,8 +45,8 @@ int adi(uint8_t opcode, struct cpu_state* cpu)
 	APPLY_CARRY_FLAG(result, cpu->flags);
 	cpu->a = result;
 
-	cpu->pc += 2;
-	return 7;
+	cycle_wait(7);
+	return 2;
 }
 
 int aci(uint8_t opcode, struct cpu_state* cpu)
@@ -68,8 +68,8 @@ int aci(uint8_t opcode, struct cpu_state* cpu)
 	APPLY_CARRY_FLAG(result, cpu->flags);
 	cpu->a = result;
 
-	cpu->pc += 2;
-	return 7;
+	cycle_wait(7);
+	return 2;
 }
 
 int adc(uint8_t opcode, struct cpu_state* cpu)
