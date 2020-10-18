@@ -63,14 +63,14 @@ TEST(MVI, ToRegister)
 	// MVI B
 	cpu.memory[0] = 0x06;
 	cpu.memory[1] = 0x01;
-	mvi(0x06, &cpu);
+	cpu.pc += mvi(0x06, &cpu);
 	EXPECT_EQ(cpu.b, cpu.memory[1]);
 	EXPECT_EQ(cpu.pc, 2);
 
 	// MVI C
 	cpu.memory[2] = 0x0e;
 	cpu.memory[3] = 0x02;
-	mvi(0x0e, &cpu);
+	cpu.pc += mvi(0x0e, &cpu);
 	EXPECT_EQ(cpu.c, cpu.memory[3]);
 	EXPECT_EQ(cpu.pc, 4);
 	// Check that the whole register is correct.
@@ -79,14 +79,14 @@ TEST(MVI, ToRegister)
 	// MVI D
 	cpu.memory[4] = 0x16;
 	cpu.memory[5] = 0x03;
-	mvi(0x16, &cpu);
+	cpu.pc += mvi(0x16, &cpu);
 	EXPECT_EQ(cpu.d, cpu.memory[5]);
 	EXPECT_EQ(cpu.pc, 6);
 
 	// MVI E
 	cpu.memory[6] = 0x1e;
 	cpu.memory[7] = 0x04;
-	mvi(0x1e, &cpu);
+	cpu.pc += mvi(0x1e, &cpu);
 	EXPECT_EQ(cpu.e, cpu.memory[7]);
 	EXPECT_EQ(cpu.pc, 8);
 	EXPECT_EQ(cpu.de, 0x0304);
@@ -95,13 +95,13 @@ TEST(MVI, ToRegister)
 	// MVI L
 	cpu.memory[8] = 0x2e;
 	cpu.memory[9] = 0x05;
-	mvi(0x2e, &cpu);
+	cpu.pc += mvi(0x2e, &cpu);
 	EXPECT_EQ(cpu.l, cpu.memory[9]);
 	EXPECT_EQ(cpu.pc, 10);
 	// MVI H
 	cpu.memory[10] = 0x26;
 	cpu.memory[11] = 0x06;
-	mvi(0x26, &cpu);
+	cpu.pc += mvi(0x26, &cpu);
 	EXPECT_EQ(cpu.h, cpu.memory[11]);
 	EXPECT_EQ(cpu.hl, 0x0605);
 	EXPECT_EQ(cpu.pc, 12);
@@ -109,7 +109,7 @@ TEST(MVI, ToRegister)
 	// MVI A
 	cpu.memory[12] = 0x3e;
 	cpu.memory[13] = 0x07;
-	mvi(0x3e, &cpu);
+	cpu.pc += mvi(0x3e, &cpu);
 	EXPECT_EQ(cpu.a, cpu.memory[13]);
 	EXPECT_EQ(cpu.pc, 14);
 }
@@ -128,7 +128,7 @@ TEST(MVI, ToMem)
 	cpu.hl	      = 12345;
 	cpu.memory[0] = 0x36;
 	cpu.memory[1] = 255;
-	mvi(0x36, &cpu);
+	cpu.pc += mvi(0x36, &cpu);
 	EXPECT_EQ(cpu.memory[12345], 255);
 	EXPECT_EQ(cpu.pc, 2);
 }
@@ -151,8 +151,7 @@ TEST(LDA, All)
 	cpu.memory[0xbbaa]		       = 0x12;
 
 	// LDA
-	int cycles = lda(0x3a, &cpu);
-	EXPECT_EQ(cycles, 13);
+	cpu.pc += lda(0x3a, &cpu);
 	EXPECT_EQ(cpu.a, 0x12);
 	EXPECT_EQ(cpu.pc, 3);
 }
@@ -175,8 +174,7 @@ TEST(STA, All)
 	*((uint16_t*) &cpu.memory[cpu.pc + 1]) = 0xbbaa;
 
 	// STA
-	int cycles = sta(0x32, &cpu);
-	EXPECT_EQ(cycles, 13);
+	cpu.pc += sta(0x32, &cpu);
 	EXPECT_EQ(cpu.memory[0xbbaa], 0x12);
 	EXPECT_EQ(cpu.pc, 3);
 }
@@ -198,8 +196,7 @@ TEST(LHLD, All)
 	*((uint16_t*) &cpu.memory[0xbbaa])     = 0x1234;
 
 	// LHLD
-	int cycles = lhld(0x2a, &cpu);
-	EXPECT_EQ(cycles, 16);
+	cpu.pc += lhld(0x2a, &cpu);
 	EXPECT_EQ(cpu.pc, 3);
 	EXPECT_EQ(cpu.hl, 0x1234);
 }
@@ -220,8 +217,7 @@ TEST(SHLD, All)
 	*((uint16_t*) &cpu.memory[cpu.pc + 1]) = 0xbbaa;
 
 	// SHLD
-	int cycles = shld(0x22, &cpu);
-	EXPECT_EQ(cycles, 16);
+	cpu.pc += shld(0x22, &cpu);
 	EXPECT_EQ(cpu.pc, 3);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[0xbbaa]), 0x1234);
 }
@@ -242,8 +238,7 @@ TEST(LDAX, B_D)
 	cpu.memory[cpu.de] = 0xcd;
 
 	// LDAX B
-	int cycles = ldax(0x0a, &cpu);
-	EXPECT_EQ(cycles, 7);
+	cpu.pc += ldax(0x0a, &cpu);
 	EXPECT_EQ(cpu.a, 0xab);
 
 	// LDAX D
@@ -266,12 +261,11 @@ TEST(STAX, B_D)
 	cpu.a = 0xab;
 
 	// STAX B
-	int cycles = stax(0x02, &cpu);
-	EXPECT_EQ(cycles, 7);
+	cpu.pc += stax(0x02, &cpu);
 	EXPECT_EQ(cpu.memory[cpu.bc], 0xab);
 
 	// STAX D
-	stax(0x12, &cpu);
+	cpu.pc += stax(0x12, &cpu);
 	EXPECT_EQ(cpu.memory[cpu.de], 0xab);
 }
 
@@ -287,7 +281,7 @@ TEST(XCHG, All)
 	};
 
 	// XCHG
-	xchg(0xeb, &cpu);
+	cpu.pc += xchg(0xeb, &cpu);
 	EXPECT_EQ(cpu.de, 0x2222);
 	EXPECT_EQ(cpu.hl, 0x1111);
 	EXPECT_EQ(cpu.pc, 1);

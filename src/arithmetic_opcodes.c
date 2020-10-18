@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include "cycle_timer.h"
 #include "opcode_decls.h"
 #include "opcode_helpers.h"
 
@@ -23,23 +24,55 @@ int add_adc(uint8_t opcode, struct cpu_state* cpu)
 	uint16_t result = _add(cpu->a, operand, &cpu->flags);
 	APPLY_CARRY_FLAG(result, cpu->flags);
 	cpu->a = result;
-	++cpu->pc;
-	return 4;
+	cycle_wait(4);
+	return 1;
 }
 
 int adi(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
-}
+	assert(opcode == 0xc6);
+	(void) opcode;
 
-int adc(uint8_t opcode, struct cpu_state* cpu)
-{
-	// TODO
-	return placeholder(opcode, cpu);
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: ADI\n", cpu->pc);
+#endif
+
+	// Add immediate
+	// The content of the second byte of the instruction is added to
+	// the content of the accumulator.
+	uint16_t operand = cpu->memory[cpu->pc + 1];
+	uint16_t result	 = _add(cpu->a, operand, &cpu->flags);
+	APPLY_CARRY_FLAG(result, cpu->flags);
+	cpu->a = result;
+
+	cycle_wait(7);
+	return 2;
 }
 
 int aci(uint8_t opcode, struct cpu_state* cpu)
+{
+	assert(opcode == 0xce);
+	(void) opcode;
+
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: ACI\n", cpu->pc);
+#endif
+
+	// Add immediate with carry
+	// The content of the second byte of the instruction and the
+	// content of the carry flag are added to the contents of the
+	// accumulator.
+	uint16_t operand = cpu->memory[cpu->pc + 1];
+	if (cpu->flags & CARRY_FLAG) ++operand;
+	uint16_t result = _add(cpu->a, operand, &cpu->flags);
+	APPLY_CARRY_FLAG(result, cpu->flags);
+	cpu->a = result;
+
+	cycle_wait(7);
+	return 2;
+}
+
+int adc(uint8_t opcode, struct cpu_state* cpu)
 {
 	// TODO
 	return placeholder(opcode, cpu);
@@ -79,8 +112,9 @@ int sub_sbb(uint8_t opcode, struct cpu_state* cpu)
 	uint16_t result = _add(cpu->a, operand, &cpu->flags);
 	APPLY_CARRY_FLAG_INVERTED(result, cpu->flags);
 	cpu->a = result;
-	++cpu->pc;
-	return 4;
+
+	cycle_wait(4);
+	return 1;
 }
 
 int sui(uint8_t opcode, struct cpu_state* cpu)
@@ -121,8 +155,9 @@ int sui_sbi(uint8_t opcode, struct cpu_state* cpu)
 
 	// apply the lower 8-bits of result to register A
 	cpu->a = result;
-	cpu->pc += 2;
-	return 7;
+
+	cycle_wait(7);
+	return 2;
 }
 
 int inr(uint8_t opcode, struct cpu_state* cpu)

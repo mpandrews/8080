@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include "cycle_timer.h"
 #include "opcode_decls.h"
 #include "opcode_helpers.h"
 
@@ -40,14 +41,14 @@ int ana(uint8_t opcode, struct cpu_state* cpu)
 	// unconditionally reset the CARRY flags
 	cpu->flags &= ~CARRY_FLAG;
 
-	// Advance PC by one byte
-	++cpu->pc;
 	// Performing this operation using OPERAND MEM requires 7 cycles, and
 	// it takes 4 cycles when using register operands.
 	if (source_operand == OPERAND_MEM)
-		return 7;
+		cycle_wait(7);
 	else
-		return 4;
+		cycle_wait(4);
+	// Advance PC by one byte
+	return 1;
 }
 
 int ani(uint8_t opcode, struct cpu_state* cpu)
@@ -96,11 +97,11 @@ int ora(uint8_t opcode, struct cpu_state* cpu)
 
 	// getting an operand from memory takes 7 cycles, using register
 	// operands takes 4 cycles and all are 1-byte instructions
-	++cpu->pc;
 	if (source_operand == OPERAND_MEM)
-		return 7;
+		cycle_wait(7);
 	else
-		return 4;
+		cycle_wait(4);
+	return 1;
 }
 
 int ori(uint8_t opcode, struct cpu_state* cpu)
@@ -169,7 +170,7 @@ int stc(uint8_t opcode, struct cpu_state* cpu)
 
 	// Set the carry flag
 	cpu->flags |= CARRY_FLAG;
-	cpu->pc++;
 
-	return 4;
+	cycle_wait(4);
+	return 1;
 }
