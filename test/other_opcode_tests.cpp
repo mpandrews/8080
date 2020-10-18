@@ -147,25 +147,24 @@ TEST(PUSH, All)
 		.interrupt_enable_flag = 0
 	};
 	// PUSH B
-	int cycles = push(0xc5, &cpu);
-	EXPECT_EQ(cycles, 11);
+	cpu.pc += push(0xc5, &cpu);
 	EXPECT_EQ(cpu.pc, 1);
 	EXPECT_EQ(cpu.sp, 0x100e); // 0x1010 - 2
 	EXPECT_EQ(cpu.memory[cpu.sp], 0x02);
 	EXPECT_EQ(cpu.memory[cpu.sp + 1], 0x01);
 
 	// PUSH D
-	push(0xd5, &cpu);
+	cpu.pc += push(0xd5, &cpu);
 	EXPECT_EQ(cpu.sp, 0x100c);
 	EXPECT_EQ(*(uint16_t*) (cpu.memory + cpu.sp), 0x0304);
 
 	// PUSH H
-	push(0xe5, &cpu);
+	cpu.pc += push(0xe5, &cpu);
 	EXPECT_EQ(cpu.sp, 0x100a);
 	EXPECT_EQ(*(uint16_t*) (cpu.memory + cpu.sp), 0x0506);
 
 	// PUSH PSW
-	push(0xf5, &cpu);
+	cpu.pc += push(0xf5, &cpu);
 	EXPECT_EQ(cpu.sp, 0x1008);
 	// Bits 1, 3 and 5 of PSW always push to the same values: 1, 0, and 0.
 	// The value we currently have in PSW has those flipped: the flag byte
