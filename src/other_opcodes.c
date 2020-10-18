@@ -49,8 +49,8 @@ int push(uint8_t opcode, struct cpu_state* cpu)
 
 	*((uint16_t*) (cpu->memory + cpu->sp)) = value;
 
-	++cpu->pc;
-	return 11;
+	cycle_wait(11);
+	return 1;
 }
 int pop(uint8_t opcode, struct cpu_state* cpu)
 {
