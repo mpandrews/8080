@@ -82,14 +82,34 @@ int sphl(uint8_t opcode, struct cpu_state* cpu)
 
 int ei(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	assert(opcode == 0xFB);
+	(void) opcode;
+
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: EI\n", opcode);
+#endif
+
+	// Enable interrupts
+	cpu->interrupt_enable_flag = 2;
+
+	cycle_wait(4);
+	return 1;
 }
 
 int di(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	assert(opcode == 0xF3);
+	(void) opcode;
+
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: DI\n", opcode);
+#endif
+
+	// Disable interrupts
+	cpu->interrupt_enable_flag = 0;
+
+	cycle_wait(4);
+	return 1;
 }
 
 int hlt(uint8_t opcode, struct cpu_state* cpu)
