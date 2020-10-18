@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include "cycle_timer.h"
 #include "opcode_helpers.h"
 
 #include <assert.h>
@@ -40,9 +41,9 @@ int pop(uint8_t opcode, struct cpu_state* cpu)
 	*rp	     = *((uint16_t*) &cpu->memory[cpu->sp]);
 
 	cpu->sp += 2;
-	cpu->pc++;
 
-	return 10;
+	cycle_wait(10);
+	return 1;
 }
 
 int xthl(uint8_t opcode, struct cpu_state* cpu)
@@ -59,7 +60,8 @@ int xthl(uint8_t opcode, struct cpu_state* cpu)
 	*((uint16_t*) &cpu->memory[cpu->sp]) = cpu->hl;
 	cpu->hl				     = temp;
 
-	return 18;
+	cycle_wait(18);
+	return 1;
 }
 
 int sphl(uint8_t opcode, struct cpu_state* cpu)
@@ -74,7 +76,8 @@ int sphl(uint8_t opcode, struct cpu_state* cpu)
 	// replace sp with the contents of hl
 	cpu->sp = cpu->hl;
 
-	return 5;
+	cycle_wait(5);
+	return 1;
 }
 
 int in(uint8_t opcode, struct cpu_state* cpu)
@@ -111,8 +114,8 @@ int hlt(uint8_t opcode, struct cpu_state* cpu)
 #endif
 
 	cpu->halt_flag = 1;
-	cpu->pc++;
-	return 7;
+	cycle_wait(7);
+	return 1;
 }
 
 int nop(uint8_t opcode, struct cpu_state* cpu)
@@ -121,11 +124,12 @@ int nop(uint8_t opcode, struct cpu_state* cpu)
 	// 0x00, 0x10, 0x20, 0x30, 0x08, 0x18 0x28, 0x38
 	assert((opcode & 0b11000111) == 0b00000000);
 	(void) opcode;
+	(void) cpu;
 
 #ifdef VERBOSE
 	fprintf(stderr, "0x%4.4x: NOP\n", cpu->pc);
 #endif
 
-	cpu->pc++;
-	return 4;
+	cycle_wait(4);
+	return 1;
 }

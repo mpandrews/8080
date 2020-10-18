@@ -62,7 +62,7 @@ TEST(HLT, All)
 	};
 
 	// HLT
-	EXPECT_EQ(hlt(0x76, &cpu), 7);
+	EXPECT_EQ(hlt(0x76, &cpu), 1);
 	EXPECT_EQ(cpu.halt_flag, 1);
 }
 
@@ -78,11 +78,11 @@ TEST(NOP, All)
 	};
 
 	// NOP 0x00
-	EXPECT_EQ(nop(0x00, &cpu), 4);
+	cpu.pc += nop(0x00, &cpu);
 	EXPECT_EQ(cpu.pc, 1);
 
 	// NOP 0x38
-	EXPECT_EQ(nop(0x38, &cpu), 4);
+	cpu.pc += nop(0x38, &cpu);
 	EXPECT_EQ(cpu.pc, 2);
 }
 
@@ -107,8 +107,7 @@ TEST(XTHL, All)
 	// execute xthl, assert that the contents of the h register are now
 	// stored in memory at the address pointed to by the stack pointer
 	// and vice versa
-	int cycles = xthl(0xe3, &cpu);
-	EXPECT_EQ(cycles, 18);
+	cpu.pc += xthl(0xe3, &cpu);
 	EXPECT_EQ(cpu.sp, 0x10ad);
 	EXPECT_EQ(cpu.memory[cpu.sp], 0x3c);
 	EXPECT_EQ(cpu.memory[cpu.sp + 1], 0x0b);
@@ -129,8 +128,7 @@ TEST(SPHL, All)
 		.halt_flag = 0, .reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	int cycles = sphl(0xf9, &cpu);
-	EXPECT_EQ(cycles, 5);
+	cpu.pc += sphl(0xf9, &cpu);
 	EXPECT_EQ(cpu.sp, 0x0b3c);
 	EXPECT_EQ(cpu.hl, 0x0b3c);
 }
