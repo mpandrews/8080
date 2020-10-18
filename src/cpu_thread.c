@@ -54,7 +54,8 @@ void* cpu_thread_routine(void* resources)
 			.int_cond	  = res->interrupt_cond,
 			.interrupt_buffer = res->interrupt_buffer,
 			.address_bus	  = res->address_bus,
-			.data_bus	  = res->data_bus};
+			.data_bus	  = res->data_bus,
+			.hw_struct	  = res->hw_struct};
 
 	uint8_t opcode;
 
@@ -77,7 +78,7 @@ void* cpu_thread_routine(void* resources)
 		switch (cpu.interrupt_enable_flag)
 		{
 		/* If the interrupt flag is currently enabled,
-		 * then we we our opcode from the interrupt buffer
+		 * then we take our opcode from the interrupt buffer
 		 * if there's anything there, otherwise we
 		 * fetch normally.
 		 *
@@ -96,10 +97,14 @@ void* cpu_thread_routine(void* resources)
 				cpu.halt_flag	      = 0;
 				cpu.interrupt_enable_flag = 0;
 				pthread_cond_signal(cpu.int_cond);
+				pthread_mutex_unlock(cpu.int_lock);
+				// Ignore return value: we don't advance
+				// PC for interrupts, though they can jump us.
+				opcodes[opcode](opcode, &cpu);
+				continue;
 			}
-			else
-				opcode = cpu.memory[cpu.pc];
 			pthread_mutex_unlock(cpu.int_lock);
+			opcode = cpu.memory[cpu.pc];
 			break;
 		/* If the interrupt flag is pending enablement,
 		 * which will happen if that last opcode we
@@ -139,7 +144,7 @@ void* cpu_thread_routine(void* resources)
 		 */
 		switch (cpu.halt_flag)
 		{
-		case 0: cycle_wait(opcodes[opcode](opcode, &cpu));
+		case 0: cpu.pc += opcodes[opcode](opcode, &cpu);
 #ifdef VERBOSE
 			print_registers(&cpu);
 #endif

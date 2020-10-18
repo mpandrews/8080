@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include "cycle_timer.h"
 #include "opcode_decls.h"
 #include "opcode_helpers.h"
 
@@ -20,7 +21,8 @@ int jmp(uint8_t opcode, struct cpu_state* cpu)
 
 	cpu->pc = memory_address;
 
-	return 10;
+	cycle_wait(10);
+	return 0;
 }
 
 int jcond(uint8_t opcode, struct cpu_state* cpu)
@@ -43,12 +45,14 @@ int jcond(uint8_t opcode, struct cpu_state* cpu)
 	// which is the next 2 bytes after the jcond opcode. If the condition
 	// was not met, then increment the program counter by 3 to the next
 	// opcode
+	cycle_wait(10);
 	if (conditionMet)
+	{
 		cpu->pc = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
+		return 0;
+	}
 	else
-		cpu->pc += 3;
-
-	return 10;
+		return 3;
 }
 
 int call(uint8_t opcode, struct cpu_state* cpu)
@@ -69,7 +73,8 @@ int call(uint8_t opcode, struct cpu_state* cpu)
 
 	// set the program counter to the argument supplied to by call
 	cpu->pc = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
-	return 17;
+	cycle_wait(17);
+	return 0;
 }
 
 int ccond(uint8_t opcode, struct cpu_state* cpu)
@@ -95,16 +100,14 @@ int ccond(uint8_t opcode, struct cpu_state* cpu)
 		// put CALL's argument which is at cpu->pc + 1 in memory
 		// into the program counter
 		cpu->pc = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
+		cycle_wait(17);
+		return 0;
 	}
 	else
-		cpu->pc += 3;
-
-	// Executing the call if the condition is met takes 17 cycles,
-	// otherwise it takes 11
-	if (conditionMet)
-		return 17;
-	else
-		return 11;
+	{
+		cycle_wait(11);
+		return 3;
+	}
 }
 
 int ret(uint8_t opcode, struct cpu_state* cpu)
@@ -125,7 +128,8 @@ int ret(uint8_t opcode, struct cpu_state* cpu)
 	cpu->sp += 2;
 
 	// RET takes 10 cycles
-	return 10;
+	cycle_wait(10);
+	return 0;
 }
 
 int retcond(uint8_t opcode, struct cpu_state* cpu)
@@ -140,23 +144,21 @@ int retcond(uint8_t opcode, struct cpu_state* cpu)
 	// Evaluate whether the given condition has been met. If the condition
 	// is met, then execute the return by pulling the contents of memory
 	// at the stack pointer into the program counter and incrementing the
-	// stack pointer. If the conditon is met, just move on to the next
+	// stack pointer. If the conditon is not met, just move on to the next
 	// instruction.
 	uint8_t conditionMet = evaluate_condition(opcode, cpu->psw);
 	if (conditionMet)
 	{
 		cpu->pc = *((uint16_t*) &cpu->memory[cpu->sp]);
 		cpu->sp += 2;
+		cycle_wait(11);
+		return 0;
 	}
 	else
-		cpu->pc += 1;
-
-	// Executing ret takes 11 cycles if the condition is met,
-	// otherwise it takes 5
-	if (conditionMet)
-		return 11;
-	else
-		return 5;
+	{
+		cycle_wait(5);
+		return 1;
+	}
 }
 
 int rst(uint8_t opcode, struct cpu_state* cpu)
@@ -177,6 +179,6 @@ int pchl(uint8_t opcode, struct cpu_state* cpu)
 
 	// The contents of register pair HL are copied to the PC
 	cpu->pc = cpu->hl;
-
-	return 5;
+	cycle_wait(5);
+	return 0;
 }

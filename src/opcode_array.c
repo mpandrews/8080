@@ -36,7 +36,7 @@
  * with an extern declaration in the accompanying header file.
  */
 
-int (*const opcodes[256])(uint8_t opcode, struct cpu_state* cpu) = {
+int (*opcodes[256])(uint8_t opcode, struct cpu_state* cpu) = {
 		nop,	 // 0x00	NOP
 		lxi,	 // 0x01	LXI	B
 		stax,	 // 0x02	STAX	B
@@ -248,7 +248,7 @@ int (*const opcodes[256])(uint8_t opcode, struct cpu_state* cpu) = {
 		retcond, // 0xD0	RNC
 		pop,	 // 0xD1	POP	D
 		jcond,	 // 0xD2	JNC
-		out,	 // 0xD3	OUT
+		NULL,	 // 0xD3	OUT
 		ccond,	 // 0xD4	CNC
 		push,	 // 0xD5	PUSH	D
 		sui_sbi, // 0xD6	SUI
@@ -256,7 +256,7 @@ int (*const opcodes[256])(uint8_t opcode, struct cpu_state* cpu) = {
 		retcond, // 0xD8	RC
 		ret,	 // 0xD9	RET
 		jcond,	 // 0xDA	JC
-		in,	 // 0xDB	IN
+		NULL,	 // 0xDB	IN
 		ccond,	 // 0xDC	CC
 		call,	 // 0xDD	CALL
 		sui_sbi, // 0xDE	SBI
