@@ -106,8 +106,29 @@ int ora(uint8_t opcode, struct cpu_state* cpu)
 
 int ori(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	(void) opcode;
+	assert(opcode == 0b11110110);
+	uint8_t operand = cpu->memory[cpu->pc + 1];
+
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: ORI\n", cpu->pc);
+#endif
+
+	// Inclusive-OR the A register with ORI's argument
+	cpu->a |= operand;
+
+	/* ORI affects the Sign, Zero, and Parity flags based on the
+	 * result of the operation. The Carry and Aux Carry flags are
+	 * reset unconditionally
+	 */
+	APPLY_ZERO_FLAG(cpu->a, cpu->flags);
+	APPLY_SIGN_FLAG(cpu->a, cpu->flags);
+	APPLY_PARITY_FLAG(cpu->a, cpu->flags);
+	cpu->flags &= (~CARRY_FLAG & ~AUX_CARRY_FLAG);
+
+	// ORI always takes 7 cycles and advances the PC by 2
+	cycle_wait(7);
+	return 2;
 }
 
 int cmp(uint8_t opcode, struct cpu_state* cpu)
@@ -148,14 +169,31 @@ int rar(uint8_t opcode, struct cpu_state* cpu)
 
 int cma(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	(void) opcode;
+	assert(opcode == 0x2f);
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: CMA\n", cpu->pc);
+#endif
+
+	// Set the A register to its complement
+	cpu->a = ~cpu->a;
+	cycle_wait(4);
+	return 1;
 }
 
 int cmc(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	(void) opcode;
+	assert(opcode == 0x3f);
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: CMC\n", cpu->pc);
+#endif
+
+	// XOR the flags register with the carry flag bit to toggle
+	// just that one bit
+	cpu->flags ^= CARRY_FLAG;
+	cycle_wait(4);
+	return 1;
 }
 
 int stc(uint8_t opcode, struct cpu_state* cpu)

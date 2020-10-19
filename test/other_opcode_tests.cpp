@@ -50,6 +50,40 @@ TEST(POP, B_D_H_PSW)
 	EXPECT_EQ(cpu.sp, 8);
 }
 
+TEST(EI, All)
+{
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
+		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	// EI
+	cpu.pc += ei(0xFB, &cpu);
+	EXPECT_EQ(cpu.pc, 1);
+	EXPECT_EQ(cpu.interrupt_enable_flag, 2);
+}
+
+TEST(DI, All)
+{
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
+		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	// DI
+	cpu.pc += di(0xF3, &cpu);
+	EXPECT_EQ(cpu.pc, 1);
+	EXPECT_EQ(cpu.interrupt_enable_flag, 0);
+}
+
 TEST(HLT, All)
 {
 	struct cpu_state cpu
@@ -131,4 +165,43 @@ TEST(SPHL, All)
 	cpu.pc += sphl(0xf9, &cpu);
 	EXPECT_EQ(cpu.sp, 0x0b3c);
 	EXPECT_EQ(cpu.hl, 0x0b3c);
+}
+
+TEST(PUSH, All)
+{
+
+	unsigned char memory[MAX_MEMORY];
+	memset(memory, 0, MAX_MEMORY);
+	struct cpu_state cpu
+	{
+		.int_cond = 0, .int_lock = 0, .memory = memory,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0,
+		.sp = 0x1010, .pc = 0, .bc = 0x0102, .de = 0x0304, .hl = 0x0506,
+		.psw = 0xfffd, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+	// PUSH B
+	cpu.pc += push(0xc5, &cpu);
+	EXPECT_EQ(cpu.pc, 1);
+	EXPECT_EQ(cpu.sp, 0x100e); // 0x1010 - 2
+	EXPECT_EQ(cpu.memory[cpu.sp], 0x02);
+	EXPECT_EQ(cpu.memory[cpu.sp + 1], 0x01);
+
+	// PUSH D
+	cpu.pc += push(0xd5, &cpu);
+	EXPECT_EQ(cpu.sp, 0x100c);
+	EXPECT_EQ(*(uint16_t*) (cpu.memory + cpu.sp), 0x0304);
+
+	// PUSH H
+	cpu.pc += push(0xe5, &cpu);
+	EXPECT_EQ(cpu.sp, 0x100a);
+	EXPECT_EQ(*(uint16_t*) (cpu.memory + cpu.sp), 0x0506);
+
+	// PUSH PSW
+	cpu.pc += push(0xf5, &cpu);
+	EXPECT_EQ(cpu.sp, 0x1008);
+	// Bits 1, 3 and 5 of PSW always push to the same values: 1, 0, and 0.
+	// The value we currently have in PSW has those flipped: the flag byte
+	// is 0xfd.  The value pushed should be 0xd7.
+	EXPECT_EQ(*(uint16_t*) (cpu.memory + cpu.sp), 0xffd7);
 }
