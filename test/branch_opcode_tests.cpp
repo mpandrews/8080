@@ -1037,3 +1037,38 @@ TEST(PCHL, All)
 	cpu.pc += pchl(0xe9, &cpu);
 	EXPECT_EQ(cpu.pc, 0xabcd);
 }
+
+TEST(RST, All)
+{
+	unsigned char memory[MAX_MEMORY];
+	memset(memory, 0, MAX_MEMORY);
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = memory,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0x1000, .pc = 0xffff, .bc = 0,
+		.de = 0, .hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	// RST 0x0000
+	cpu.pc += rst(0xc7, &cpu);
+	// This should set the PC to 0.
+	EXPECT_EQ(cpu.pc, 0);
+	// It should also decrement SP by two and push the old contents of
+	// PC, 0xffff, onto the stack.
+	EXPECT_EQ(cpu.sp, 0x0ffe);
+	EXPECT_EQ(*((uint16_t*) cpu.memory + cpu.sp), 0xffff);
+
+	// RST 0x0008
+	cpu.pc += rst(0xcf, &cpu);
+	EXPECT_EQ(cpu.pc, 0x0008);
+	EXPECT_EQ(cpu.sp, 0x0ffc);
+	EXPECT_EQ(*((uint16_t*) cpu.memory + cpu.sp), 0);
+
+	// RST 0x0038
+	cpu.pc += rst(0xff, &cpu);
+	EXPECT_EQ(cpu.pc, 0x0038);
+	EXPECT_EQ(cpu.sp, 0x0ffa);
+	EXPECT_EQ(*((uint16_t*) cpu.memory + cpu.sp), 0x0008);
+}
