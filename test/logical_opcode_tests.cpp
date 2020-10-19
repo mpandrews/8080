@@ -230,3 +230,84 @@ TEST(ORI, All)
 	EXPECT_EQ(cpu.pc, 0x06);
 	EXPECT_EQ(cpu.flags, 0b01000100);
 }
+
+TEST(CMP, All)
+{
+	unsigned char memory[MAX_MEMORY];
+	memset(memory, 0, MAX_MEMORY);
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = memory,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
+		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	// Z flag is set to 1 if A == operand_val.
+	// Carry flag s set to 1 if A < operand_val.
+
+	// CMP B
+	// compare same values, A = operand_val
+	cpu.pc += cmp(0xb8, &cpu);
+	EXPECT_EQ(cpu.pc, 1);
+	// Zero and parity flags are set.
+	EXPECT_EQ(cpu.flags, 0b01000100);
+
+	// CMP C
+	// A < operand_val
+	cpu.c = 0x12;
+	cpu.pc += cmp(0xb9, &cpu);
+	EXPECT_EQ(cpu.pc, 2);
+	// Sign, Parity, Carry flags are set
+	EXPECT_EQ(cpu.flags, 0b10000101);
+
+	// CMP D
+	// A > operand_val
+	cpu.a = 0x99;
+	cpu.d = 0x11;
+	cpu.pc += cmp(0xba, &cpu);
+	EXPECT_EQ(cpu.pc, 3);
+	// Sign, AC, parity flags are set
+	EXPECT_EQ(cpu.flags, 0b10010100);
+
+	// CMP E
+	cpu.a = 0;
+	cpu.e = 0;
+	cpu.pc += cmp(0xbb, &cpu);
+	EXPECT_EQ(cpu.pc, 4);
+	// Zero and parity flags are set.
+	EXPECT_EQ(cpu.flags, 0b01000100);
+
+	// CMP H
+	// A < operand_val
+	cpu.h = 0x12;
+	cpu.pc += cmp(0xbc, &cpu);
+	EXPECT_EQ(cpu.pc, 5);
+	// Sign, Parity, Carry flags are set
+	EXPECT_EQ(cpu.flags, 0b10000101);
+
+	// CMP L
+	// A > operand_val
+	cpu.a = 0x99;
+	cpu.l = 0x11;
+	cpu.pc += cmp(0xbd, &cpu);
+	EXPECT_EQ(cpu.pc, 6);
+	// Sign, AC, parity flags are set
+	EXPECT_EQ(cpu.flags, 0b10010100);
+
+	// CMP M
+	// A > operand_val
+	cpu.a		   = 0xff;
+	cpu.memory[cpu.hl] = 0xab;
+	cpu.pc += cmp(0xbe, &cpu);
+	EXPECT_EQ(cpu.pc, 7);
+	// AC flag is set
+	EXPECT_EQ(cpu.flags, 0b00010000);
+
+	// CMP A
+	cpu.pc += cmp(0xbf, &cpu);
+	EXPECT_EQ(cpu.pc, 8);
+	// Zero, AC, and parity flags are set.
+	EXPECT_EQ(cpu.flags, 0b01010100);
+}
