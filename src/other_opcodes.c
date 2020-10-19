@@ -34,10 +34,10 @@ int pop(uint8_t opcode, struct cpu_state* cpu)
 	fprintf(stderr,
 			"0x%4.4x: POP %s\n",
 			cpu->pc,
-			get_register_name(opcode));
+			get_register_pair_name_pushpop(opcode));
 #endif
 
-	uint16_t* rp = get_register_pair(opcode, cpu);
+	uint16_t* rp = get_register_pair_pushpop(opcode, cpu);
 	*rp	     = *((uint16_t*) &cpu->memory[cpu->sp]);
 
 	cpu->sp += 2;

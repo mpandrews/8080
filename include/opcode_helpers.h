@@ -238,7 +238,7 @@ static inline uint8_t evaluate_condition(
 	return 0;
 }
 
-static inline uint16_t* get_register_pair(
+static inline uint16_t* get_register_pair_pushpop(
 		const uint8_t opcode, struct cpu_state* cpu)
 {
 	switch (GET_REGISTER_PAIR(opcode))
@@ -251,7 +251,7 @@ static inline uint16_t* get_register_pair(
 	}
 }
 
-static inline const char* get_register_name(const uint8_t opcode)
+static inline const char* get_register_pair_name_pushpop(const uint8_t opcode)
 {
 	switch (GET_REGISTER_PAIR(opcode))
 	{
@@ -259,6 +259,31 @@ static inline const char* get_register_name(const uint8_t opcode)
 	case REGISTER_PAIR_DE: return "D";
 	case REGISTER_PAIR_HL: return "H";
 	case REGISTER_PAIR_SP_PSW: return "PSW";
+	default: exit(1);
+	}
+}
+
+static inline uint16_t* get_register_pair_other(
+		const uint8_t opcode, struct cpu_state* cpu)
+{
+	switch (GET_REGISTER_PAIR(opcode))
+	{
+	case REGISTER_PAIR_BC: return &cpu->bc;
+	case REGISTER_PAIR_DE: return &cpu->de;
+	case REGISTER_PAIR_HL: return &cpu->hl;
+	case REGISTER_PAIR_SP_PSW: return &cpu->sp;
+	default: exit(1);
+	}
+}
+
+static inline const char* get_register_pair_name_other(const uint8_t opcode)
+{
+	switch (GET_REGISTER_PAIR(opcode))
+	{
+	case REGISTER_PAIR_BC: return "B";
+	case REGISTER_PAIR_DE: return "D";
+	case REGISTER_PAIR_HL: return "H";
+	case REGISTER_PAIR_SP_PSW: return "SP";
 	default: exit(1);
 	}
 }

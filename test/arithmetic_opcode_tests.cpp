@@ -344,3 +344,26 @@ TEST(SUI, All)
 	EXPECT_EQ(cpu.flags, 0b01010100);
 	//                     SZ-A-P-C
 }
+
+TEST(DAD, All)
+{
+
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
+		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+	cpu.bc = 0x10;
+	cpu.flags = 0xff;
+	//DAD B
+	cpu.pc += dad(0x09, &cpu);
+	EXPECT_EQ(cpu.pc, 1);
+	EXPECT_EQ(cpu.hl, 0x10);
+	//Should clear the carry, but only that.
+	EXPECT_EQ(cpu.flags, 0xfe);
+
+	//DAD H
+}
