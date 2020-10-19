@@ -20,10 +20,38 @@ int placeholder(uint8_t opcode, struct cpu_state* cpu)
 
 int push(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
-}
+	assert((opcode & 0b11001111) == 0b11000101);
+#ifdef VERBOSE
+	fprintf(stderr,
+			"0x%4.4x: PUSH %s\n",
+			cpu->pc,
+			get_register_name(opcode));
+#endif
+	uint16_t value = *get_register_pair(opcode, cpu);
+	/* Special case to handle fixed bits in PUSH PSW.
+	 * For whatever reason, bits 1, 3, and 5 of flags take fixed
+	 * values when PSW is pushed onto the stack.  1 takes 1,
+	 * 3 and 5 take 0.  Why this should be, I don't know.
+	 * Some quirk of the silicon.  Regardless, the 8080
+	 * does it, therefore we do it.
+	 *
+	 * Flags is the low byte, so we just need to make sure
+	 * we don't accidentally trample A's value by implicitly
+	 * and'ing zeroes into the high byte.  Hence the ~, since
+	 * that will get us a nice 1-padded high byte.
+	 */
+	if (opcode == 0b11110101)
+	{
+		value |= 0b00000010;
+		value &= ~0b00101000;
+	}
+	cpu->sp -= 2;
 
+	*((uint16_t*) (cpu->memory + cpu->sp)) = value;
+
+	cycle_wait(11);
+	return 1;
+}
 int pop(uint8_t opcode, struct cpu_state* cpu)
 {
 	// Check POP opcode is one of: 0xC1, 0xD1, 0xE1, 0xF1
