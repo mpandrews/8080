@@ -356,14 +356,33 @@ TEST(DAD, All)
 		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
 		.interrupt_enable_flag = 0
 	};
-	cpu.bc = 0x10;
+	cpu.bc	  = 0x10;
 	cpu.flags = 0xff;
-	//DAD B
+	// DAD B
 	cpu.pc += dad(0x09, &cpu);
 	EXPECT_EQ(cpu.pc, 1);
 	EXPECT_EQ(cpu.hl, 0x10);
-	//Should clear the carry, but only that.
-	EXPECT_EQ(cpu.flags, 0xfe);
+	// Should clear the carry, but only that.
+	EXPECT_EQ(cpu.flags, (uint8_t) ~CARRY_FLAG);
 
-	//DAD H
+	// DAD H
+	cpu.pc += dad(0x29, &cpu);
+	EXPECT_EQ(cpu.pc, 2);
+	EXPECT_EQ(cpu.hl, 0x20);
+	EXPECT_EQ(cpu.flags, (uint8_t) ~CARRY_FLAG);
+
+	// DAD SP
+	cpu.sp = 0xf0;
+	cpu.pc += dad(0x39, &cpu);
+	EXPECT_EQ(cpu.pc, 3);
+	EXPECT_EQ(cpu.hl, 0x0110);
+	EXPECT_EQ(cpu.flags, (uint8_t) ~CARRY_FLAG);
+
+	// DAD D, with carry out.
+	cpu.hl = 0xf000;
+	cpu.de = 0xf000;
+	cpu.pc += dad(0x19, &cpu);
+	EXPECT_EQ(cpu.pc, 4);
+	EXPECT_EQ(cpu.hl, 0xe000);
+	EXPECT_EQ(cpu.flags, 0xff);
 }

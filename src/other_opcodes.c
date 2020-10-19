@@ -25,9 +25,9 @@ int push(uint8_t opcode, struct cpu_state* cpu)
 	fprintf(stderr,
 			"0x%4.4x: PUSH %s\n",
 			cpu->pc,
-			get_register_name(opcode));
+			get_register_pair_name_pushpop(opcode));
 #endif
-	uint16_t value = *get_register_pair(opcode, cpu);
+	uint16_t value = *get_register_pair_pushpop(opcode, cpu);
 	/* Special case to handle fixed bits in PUSH PSW.
 	 * For whatever reason, bits 1, 3, and 5 of flags take fixed
 	 * values when PSW is pushed onto the stack.  1 takes 1,

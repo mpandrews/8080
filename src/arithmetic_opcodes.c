@@ -188,15 +188,17 @@ int dad(uint8_t opcode, struct cpu_state* cpu)
 {
 	assert((opcode & 0b11001111) == 0b00001001);
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x DAD %s\n",
+	fprintf(stderr,
+			"0x%4.4x DAD %s\n",
 			cpu->pc,
 			get_register_pair_name_other(opcode));
 #endif
-	//Add the indicated register pair to HL.
+	// Add the indicated register pair to HL.
 	uint32_t result = cpu->hl + *get_register_pair_other(opcode, cpu);
-	//Set the carry flag if we carried out of the pair.
-	//We don't touch any other flags.
-	cpu->flags = (result & (1 << 16)) ? cpu->flags | CARRY_FLAG : cpu->flags & ~CARRY_FLAG;
+	// Set the carry flag if we carried out of the pair.
+	// We don't touch any other flags.
+	cpu->flags = (result & (1 << 16)) ? cpu->flags | CARRY_FLAG
+					  : cpu->flags & ~CARRY_FLAG;
 	cpu->hl = result;
 	cycle_wait(10);
 	return 1;
