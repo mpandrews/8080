@@ -7,6 +7,51 @@ extern "C"
 
 #include "gtest/gtest.h"
 
+TEST(CMC, All)
+{
+	struct cpu_state cpu
+	{
+		.int_cond = 0, .int_lock = 0, .memory = nullptr,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0x00ff,
+		.halt_flag = 0, .reset_flag = 0, .interrupt_enable_flag = 0
+	};
+
+	// With all the flags set, call CMC and assert that just the Carry flag
+	// was reset and all other flags were unaffected
+	cpu.pc += cmc(0x3f, &cpu);
+	EXPECT_EQ(cpu.pc, 1);
+	EXPECT_EQ(cpu.flags, 0xfe);
+
+	// Now that the carry flag is reset, call CMC again and assert that the
+	// flags register is now 0xff again
+	cpu.pc += cmc(0X3f, &cpu);
+	EXPECT_EQ(cpu.pc, 2);
+	EXPECT_EQ(cpu.flags, 0xff);
+}
+
+TEST(CMA, All)
+{
+	struct cpu_state cpu
+	{
+		.int_cond = 0, .int_lock = 0, .memory = nullptr,
+		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
+		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
+	};
+
+	// cpu.a is set to 0 to start, assert that it is complemented to 0xff
+	cpu.pc += cma(0x2f, &cpu);
+	EXPECT_EQ(cpu.pc, 1);
+	EXPECT_EQ(cpu.a, 0xff);
+
+	// now that it is 0xff, complement it again and asser that it has been
+	// reset to 0x00
+	cpu.pc += cma(0X2f, &cpu);
+	EXPECT_EQ(cpu.pc, 2);
+	EXPECT_EQ(cpu.a, 0);
+}
+
 TEST(ANA, All)
 {
 	unsigned char memory[(1 << 16)];
