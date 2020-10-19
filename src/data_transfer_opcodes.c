@@ -160,10 +160,10 @@ int ldax(uint8_t opcode, struct cpu_state* cpu)
 	fprintf(stderr,
 			"0x%4.4x: LDAX %s\n",
 			cpu->pc,
-			get_register_name(opcode));
+			get_register_pair_name_other(opcode));
 #endif
 
-	uint16_t* rp = get_register_pair(opcode, cpu);
+	uint16_t* rp = get_register_pair_other(opcode, cpu);
 	// load content of the byte at the address found at RP to register A
 	cpu->a = cpu->memory[*rp];
 
@@ -180,10 +180,10 @@ int stax(uint8_t opcode, struct cpu_state* cpu)
 	fprintf(stderr,
 			"0x%4.4x: STAX %s\n",
 			cpu->pc,
-			get_register_name(opcode));
+			get_register_pair_name_other(opcode));
 #endif
 
-	uint16_t* rp = get_register_pair(opcode, cpu);
+	uint16_t* rp = get_register_pair_other(opcode, cpu);
 	// load register A to memory at the address found in RP
 	cpu->memory[*rp] = cpu->a;
 
