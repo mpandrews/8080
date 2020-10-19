@@ -163,8 +163,29 @@ int retcond(uint8_t opcode, struct cpu_state* cpu)
 
 int rst(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	assert((opcode & 0b11000111) == 0b11000111);
+
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: RST 0x%4.4x\n", cpu->pc, opcode & 0b111000);
+#endif
+
+	// Push PC onto the stack.  If the opcode we're executing doesn't
+	// match the opcode pointed to by PC, this is an interrupt and we
+	// need to push the current value in PC onto the stack.
+	// Otherwise, this is a normal execution and we need to push the opcode
+	// after it.
+	cpu->sp -= 2;
+	if (opcode != cpu->memory[cpu->pc])
+		*((uint16_t*) cpu->memory + cpu->sp) = cpu->pc;
+	else
+		*((uint16_t*) cpu->memory + cpu->sp) = cpu->pc + 1;
+	// RST jumps to the address signified in bits 3, 4, and 5 of the opcode,
+	// multiplied by eight.  As it happens, bit 3 is already the 8s place,
+	// so we can just filter out all the other bits and assign that
+	// directly. Neat.
+	cpu->pc = opcode & 0b111000;
+	cycle_wait(11);
+	return 0;
 }
 
 int pchl(uint8_t opcode, struct cpu_state* cpu)
