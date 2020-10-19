@@ -1051,27 +1051,34 @@ TEST(RST, All)
 		.interrupt_enable_flag = 0
 	};
 
-	// RST 0x0000
+	// RST 0x0000, non-interrupt.
+	cpu.memory[cpu.pc] = 0xc7;
 	cpu.pc += rst(0xc7, &cpu);
-	cpu.memory[cpu.pc + 1] = 0xff;
 	// This should set the PC to 0.
 	EXPECT_EQ(cpu.pc, 0);
-	// It should also decrement SP by two and push the old contents of
-	// PC + 1, 0x00ff, onto the stack.
+	// It should also decrement SP by two and push PC + 1, 0xfff1
+	// onto the stack.
 	EXPECT_EQ(cpu.sp, 0x0ffe);
 	EXPECT_EQ(*((uint16_t*) cpu.memory + cpu.sp), 0xfff1);
 
-	// RST 0x0008
-	cpu.memory[cpu.pc + 1] = 0xfe;
+	// RST 0x0008, non-interrupt
+	cpu.memory[cpu.pc] = 0xcf;
 	cpu.pc += rst(0xcf, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0008);
 	EXPECT_EQ(cpu.sp, 0x0ffc);
 	EXPECT_EQ(*((uint16_t*) cpu.memory + cpu.sp), 0x0001);
 
-	// RST 0x0038
+	// RST 0x0038 non_interrupt
+	cpu.memory[cpu.pc] = 0xff;
 	cpu.pc += rst(0xff, &cpu);
-	cpu.memory[cpu.pc + 1] = 0xfd;
 	EXPECT_EQ(cpu.pc, 0x0038);
 	EXPECT_EQ(cpu.sp, 0x0ffa);
 	EXPECT_EQ(*((uint16_t*) cpu.memory + cpu.sp), 0x0009);
+
+	// RST 0x0000, interrupt
+	cpu.memory[cpu.pc] = 0xff;
+	cpu.pc += rst(0xc7, &cpu);
+	EXPECT_EQ(cpu.pc, 0);
+	EXPECT_EQ(cpu.sp, 0xff8);
+	EXPECT_EQ(*((uint16_t*) cpu.memory + cpu.sp), 0x0038);
 }
