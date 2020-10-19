@@ -197,6 +197,7 @@ int daa(uint8_t opcode, struct cpu_state* cpu)
 	fprintf(stderr, "0x%4.4x: DAA\n", cpu->pc);
 #endif
 
+	(void) opcode;
 	uint16_t working = cpu->a;
 	// uint8_t aux_carry_set = 0;
 	// If the low nibble > 9, OR aux carry is set, add six to the low
