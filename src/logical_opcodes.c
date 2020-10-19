@@ -145,26 +145,60 @@ int cpi(uint8_t opcode, struct cpu_state* cpu)
 
 int rlc(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	assert(opcode == 0x07);
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: RLC\n", cpu->pc);
+#endif
+	(void) opcode;
+	cpu->a	   = (cpu->a << 1) | (cpu->a >> 7);
+	cpu->flags = (cpu->a & 1) ? cpu->flags | CARRY_FLAG
+				  : cpu->flags & ~CARRY_FLAG;
+	cycle_wait(4);
+	return 1;
 }
 
 int rrc(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	assert(opcode == 0x0f);
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: RRC\n", cpu->pc);
+#endif
+	(void) opcode;
+	cpu->a	   = (cpu->a >> 1) | (cpu->a << 7);
+	cpu->flags = (cpu->a & 0x80) ? cpu->flags | CARRY_FLAG
+				     : cpu->flags & ~CARRY_FLAG;
+	cycle_wait(4);
+	return 1;
 }
 
 int ral(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	assert(opcode == 0x17);
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: RAL\n", cpu->pc);
+#endif
+	(void) opcode;
+	uint16_t shifted = (cpu->a << 1) | (cpu->flags & CARRY_FLAG);
+	APPLY_CARRY_FLAG(shifted, cpu->flags);
+	cpu->a = shifted;
+	cycle_wait(4);
+	return 1;
 }
 
 int rar(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	assert(opcode == 0x1f);
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: RAR\n", cpu->pc);
+#endif
+	(void) opcode;
+	uint8_t outshifted_bit = cpu->a & 1;
+	uint16_t shifted = (cpu->a >> 1) | ((cpu->flags & CARRY_FLAG) << 7);
+	cpu->a		 = shifted;
+	cpu->flags	 = outshifted_bit ? cpu->flags | CARRY_FLAG
+				    : cpu->flags & ~CARRY_FLAG;
+	cycle_wait(4);
+	return 1;
 }
 
 int cma(uint8_t opcode, struct cpu_state* cpu)
