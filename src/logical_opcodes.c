@@ -139,8 +139,35 @@ int cmp(uint8_t opcode, struct cpu_state* cpu)
 
 int cpi(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	assert(opcode == 0xfe);
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: CPI\n", cpu->pc);
+#endif
+
+	/* CPI compares the next byte in memory against the accumulator.
+	 * It affects all of the flags based upon the result of subtracting
+	 * its argument from the accumulator. If the result is 0, the Zero
+	 * flag is set. The carry flag is set if reg A < the operand. the rest
+	 * of the flags are set normally based upon the result.
+	 */
+	// get two's complement of the operand
+	uint16_t operand = ~(cpu->memory[cpu->sp]);
+	operand++;
+	fprintf(stderr, "%d\n", operand);
+
+	//figure out how to set the aux carry flag later
+	
+	// add the contents of a
+	operand += cpu->a;
+
+	// set flags
+	APPLY_CARRY_FLAG_INVERTED(operand, cpu->flags);
+	APPLY_ZERO_FLAG(operand, cpu->flags);
+	APPLY_SIGN_FLAG(operand, cpu->flags);
+	APPLY_PARITY_FLAG(operand, cpu->flags);
+
+	cycle_wait(7);
+	return 2;
 }
 
 int rlc(uint8_t opcode, struct cpu_state* cpu)

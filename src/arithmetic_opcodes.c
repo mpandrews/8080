@@ -162,14 +162,59 @@ int sui_sbi(uint8_t opcode, struct cpu_state* cpu)
 
 int inr(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	
+	(void) opcode;
+	assert((opcode & 0b11000111) == 0b000000100);
+#ifdef VERBOSE
+	fprintf(stderr,
+			"0x%4.4x: INR %s\n",
+			cpu->pc,
+			get_register_pair_name_other(opcode));
+#endif
+	uint8_t* op_ptr = fetch_operand_ptr(GET_DESTINATION_OPERAND(opcode), cpu);
+	/* INR increments an 8-bit register or a location in memory.
+	 * The aux carry flag will be set if the lower 3 bits of the operator
+	 * are set.
+	 */
+	cpu->flags = ((*op_ptr & 0x07) == 7) ?  cpu->flags | AUX_CARRY_FLAG : cpu->flags & ~AUX_CARRY_FLAG;
+	++*op_ptr;
+
+	//all flags are affected except the carry flag
+	APPLY_ZERO_FLAG(*op_ptr, cpu->flags);
+	APPLY_SIGN_FLAG(*op_ptr, cpu->flags);
+	APPLY_PARITY_FLAG(*op_ptr, cpu->flags);
+
+	(GET_DESTINATION_OPERAND(opcode) == OPERAND_MEM) ? cycle_wait(10) : cycle_wait(5);
+
+	return 1;
 }
 
 int dcr(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	(void) opcode;
+	assert((opcode & 0b11000111) == 0b000000101);
+#ifdef VERBOSE
+	fprintf(stderr,
+			"0x%4.4x: DCR %s\n",
+			cpu->pc,
+			get_register_pair_name_other(opcode));
+#endif
+	uint8_t* op_ptr = fetch_operand_ptr(GET_DESTINATION_OPERAND(opcode), cpu);
+	/* DCR decremtns an 8-bit register or a location in memory.
+	 * The aux carry flag will be set iff the lower 4 bits of the operator 
+	 * are reset.
+	 */
+	cpu->flags = ((*op_ptr & 0x0f) == 0) ?  cpu->flags | AUX_CARRY_FLAG : cpu->flags & ~AUX_CARRY_FLAG;
+	--*op_ptr;
+
+	//all flags are affected except the carry flag
+	APPLY_ZERO_FLAG(*op_ptr, cpu->flags);
+	APPLY_SIGN_FLAG(*op_ptr, cpu->flags);
+	APPLY_PARITY_FLAG(*op_ptr, cpu->flags);
+
+	(GET_DESTINATION_OPERAND(opcode) == OPERAND_MEM) ? cycle_wait(10) : cycle_wait(5);
+
+	return 1;
 }
 
 int inx(uint8_t opcode, struct cpu_state* cpu)
