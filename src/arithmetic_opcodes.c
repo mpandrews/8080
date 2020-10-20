@@ -186,12 +186,59 @@ int dcx(uint8_t opcode, struct cpu_state* cpu)
 
 int dad(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	assert((opcode & 0b11001111) == 0b00001001);
+#ifdef VERBOSE
+	fprintf(stderr,
+			"0x%4.4x DAD %s\n",
+			cpu->pc,
+			get_register_pair_name_other(opcode));
+#endif
+	// Add the indicated register pair to HL.
+	uint32_t result = cpu->hl + *get_register_pair_other(opcode, cpu);
+	// Set the carry flag if we carried out of the pair.
+	// We don't touch any other flags.
+	cpu->flags = (result & (1 << 16)) ? cpu->flags | CARRY_FLAG
+					  : cpu->flags & ~CARRY_FLAG;
+	cpu->hl = result;
+	cycle_wait(10);
+	return 1;
 }
 
 int daa(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	assert(opcode == 0x27);
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: DAA\n", cpu->pc);
+#endif
+
+	(void) opcode;
+	uint16_t working = cpu->a;
+	// uint8_t aux_carry_set = 0;
+	// If the low nibble > 9, OR aux carry is set, add six to the low
+	// nibble.
+	if ((working & 0x0f) > 9 || (cpu->flags & AUX_CARRY_FLAG))
+	{
+		working += 0x06;
+		APPLY_AUX_CARRY_FLAG(cpu->a, 6, working, cpu->flags);
+	}
+	// Clear the AC if we did nothing.
+	else
+		cpu->flags &= ~AUX_CARRY_FLAG;
+	// If the high nibble is now >9, or regular carry is set,
+	// add six to the high nibble.
+	if ((working & 0xf0) > 0x90 || (cpu->flags & CARRY_FLAG))
+	{
+		working += 0x60;
+		APPLY_CARRY_FLAG(working, cpu->flags);
+	}
+	// Clear C if we did nothing.
+	else
+		cpu->flags &= ~CARRY_FLAG;
+
+	APPLY_SIGN_FLAG(working, cpu->flags);
+	APPLY_PARITY_FLAG(working, cpu->flags);
+	APPLY_ZERO_FLAG(working, cpu->flags);
+	cpu->a = working;
+	cycle_wait(4);
+	return 1;
 }
