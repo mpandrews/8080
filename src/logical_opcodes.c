@@ -207,7 +207,8 @@ int cmp(uint8_t opcode, struct cpu_state* cpu)
 	APPLY_CARRY_FLAG_INVERTED(result, cpu->flags);
 
 	// If CMP memory, wait 7 cycles. If CMP register, wait 4 cycles
-	get_operand_name(operand) == 'M' ? cycle_wait(7) : cycle_wait(4);
+	get_operand_name(GET_SOURCE_OPERAND(operand)) == 'M' ? cycle_wait(7)
+							     : cycle_wait(4);
 	return 1;
 }
 
