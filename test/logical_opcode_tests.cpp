@@ -357,7 +357,6 @@ TEST(ORI, All)
 	EXPECT_EQ(cpu.flags, 0b01000100);
 }
 
-<<<<<<< HEAD
 TEST(CPI, All)
 {
 	unsigned char memory[(1 << 16)];
