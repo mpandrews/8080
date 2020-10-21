@@ -167,9 +167,9 @@ int inr(uint8_t opcode, struct cpu_state* cpu)
 	assert((opcode & 0b11000111) == 0b000000100);
 #ifdef VERBOSE
 	fprintf(stderr,
-			"0x%4.4x: INR %s\n",
+			"0x%4.4x: INR %c\n",
 			cpu->pc,
-			get_register_pair_name_other(opcode));
+			get_operand_name(GET_DESTINATION_OPERAND(opcode)));
 #endif
 	uint8_t* op_ptr =
 			fetch_operand_ptr(GET_DESTINATION_OPERAND(opcode), cpu);
@@ -193,9 +193,9 @@ int dcr(uint8_t opcode, struct cpu_state* cpu)
 	assert((opcode & 0b11000111) == 0b000000101);
 #ifdef VERBOSE
 	fprintf(stderr,
-			"0x%4.4x: DCR %s\n",
+			"0x%4.4x: DCR %c\n",
 			cpu->pc,
-			get_register_pair_name_other(opcode));
+			get_operand_name(GET_DESTINATION_OPERAND(opcode)));
 #endif
 	uint8_t* op_ptr =
 			fetch_operand_ptr(GET_DESTINATION_OPERAND(opcode), cpu);
