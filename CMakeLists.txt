@@ -11,7 +11,6 @@ set(FlagSettings "-Wall" "-Werror" "-Wextra"
 	"$<$<CONFIG:DEBUG>:-DVERBOSE -DDEBUG>"
 )
 
-#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/hardware)
 set(ROM_DIR ${CMAKE_BINARY_DIR}/roms)
 

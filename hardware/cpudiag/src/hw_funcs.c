@@ -27,12 +27,14 @@ int hw_out(uint8_t opcode, struct cpu_state* cpu)
 #ifdef VERBOSE
 	fprintf(stderr, "0x%4.4x: OUT (Hardware: cpudiag)\n", cpu->pc);
 #endif
-	//Thanks to emulator101.com for figuring out how the ROM tries to print.
+	// Thanks to emulator101.com for figuring out how the ROM tries to
+	// print.
 	if (cpu->c == 9)
 	{
 		uint8_t* s = cpu->memory + cpu->de + 3;
-		while (s < cpu->memory + MAX_MEMORY - 1 && *s != '$' && *s <= 0x7f)
-		printf("%c", *s++);
+		while (s < cpu->memory + MAX_MEMORY - 1 && *s != '$'
+				&& *s <= 0x7f)
+			printf("%c", *s++);
 		printf("\n");
 	}
 	else
