@@ -410,7 +410,6 @@ TEST(INR, All)
 	EXPECT_EQ(cpu.flags, 0b00000001);
 	//                     SZ-A-P-C
 
-
 	// Next, call INR on register C which will be set to 0x8f. This should
 	// leave register C set to 0x90, advance the pc by 1, and set the aux
 	// carry, parity, and sign flags.
@@ -433,12 +432,12 @@ TEST(INR, All)
 	// that INR did not set the carry flag. Additionally, the zero, aux
 	// carry, and parity flags should be set.
 	cpu.flags = 0;
-	cpu.a = 0xff;
+	cpu.a	  = 0xff;
 	cpu.pc += inr(0x3c, &cpu);
 	EXPECT_EQ(cpu.a, 0);
 	EXPECT_EQ(cpu.pc, 4);
 	EXPECT_EQ(cpu.flags, 0b01010100);
- }
+}
 
 TEST(DCR, All)
 {
@@ -464,7 +463,6 @@ TEST(DCR, All)
 	EXPECT_EQ(cpu.flags, 0b00000001);
 	//                     SZ-A-P-C
 
-
 	// Now set byte 0x8001 in memory (pointed to by register hl) to 0x00.
 	// Then call dcr mem and assert that it now holds the value 0xff. Also
 	// assert that the sign, aux carry, and parity flags are set.
@@ -475,7 +473,7 @@ TEST(DCR, All)
 	EXPECT_EQ(cpu.flags, 0b10010101);
 
 	// Now set the d register to hold the value 1 and decrement it. This
-	// should leave D register at 0. It should also set the zero flag and 
+	// should leave D register at 0. It should also set the zero flag and
 	// the parity flag, and should reset the sign and aux carry flags
 	cpu.d = 1;
 	cpu.pc += dcr(0x15, &cpu);
@@ -487,9 +485,9 @@ TEST(DCR, All)
 	// that the carry flag was not set. The zero, parity, and aux carry
 	// flags should be set by this operation.
 	cpu.flags = 0;
-	cpu.c = 0x00;
+	cpu.c	  = 0x00;
 	cpu.pc += dcr(0x0d, &cpu);
 	EXPECT_EQ(cpu.c, 0xff);
 	EXPECT_EQ(cpu.pc, 4);
 	EXPECT_EQ(cpu.flags, 0b10010100);
- }
+}

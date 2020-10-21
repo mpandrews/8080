@@ -230,3 +230,47 @@ TEST(ORI, All)
 	EXPECT_EQ(cpu.pc, 0x06);
 	EXPECT_EQ(cpu.flags, 0b01000100);
 }
+
+TEST(CPI, All)
+{
+	unsigned char memory[(1 << 16)];
+	memset(memory, 0, 1 << 16);
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = memory,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0x0,
+		.hl = 0x8001, .psw = 0x02d5, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	/* The accumulator is set equal to 2 and all the flags are turned on
+	 * at this point. This will compare the accumulator's value against 1.
+	 * This should reset the sign, zero, aux carry, parity, and carry flags
+	 */
+
+	cpu.memory[1] = 1;
+	cpu.pc += cpi(0xfe, &cpu);
+	EXPECT_EQ(cpu.a, 2);
+	EXPECT_EQ(cpu.pc, 2);
+	EXPECT_EQ(cpu.flags, 0b00010000);
+	//                     SZ-A-P-C
+
+	/* Now we'll compare the accumulator against an equal value. This should
+	 * set the Zero flag and leave the rest of the flags reset
+	 */
+	cpu.memory[3] = 2;
+	cpu.pc += cpi(0xfe, &cpu);
+	EXPECT_EQ(cpu.a, 2);
+	EXPECT_EQ(cpu.pc, 4);
+	EXPECT_EQ(cpu.flags, 0b01010100);
+
+	/* Now we'll compare 2 to 3, this should set the Sign, Aux carry,
+	 * and Carry flags and it should reset the zero and parity flags
+	 */
+	cpu.memory[5] = 3;
+	cpu.pc += cpi(0xfe, &cpu);
+	EXPECT_EQ(cpu.a, 2);
+	EXPECT_EQ(cpu.pc, 6);
+	EXPECT_EQ(cpu.flags, 0b10000101);
+}
