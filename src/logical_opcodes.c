@@ -191,7 +191,7 @@ int cmp(uint8_t opcode, struct cpu_state* cpu)
 
 int cpi(uint8_t opcode, struct cpu_state* cpu)
 {
-	(void)opcode;
+	(void) opcode;
 	assert(opcode == 0xfe);
 
 #ifdef VERBOSE

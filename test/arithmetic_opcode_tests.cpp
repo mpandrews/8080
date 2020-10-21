@@ -537,7 +537,8 @@ TEST(DCR, All)
 
 	// Now set byte 0x8001 in memory (pointed to by register hl) to 0x00.
 	// Then call dcr mem and assert that it now holds the value 0xff. Also
-	// assert that the sign and parity flags are set, and aux carry is reset.
+	// assert that the sign and parity flags are set, and aux carry is
+	// reset.
 	cpu.memory[0x8001] = 0x00;
 	cpu.pc += dcr(0x35, &cpu);
 	EXPECT_EQ(cpu.pc, 2);
