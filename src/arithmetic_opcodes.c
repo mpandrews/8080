@@ -289,7 +289,7 @@ int daa(uint8_t opcode, struct cpu_state* cpu)
 
 	APPLY_SIGN_FLAG(working, cpu->flags);
 	APPLY_PARITY_FLAG(working, cpu->flags);
-	APPLY_ZERO_FLAG(working, cpu->flags);
+	APPLY_ZERO_FLAG((uint8_t) working, cpu->flags);
 	cpu->a = working;
 	cycle_wait(4);
 	return 1;
