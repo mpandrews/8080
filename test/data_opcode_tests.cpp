@@ -286,3 +286,36 @@ TEST(XCHG, All)
 	EXPECT_EQ(cpu.hl, 0x1111);
 	EXPECT_EQ(cpu.pc, 1);
 }
+
+TEST(LXI, All)
+{
+	unsigned char memory[(1 << 16)];
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = memory,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0x1111,
+		.hl = 0x2222, .psw = 0, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	// First, set an argument of 0x8001 in memory and call lxi. The
+	// program counter should be advanced to 3, the flags should be
+	// unchanged, and the BC register should now contain 0x8001
+	// LXI B
+	*((uint16_t*) &cpu.memory[1]) = 0x8001;
+	cpu.pc += lxi(0x01, &cpu);
+	EXPECT_EQ(cpu.flags, 0);
+	EXPECT_EQ(cpu.bc, 0x8001);
+	EXPECT_EQ(cpu.pc, 3);
+
+	// Next, set an argument of 0x0203 and call LXI D. The flags register
+	// will also be set high before this operation and tested to ensure it
+	// is still high afterwards
+	*((uint16_t*) &cpu.memory[4]) = 0x0203;
+	cpu.flags		      = 0xff;
+	cpu.pc += lxi(0x11, &cpu);
+	EXPECT_EQ(cpu.flags, 0xff);
+	EXPECT_EQ(cpu.de, 0x0203);
+	EXPECT_EQ(cpu.pc, 6);
+}

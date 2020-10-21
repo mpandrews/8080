@@ -72,8 +72,23 @@ int mvi(uint8_t opcode, struct cpu_state* cpu)
 
 int lxi(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	assert((opcode & 0b11001111) == 0b00000001);
+#ifdef VERBOSE
+	fprintf(stderr,
+			"0x%4.4x: LXI %s\n",
+			cpu->pc,
+			get_register_pair_name_other(opcode));
+#endif
+
+	/* LXI takes its argument (the next two bytes in memory after the
+	 * opcode) and stores it in the register pair that it corresponds to.
+	 * It takes 10 clock cycles and advances the program counter 3 bytes.
+	 * It does not affect any condition flags.
+	 */
+	uint16_t* reg = get_register_pair_other(opcode, cpu);
+	*reg	      = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
+	cycle_wait(10);
+	return 3;
 }
 
 int lda(uint8_t opcode, struct cpu_state* cpu)
