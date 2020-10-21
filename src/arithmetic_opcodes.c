@@ -177,15 +177,10 @@ int inr(uint8_t opcode, struct cpu_state* cpu)
 	 * The aux carry flag will be set if the lower 3 bits of the operator
 	 * are set.
 	 */
-	cpu->flags = ((*op_ptr & 0x07) == 7) ? cpu->flags | AUX_CARRY_FLAG
-					     : cpu->flags & ~AUX_CARRY_FLAG;
-	++*op_ptr;
+	*op_ptr = _add(*op_ptr, 1, &cpu->flags);
 
-	// all flags are affected except the carry flag
-	APPLY_ZERO_FLAG(*op_ptr, cpu->flags);
-	APPLY_SIGN_FLAG(*op_ptr, cpu->flags);
-	APPLY_PARITY_FLAG(*op_ptr, cpu->flags);
-
+	// If the operand was OPERAND_MEM, then this opcode takes 10 clock
+	// cycles. Otherwise, it takes 5.
 	(GET_DESTINATION_OPERAND(opcode) == OPERAND_MEM) ? cycle_wait(10)
 							 : cycle_wait(5);
 
@@ -208,15 +203,10 @@ int dcr(uint8_t opcode, struct cpu_state* cpu)
 	 * The aux carry flag will be set iff the lower 4 bits of the operator
 	 * are reset.
 	 */
-	cpu->flags = ((*op_ptr & 0x0f) == 0) ? cpu->flags | AUX_CARRY_FLAG
-					     : cpu->flags & ~AUX_CARRY_FLAG;
-	--*op_ptr;
+	*op_ptr = _add(*op_ptr, -1, &cpu->flags);
 
-	// all flags are affected except the carry flag
-	APPLY_ZERO_FLAG(*op_ptr, cpu->flags);
-	APPLY_SIGN_FLAG(*op_ptr, cpu->flags);
-	APPLY_PARITY_FLAG(*op_ptr, cpu->flags);
-
+	// If the operand was OPERAND_MEM, then this opcode takes 10 clock
+	// cycles. Otherwise, it takes 5.
 	(GET_DESTINATION_OPERAND(opcode) == OPERAND_MEM) ? cycle_wait(10)
 							 : cycle_wait(5);
 
