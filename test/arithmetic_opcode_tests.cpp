@@ -459,6 +459,112 @@ TEST(DAD, All)
 	EXPECT_EQ(cpu.flags, 0xff);
 }
 
+TEST(INR, All)
+{
+	unsigned char memory[(1 << 16)];
+	memset(memory, 0, 1 << 16);
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = memory,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0x0,
+		.hl = 0x8001, .psw = 0xd5, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	// First call INR on register B which is set to 0. Assert that it is
+	// set to 1 afterwards. Also assert that the pc advanced one byte and
+	// that the flags are all cleared, except the carry flag which should
+	// be unaffected by INR. All flags are set to one at this point
+	cpu.pc += inr(0x04, &cpu);
+	EXPECT_EQ(cpu.pc, 1);
+	EXPECT_EQ(cpu.b, 1);
+	EXPECT_EQ(cpu.flags, 0b00000001);
+	//                     SZ-A-P-C
+
+	// Next, call INR on register C which will be set to 0x8f. This should
+	// leave register C set to 0x90, advance the pc by 1, and set the aux
+	// carry, parity, and sign flags.
+	cpu.c = 0x8f;
+	cpu.pc += inr(0x0c, &cpu);
+	EXPECT_EQ(cpu.pc, 2);
+	EXPECT_EQ(cpu.c, 0x90);
+	EXPECT_EQ(cpu.flags, 0b10010101);
+
+	// Call INR with MEM operand, which will hold the value 0xff. This
+	// should leave 0x00 in memory at the address pointed to by HL, should
+	// set the zero, aux carry, and parity flags.
+	cpu.memory[0x8001] = 0xff;
+	cpu.pc += inr(0x34, &cpu);
+	EXPECT_EQ(cpu.pc, 3);
+	EXPECT_EQ(cpu.memory[cpu.hl], 0x00);
+	EXPECT_EQ(cpu.flags, 0b01010101);
+
+	// Finally, manually reset the carry flag, cause a carry, and assert
+	// that INR did not set the carry flag. Additionally, the zero, aux
+	// carry, and parity flags should be set.
+	cpu.flags = 0;
+	cpu.a	  = 0xff;
+	cpu.pc += inr(0x3c, &cpu);
+	EXPECT_EQ(cpu.a, 0);
+	EXPECT_EQ(cpu.pc, 4);
+	EXPECT_EQ(cpu.flags, 0b01010100);
+}
+
+TEST(DCR, All)
+{
+	unsigned char memory[(1 << 16)];
+	memset(memory, 0, 1 << 16);
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = memory,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0x0,
+		.hl = 0x8001, .psw = 0xd5, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	// First decrement the A register which will be set to 0x02. Then,
+	// assert that it holds the value 1 afterwards. Additionally, the
+	// sign, zero, and parity flags should be reset. the aux carry flag
+	// should remain set. DCR does not affect the carry flag.
+	cpu.a = 2;
+	cpu.pc += dcr(0x3d, &cpu);
+	EXPECT_EQ(cpu.pc, 1);
+	EXPECT_EQ(cpu.a, 1);
+	EXPECT_EQ(cpu.flags, 0b00010001);
+	//                     SZ-A-P-C
+
+	// Now set byte 0x8001 in memory (pointed to by register hl) to 0x00.
+	// Then call dcr mem and assert that it now holds the value 0xff. Also
+	// assert that the sign and parity flags are set, and aux carry is
+	// reset.
+	cpu.memory[0x8001] = 0x00;
+	cpu.pc += dcr(0x35, &cpu);
+	EXPECT_EQ(cpu.pc, 2);
+	EXPECT_EQ(cpu.memory[cpu.hl], 0xff);
+	EXPECT_EQ(cpu.flags, 0b10000101);
+
+	// Now set the d register to hold the value 1 and decrement it. This
+	// should leave D register at 0. It should also set the zero flag, the
+	// parity flag, and the aux carry flag. It should reset the sign flag.
+	cpu.d = 1;
+	cpu.pc += dcr(0x15, &cpu);
+	EXPECT_EQ(cpu.pc, 3);
+	EXPECT_EQ(cpu.d, 0x00);
+	EXPECT_EQ(cpu.flags, 0b01010101);
+
+	// Lastly, reset the flags manually, induce a carry(borrow) and assert
+	// that the carry flag and aux carry flags were not set. The zero and
+	// parity should be set by this operation.
+	cpu.flags = 0;
+	cpu.c	  = 0x00;
+	cpu.pc += dcr(0x0d, &cpu);
+	EXPECT_EQ(cpu.c, 0xff);
+	EXPECT_EQ(cpu.pc, 4);
+	EXPECT_EQ(cpu.flags, 0b10000100);
+}
+
 TEST(DCX, All)
 {
 	struct cpu_state cpu

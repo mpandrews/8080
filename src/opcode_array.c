@@ -291,6 +291,6 @@ int (*opcodes[256])(uint8_t opcode, struct cpu_state* cpu) = {
 		ei,	 // 0xFB	EI
 		ccond,	 // 0xFC	CM
 		call,	 // 0xFD	CALL
-		ccond,	 // 0xFE	CPI
+		cpi,	 // 0xFE	CPI
 		rst,	 // 0xFF	RST	7
 };
