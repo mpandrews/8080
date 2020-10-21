@@ -213,16 +213,27 @@ int dcr(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int inx(uint8_t opcode, struct cpu_state* cpu)
+int inx_dcx(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
-}
-
-int dcx(uint8_t opcode, struct cpu_state* cpu)
-{
-	// TODO
-	return placeholder(opcode, cpu);
+	(void) opcode;
+	assert((opcode & 0b11000111) == 0b00000011);
+	/* INX and DCX are increment register pair and derement register pair,
+	 * respectively. Bit 3 determines whether it is INX or DCX.
+	 */
+#ifdef VERBOSE
+	fprintf(stderr,
+			"0x%4.4x: %sX %s\n",
+			cpu->pc,
+			opcode & 0b00001000 ? "DC" : "IN",
+			get_register_pair_name_other(opcode));
+#endif
+	// INX and DCX increment or decrement the register without affecting
+	// any condition flags. they take 5 clock cycles and advance the
+	// program counter one byte.
+	uint16_t* operand = get_register_pair_other(opcode, cpu);
+	opcode & 0b00001000 ? --*operand : ++*operand;
+	cycle_wait(5);
+	return 1;
 }
 
 int dad(uint8_t opcode, struct cpu_state* cpu)

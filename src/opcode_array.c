@@ -40,7 +40,7 @@ int (*opcodes[256])(uint8_t opcode, struct cpu_state* cpu) = {
 		nop,	 // 0x00	NOP
 		lxi,	 // 0x01	LXI	B
 		stax,	 // 0x02	STAX	B
-		inx,	 // 0x03	INX	B
+		inx_dcx, // 0x03	INX	B
 		inr,	 // 0x04	INR	B
 		dcr,	 // 0x05	DCR	B
 		mvi,	 // 0x06	MVI	B
@@ -48,7 +48,7 @@ int (*opcodes[256])(uint8_t opcode, struct cpu_state* cpu) = {
 		nop,	 // 0x08	NOP
 		dad,	 // 0x09	DAD	B
 		ldax,	 // 0x0A	LDAX	B
-		dcx,	 // 0x0B	DCX	B
+		inx_dcx, // 0x0B	DCX	B
 		inr,	 // 0x0C	INR	C
 		dcr,	 // 0x0D	DCR	C
 		mvi,	 // 0x0E	MVI	C
@@ -56,7 +56,7 @@ int (*opcodes[256])(uint8_t opcode, struct cpu_state* cpu) = {
 		nop,	 // 0x10	NOP
 		lxi,	 // 0x11	LXI	D
 		stax,	 // 0x12	STAX	D
-		inx,	 // 0x13	INX	D
+		inx_dcx, // 0x13	INX	D
 		inr,	 // 0x14	INR	D
 		dcr,	 // 0x15	DCR	D
 		mvi,	 // 0x16	MVI	D
@@ -64,7 +64,7 @@ int (*opcodes[256])(uint8_t opcode, struct cpu_state* cpu) = {
 		nop,	 // 0x18	NOP
 		dad,	 // 0x19	DAD	D
 		ldax,	 // 0x1A	LDAX	D
-		dcx,	 // 0x1A	DCX	D
+		inx_dcx, // 0x1A	DCX	D
 		inr,	 // 0x1C	INR	E
 		dcr,	 // 0x1D	DCR	E
 		mvi,	 // 0x1E	MVI	E
@@ -72,7 +72,7 @@ int (*opcodes[256])(uint8_t opcode, struct cpu_state* cpu) = {
 		nop,	 // 0x20	NOP
 		lxi,	 // 0x21	LXI	H
 		shld,	 // 0x22	SHLD
-		inx,	 // 0x23	INX	H
+		inx_dcx, // 0x23	INX	H
 		inr,	 // 0x24	INR	H
 		dcr,	 // 0x25	DCR	H
 		mvi,	 // 0x26	MVI	H
@@ -80,7 +80,7 @@ int (*opcodes[256])(uint8_t opcode, struct cpu_state* cpu) = {
 		nop,	 // 0x28	NOP
 		dad,	 // 0x29	DAD	H
 		lhld,	 // 0x2A	LHLD
-		dcx,	 // 0x2B	DCX	H
+		inx_dcx, // 0x2B	DCX	H
 		inr,	 // 0x2C	INR	L
 		dcr,	 // 0x2D	DCR	L
 		mvi,	 // 0x2E	MVI	L
@@ -88,7 +88,7 @@ int (*opcodes[256])(uint8_t opcode, struct cpu_state* cpu) = {
 		nop,	 // 0x30	NOP
 		lxi,	 // 0x31	LXI 	SP
 		sta,	 // 0x32	STA
-		inx,	 // 0x33	INX 	SP
+		inx_dcx, // 0x33	INX 	SP
 		inr,	 // 0x34	INR	M
 		dcr,	 // 0x35	DCR	M
 		mvi,	 // 0x36	MVI	M
@@ -96,7 +96,7 @@ int (*opcodes[256])(uint8_t opcode, struct cpu_state* cpu) = {
 		nop,	 // 0x38	NOP
 		dad,	 // 0x39	DAD	SP
 		lda,	 // 0x3A	LDA
-		dcx,	 // 0x3B	DCX	SP
+		inx_dcx, // 0x3B	DCX	SP
 		inr,	 // 0x3C	INR	A
 		dcr,	 // 0x3D	DCR	A
 		mvi,	 // 0x3E	MVI	A

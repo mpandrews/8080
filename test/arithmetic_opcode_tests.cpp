@@ -564,3 +564,95 @@ TEST(DCR, All)
 	EXPECT_EQ(cpu.pc, 4);
 	EXPECT_EQ(cpu.flags, 0b10000100);
 }
+
+TEST(DCX, All)
+{
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0x8000,
+		.hl = 1, .psw = 0, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	// Decrement the bc register. Since it is 0 right now, we should expect
+	// it to be 0xffff after the instruction. No condition flags are
+	// affected by DCX
+	cpu.pc += inx_dcx(0x0b, &cpu);
+	EXPECT_EQ(cpu.pc, 1);
+	EXPECT_EQ(cpu.bc, 0xffff);
+	EXPECT_EQ(cpu.flags, 0x00);
+
+	// Decrement the hl register. Since it is 1, it should be 0 afterwards.
+	// This time, the flags register will be set to 0xff, and it should
+	// remain at 0xff after the instruction.
+	cpu.flags = 0xff;
+	cpu.pc += inx_dcx(0x2b, &cpu);
+	EXPECT_EQ(cpu.pc, 2);
+	EXPECT_EQ(cpu.hl, 0);
+	EXPECT_EQ(cpu.flags, 0xff);
+
+	// Decrement the de register. It is set to 0x8000, so we should expect
+	// it to contain 0x7fff afterwards.
+	cpu.pc += inx_dcx(0x1b, &cpu);
+	EXPECT_EQ(cpu.pc, 3);
+	EXPECT_EQ(cpu.de, 0x7fff);
+	EXPECT_EQ(cpu.flags, 0xff);
+
+	// And lastly, we'll decrement the SP because it's the only one left and
+	// we might as well. This test will set the flags back to 0 and assert
+	// that are set by the operation.
+	cpu.sp	  = 0x0100;
+	cpu.flags = 0;
+	cpu.pc += inx_dcx(0x3b, &cpu);
+	EXPECT_EQ(cpu.pc, 4);
+	EXPECT_EQ(cpu.sp, 0x00ff);
+	EXPECT_EQ(cpu.flags, 0);
+}
+
+TEST(INX, All)
+{
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0xffff,
+		.de = 0x7fff, .hl = 0, .psw = 0, .halt_flag = 0,
+		.reset_flag = 0, .interrupt_enable_flag = 0
+	};
+
+	// Increment the BC register. Since it is 0xffff right now, we should
+	// expect it to be 0x0000 after the instruction. No condition flags are
+	// affected by DCX
+	cpu.pc += inx_dcx(0x03, &cpu);
+	EXPECT_EQ(cpu.pc, 1);
+	EXPECT_EQ(cpu.bc, 0x0000);
+	EXPECT_EQ(cpu.flags, 0x00);
+
+	// Increment the HL register. Since it is 0, it should be 1 afterwards.
+	// This time, the flags register will be set to 0xff, and it should
+	// remain at 0xff after the instruction.
+	cpu.flags = 0xff;
+	cpu.pc += inx_dcx(0x23, &cpu);
+	EXPECT_EQ(cpu.pc, 2);
+	EXPECT_EQ(cpu.hl, 1);
+	EXPECT_EQ(cpu.flags, 0xff);
+
+	// Increment the de register. It is set to 0x7fff, so we should expect
+	// it to contain 0x8000 afterwards.
+	cpu.pc += inx_dcx(0x13, &cpu);
+	EXPECT_EQ(cpu.pc, 3);
+	EXPECT_EQ(cpu.de, 0x8000);
+	EXPECT_EQ(cpu.flags, 0xff);
+
+	// And lastly, we'll increment the SP because it's the only one left and
+	// we might as well. This test will set the flags back to 0 and assert
+	// that are set by the operation.
+	cpu.sp	  = 0x0200;
+	cpu.flags = 0;
+	cpu.pc += inx_dcx(0x33, &cpu);
+	EXPECT_EQ(cpu.pc, 4);
+	EXPECT_EQ(cpu.sp, 0x0201);
+	EXPECT_EQ(cpu.flags, 0);
+}
