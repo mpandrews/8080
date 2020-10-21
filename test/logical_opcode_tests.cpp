@@ -107,6 +107,132 @@ TEST(ANA, All)
 	//                     SZ-A-P-C
 }
 
+TEST(ANI, All)
+{
+	unsigned char memory[MAX_MEMORY];
+	memset(memory, 0, MAX_MEMORY);
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = memory,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
+		.hl = 0, .psw = 0xff00, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	// ANI
+	cpu.memory[cpu.pc + 1] = 0xab;
+	cpu.pc += ani(0xe6, &cpu);
+	EXPECT_EQ(cpu.pc, 2);
+	EXPECT_EQ(cpu.a, 0xab);
+	// Only sign flag is set
+	EXPECT_EQ(cpu.flags, 0b10000000);
+
+	cpu.memory[cpu.pc + 1] = 0x00;
+	cpu.pc += ani(0xe6, &cpu);
+	EXPECT_EQ(cpu.pc, 4);
+	EXPECT_EQ(cpu.a, 0x00);
+	// Zero and parity flags are set
+	EXPECT_EQ(cpu.flags, 0b01000100);
+}
+
+TEST(XRA, Registers_and_Memory)
+{
+	unsigned char memory[MAX_MEMORY];
+	memset(memory, 0, MAX_MEMORY);
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = memory,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
+		.hl = 0xabcd, .psw = 0, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	// XRA M
+	cpu.memory[cpu.hl] = 0x12;
+	cpu.pc += xra(0xae, &cpu);
+	EXPECT_EQ(cpu.pc, 1);
+	EXPECT_EQ(cpu.a, 0x12);
+	EXPECT_EQ(cpu.flags, 0b00000100);
+
+	// XRA B
+	cpu.b = 0x34;
+	cpu.pc += xra(0xa8, &cpu);
+	EXPECT_EQ(cpu.pc, 2);
+	EXPECT_EQ(cpu.a, 0x26);
+	EXPECT_EQ(cpu.flags, 0b00000000);
+
+	// XRA C
+	cpu.c = 0x56;
+	cpu.pc += xra(0xa9, &cpu);
+	EXPECT_EQ(cpu.pc, 3);
+	EXPECT_EQ(cpu.a, 0x70);
+	EXPECT_EQ(cpu.flags, 0b00000000);
+
+	// XRA D
+	cpu.d = 0x78;
+	cpu.pc += xra(0xaa, &cpu);
+	EXPECT_EQ(cpu.pc, 4);
+	EXPECT_EQ(cpu.a, 0x08);
+	EXPECT_EQ(cpu.flags, 0b00000000);
+
+	// XRA E
+	cpu.e = 0x9a;
+	cpu.pc += xra(0xab, &cpu);
+	EXPECT_EQ(cpu.pc, 5);
+	EXPECT_EQ(cpu.a, 0x92);
+	EXPECT_EQ(cpu.flags, 0b10000000);
+
+	// XRA H
+	cpu.h = 0xbc;
+	cpu.pc += xra(0xac, &cpu);
+	EXPECT_EQ(cpu.pc, 6);
+	EXPECT_EQ(cpu.a, 0x2e);
+	EXPECT_EQ(cpu.flags, 0b00000100);
+
+	// XRA L
+	cpu.l = 0xde;
+	cpu.pc += xra(0xad, &cpu);
+	EXPECT_EQ(cpu.pc, 7);
+	EXPECT_EQ(cpu.a, 0xf0);
+	EXPECT_EQ(cpu.flags, 0b10000100);
+
+	// XRA A
+	cpu.pc += xra(0xaf, &cpu);
+	EXPECT_EQ(cpu.pc, 8);
+	EXPECT_EQ(cpu.a, 0);
+	EXPECT_EQ(cpu.flags, 0b01000100);
+}
+
+TEST(XRI, All)
+{
+	unsigned char memory[MAX_MEMORY];
+	memset(memory, 0, MAX_MEMORY);
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = memory,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
+		.hl = 0, .psw = 0xff00, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	// XRI
+	cpu.memory[cpu.pc + 1] = 0xab;
+	cpu.pc += xri(0xee, &cpu);
+	EXPECT_EQ(cpu.pc, 2);
+	EXPECT_EQ(cpu.a, 0x54);
+	EXPECT_EQ(cpu.flags, 0b00000000);
+
+	cpu.memory[cpu.pc + 1] = 0xcd;
+	cpu.pc += xri(0xee, &cpu);
+	EXPECT_EQ(cpu.pc, 4);
+	EXPECT_EQ(cpu.a, 0x99);
+	// Sign and parity flags are set
+	EXPECT_EQ(cpu.flags, 0b10000100);
+}
+
 TEST(ORA, All)
 {
 	unsigned char memory[(1 << 16)];
@@ -231,6 +357,7 @@ TEST(ORI, All)
 	EXPECT_EQ(cpu.flags, 0b01000100);
 }
 
+<<<<<<< HEAD
 TEST(CPI, All)
 {
 	unsigned char memory[(1 << 16)];
@@ -273,4 +400,128 @@ TEST(CPI, All)
 	EXPECT_EQ(cpu.a, 2);
 	EXPECT_EQ(cpu.pc, 6);
 	EXPECT_EQ(cpu.flags, 0b10000101);
+}
+
+TEST(RLC, All)
+{
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
+		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	cpu.a = 1;
+	cpu.pc += rlc(0x07, &cpu);
+	EXPECT_EQ(cpu.a, 2);
+	EXPECT_EQ(cpu.pc, 1);
+	EXPECT_EQ(cpu.flags, 0);
+
+	cpu.a = 0x80;
+	cpu.pc += rlc(0x07, &cpu);
+	EXPECT_EQ(cpu.a, 1);
+	EXPECT_EQ(cpu.pc, 2);
+	EXPECT_EQ(cpu.flags, CARRY_FLAG);
+
+	cpu.a = 0xff;
+	cpu.pc += rlc(0x07, &cpu);
+	EXPECT_EQ(cpu.a, 0xff);
+	EXPECT_EQ(cpu.pc, 3);
+	EXPECT_EQ(cpu.flags, CARRY_FLAG);
+}
+
+TEST(RRC, All)
+{
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
+		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	cpu.a = 1;
+	cpu.pc += rrc(0x0f, &cpu);
+	EXPECT_EQ(cpu.a, 0x80);
+	EXPECT_EQ(cpu.pc, 1);
+	EXPECT_EQ(cpu.flags, CARRY_FLAG);
+
+	cpu.a = 0x80;
+	cpu.pc += rrc(0x0f, &cpu);
+	EXPECT_EQ(cpu.a, 0x40);
+	EXPECT_EQ(cpu.pc, 2);
+	EXPECT_EQ(cpu.flags, 0);
+
+	cpu.a = 0xff;
+	cpu.pc += rrc(0x0f, &cpu);
+	EXPECT_EQ(cpu.a, 0xff);
+	EXPECT_EQ(cpu.pc, 3);
+	EXPECT_EQ(cpu.flags, CARRY_FLAG);
+}
+
+TEST(RAL, All)
+{
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
+		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+	cpu.flags = CARRY_FLAG;
+	cpu.pc += ral(0x17, &cpu);
+	EXPECT_EQ(cpu.a, 1);
+	EXPECT_EQ(cpu.pc, 1);
+	EXPECT_EQ(cpu.flags, 0);
+
+	cpu.a = 0xff;
+	cpu.pc += ral(0x17, &cpu);
+	EXPECT_EQ(cpu.a, 0xfe);
+	EXPECT_EQ(cpu.pc, 2);
+	EXPECT_EQ(cpu.flags, CARRY_FLAG);
+	cpu.pc += ral(0x17, &cpu);
+	EXPECT_EQ(cpu.a, 0xfd);
+	EXPECT_EQ(cpu.pc, 3);
+
+	cpu.a = 0x81;
+	cpu.pc += ral(0x17, &cpu);
+	EXPECT_EQ(cpu.a, 0x03);
+	EXPECT_EQ(cpu.pc, 4);
+	EXPECT_EQ(cpu.flags, CARRY_FLAG);
+}
+
+TEST(RAR, All)
+{
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
+		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+	cpu.flags = CARRY_FLAG;
+	cpu.pc += rar(0x1f, &cpu);
+	EXPECT_EQ(cpu.a, 0x80);
+	EXPECT_EQ(cpu.pc, 1);
+	EXPECT_EQ(cpu.flags, 0);
+
+	cpu.a = 0xff;
+	cpu.pc += rar(0x1f, &cpu);
+	EXPECT_EQ(cpu.a, 0x7f);
+	EXPECT_EQ(cpu.pc, 2);
+	EXPECT_EQ(cpu.flags, CARRY_FLAG);
+	cpu.pc += rar(0x1f, &cpu);
+	EXPECT_EQ(cpu.a, 0xbf);
+	EXPECT_EQ(cpu.pc, 3);
+
+	cpu.a = 0x81;
+	cpu.pc += rar(0x1f, &cpu);
+	EXPECT_EQ(cpu.a, 0xc0);
+	EXPECT_EQ(cpu.pc, 4);
+	EXPECT_EQ(cpu.flags, CARRY_FLAG);
 }

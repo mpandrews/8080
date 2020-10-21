@@ -53,20 +53,72 @@ int ana(uint8_t opcode, struct cpu_state* cpu)
 
 int ani(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	assert(opcode == 0xE6);
+	(void) opcode;
+
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: ANI\n", cpu->pc);
+#endif
+
+	// AND immediate
+	cpu->a &= cpu->memory[cpu->pc + 1];
+
+	APPLY_ZERO_FLAG(cpu->a, cpu->flags);
+	APPLY_SIGN_FLAG(cpu->a, cpu->flags);
+	APPLY_PARITY_FLAG(cpu->a, cpu->flags);
+	// Clear CY and AC flags
+	cpu->flags &= (~CARRY_FLAG & ~AUX_CARRY_FLAG);
+
+	cycle_wait(7);
+	return 2;
 }
 
 int xra(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	// XRA opcode: 0b10101SSS, where SSS = source operand
+	assert((opcode & 0b11111000) == 0b10101000);
+	uint8_t source_operand = GET_SOURCE_OPERAND(opcode);
+
+#ifdef VERBOSE
+	fprintf(stderr,
+			"0x%4.4x: XRA %c\n",
+			cpu->pc,
+			get_operand_name(source_operand));
+#endif
+
+	cpu->a ^= fetch_operand_val(source_operand, cpu);
+
+	APPLY_ZERO_FLAG(cpu->a, cpu->flags);
+	APPLY_SIGN_FLAG(cpu->a, cpu->flags);
+	APPLY_PARITY_FLAG(cpu->a, cpu->flags);
+	// Clear CY and AC flags
+	cpu->flags &= (~CARRY_FLAG & ~AUX_CARRY_FLAG);
+
+	// If XOR memory, wait 7 cycles. If XOR register, wait 4 cycles
+	get_operand_name(source_operand) == 'M' ? cycle_wait(7) : cycle_wait(4);
+	return 1;
 }
 
 int xri(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	assert(opcode == 0xEE);
+	(void) opcode;
+
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: XRI\n", cpu->pc);
+#endif
+
+	// Exclusive OR immediate
+	cpu->a ^= cpu->memory[cpu->pc + 1];
+
+	APPLY_ZERO_FLAG(cpu->a, cpu->flags);
+	APPLY_SIGN_FLAG(cpu->a, cpu->flags);
+	APPLY_PARITY_FLAG(cpu->a, cpu->flags);
+	// Clear CY and AC flags
+	cpu->flags &= (~CARRY_FLAG & ~AUX_CARRY_FLAG);
+
+	cycle_wait(7);
+	return 2;
 }
 
 int ora(uint8_t opcode, struct cpu_state* cpu)
@@ -167,26 +219,60 @@ int cpi(uint8_t opcode, struct cpu_state* cpu)
 
 int rlc(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	assert(opcode == 0x07);
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: RLC\n", cpu->pc);
+#endif
+	(void) opcode;
+	cpu->a	   = (cpu->a << 1) | (cpu->a >> 7);
+	cpu->flags = (cpu->a & 1) ? cpu->flags | CARRY_FLAG
+				  : cpu->flags & ~CARRY_FLAG;
+	cycle_wait(4);
+	return 1;
 }
 
 int rrc(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	assert(opcode == 0x0f);
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: RRC\n", cpu->pc);
+#endif
+	(void) opcode;
+	cpu->a	   = (cpu->a >> 1) | (cpu->a << 7);
+	cpu->flags = (cpu->a & 0x80) ? cpu->flags | CARRY_FLAG
+				     : cpu->flags & ~CARRY_FLAG;
+	cycle_wait(4);
+	return 1;
 }
 
 int ral(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	assert(opcode == 0x17);
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: RAL\n", cpu->pc);
+#endif
+	(void) opcode;
+	uint16_t shifted = (cpu->a << 1) | (cpu->flags & CARRY_FLAG);
+	APPLY_CARRY_FLAG(shifted, cpu->flags);
+	cpu->a = shifted;
+	cycle_wait(4);
+	return 1;
 }
 
 int rar(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	assert(opcode == 0x1f);
+#ifdef VERBOSE
+	fprintf(stderr, "0x%4.4x: RAR\n", cpu->pc);
+#endif
+	(void) opcode;
+	uint8_t outshifted_bit = cpu->a & 1;
+	uint16_t shifted = (cpu->a >> 1) | ((cpu->flags & CARRY_FLAG) << 7);
+	cpu->a		 = shifted;
+	cpu->flags	 = outshifted_bit ? cpu->flags | CARRY_FLAG
+				    : cpu->flags & ~CARRY_FLAG;
+	cycle_wait(4);
+	return 1;
 }
 
 int cma(uint8_t opcode, struct cpu_state* cpu)

@@ -345,6 +345,77 @@ TEST(SUI, All)
 	//                     SZ-A-P-C
 }
 
+TEST(DAA, All)
+{
+	struct cpu_state cpu
+	{
+		.int_cond = nullptr, .int_lock = nullptr, .memory = 0,
+		.interrupt_buffer = nullptr, .data_bus = nullptr,
+		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
+		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
+		.interrupt_enable_flag = 0
+	};
+
+	// This is the example on page 22 (pdf) of the 1975 Programmer's Manual.
+	cpu.a = 0x9B;
+	cpu.pc += daa(0x27, &cpu);
+	EXPECT_EQ(cpu.pc, 1);
+	EXPECT_EQ(cpu.a, 1);
+	// SZ-A-P-C
+	EXPECT_EQ(cpu.flags, 0b00010001);
+
+	// The DAAs from page 61 (pdf) of the same manual.
+
+	cpu.a	  = 0xbb;
+	cpu.flags = 0; // Clear flags.
+	cpu.pc += daa(0x27, &cpu);
+	EXPECT_EQ(cpu.pc, 2);
+	EXPECT_EQ(cpu.a, 0x21);
+	// AC, C, P.
+	EXPECT_EQ(cpu.flags, 0b00010101);
+
+	cpu.a	  = 0x73;
+	cpu.flags = 0x10; // AC only.
+	cpu.pc += daa(0x27, &cpu);
+	EXPECT_EQ(cpu.pc, 3);
+	EXPECT_EQ(cpu.a, 0x79);
+	// All flags clear.
+	EXPECT_EQ(cpu.flags, 0);
+
+	// 1 and 1, with AC set.
+	cpu.a	  = 0x11;
+	cpu.flags = 0x10;
+	cpu.pc += daa(0x27, &cpu);
+	EXPECT_EQ(cpu.pc, 4);
+	EXPECT_EQ(cpu.a, 0x17);
+	EXPECT_EQ(cpu.flags, PARITY_FLAG);
+
+	// 1 and 1, with flags clear.
+	cpu.a	  = 0x11;
+	cpu.flags = 0;
+	cpu.pc += daa(0x27, &cpu);
+	EXPECT_EQ(cpu.pc, 5);
+	EXPECT_EQ(cpu.a, 0x11);
+	// P only.
+	EXPECT_EQ(cpu.flags, PARITY_FLAG);
+
+	// 1 and 1, with C set.
+	cpu.a	  = 0x11;
+	cpu.flags = CARRY_FLAG;
+	cpu.pc += daa(0x27, &cpu);
+	EXPECT_EQ(cpu.pc, 6);
+	EXPECT_EQ(cpu.a, 0x71);
+	EXPECT_EQ(cpu.flags, PARITY_FLAG);
+
+	// 1 and 1, A and AC.
+	cpu.a	  = 0x11;
+	cpu.flags = CARRY_FLAG | AUX_CARRY_FLAG;
+	cpu.pc += daa(0x27, &cpu);
+	EXPECT_EQ(cpu.pc, 7);
+	EXPECT_EQ(cpu.a, 0x77);
+	EXPECT_EQ(cpu.flags, PARITY_FLAG);
+}
+
 TEST(DAD, All)
 {
 
@@ -356,6 +427,7 @@ TEST(DAD, All)
 		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
 		.interrupt_enable_flag = 0
 	};
+
 	cpu.bc	  = 0x10;
 	cpu.flags = 0xff;
 	// DAD B
