@@ -35,8 +35,7 @@ int sui_sbi(uint8_t, struct cpu_state*);
 int sbi(uint8_t, struct cpu_state*);
 int inr(uint8_t, struct cpu_state*);
 int dcr(uint8_t, struct cpu_state*);
-int inx(uint8_t, struct cpu_state*);
-int dcx(uint8_t, struct cpu_state*);
+int inx_dcx(uint8_t, struct cpu_state*);
 int dad(uint8_t, struct cpu_state*);
 int daa(uint8_t, struct cpu_state*);
 
