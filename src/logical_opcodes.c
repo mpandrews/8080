@@ -185,8 +185,31 @@ int ori(uint8_t opcode, struct cpu_state* cpu)
 
 int cmp(uint8_t opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
+	// CMP is 0xB8 - 0xBF, or 0b10111SSS
+	assert((opcode & 0b11111000) == 0b10111000);
+	uint16_t operand = fetch_operand_val(GET_SOURCE_OPERAND(opcode), cpu);
+
+#ifdef VERBOSE
+	fprintf(stderr,
+			"0x%4.4x: CMP %c\n",
+			cpu->pc,
+			get_operand_name(GET_SOURCE_OPERAND(opcode)));
+#endif
+
+	// Compare register or memory
+	// Subtract content of register or memory location from the accumulator
+	// The accumulator remains UNCHANGED.
+	// The condition flags are set as a result of the subtraction
+	// Subtraction - take two's complement and then add
+	operand = (uint8_t) ~operand;
+	++operand;
+	uint16_t result = _add(cpu->a, operand, &cpu->flags);
+	APPLY_CARRY_FLAG_INVERTED(result, cpu->flags);
+
+	// If CMP memory, wait 7 cycles. If CMP register, wait 4 cycles
+	get_operand_name(GET_SOURCE_OPERAND(operand)) == 'M' ? cycle_wait(7)
+							     : cycle_wait(4);
+	return 1;
 }
 
 int cpi(uint8_t opcode, struct cpu_state* cpu)
