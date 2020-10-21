@@ -229,7 +229,7 @@ int cpi(uint8_t opcode, struct cpu_state* cpu)
 	 */
 
 	// get two's complement of the operand
-	uint8_t operand = cpu->memory[cpu->pc + 1];
+	uint16_t operand = cpu->memory[cpu->pc + 1];
 	operand		= (uint8_t) ~operand;
 	++operand;
 
