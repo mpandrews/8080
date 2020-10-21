@@ -12,7 +12,7 @@ int hw_in(uint8_t opcode, struct cpu_state* cpu)
 	(void) cpu;
 	(void) opcode;
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: IN (Hardware: none)\n", cpu->pc);
+	fprintf(stderr, "0x%4.4x: IN (Hardware: cpudiag)\n", cpu->pc);
 #endif
 	cycle_wait(10);
 	return 2;
@@ -25,8 +25,19 @@ int hw_out(uint8_t opcode, struct cpu_state* cpu)
 	(void) cpu;
 	(void) opcode;
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: OUT (Hardware: none)\n", cpu->pc);
+	fprintf(stderr, "0x%4.4x: OUT (Hardware: cpudiag)\n", cpu->pc);
 #endif
+	//Thanks to emulator101.com for figuring out how the ROM tries to print.
+	if (cpu->c == 9)
+	{
+		uint8_t* s = cpu->memory + cpu->de + 3;
+		while (s < cpu->memory + MAX_MEMORY - 1 && *s != '$' && *s <= 0x7f)
+		printf("%c", *s++);
+		printf("\n");
+	}
+	else
+		printf("%1.1x\n", cpu->memory[cpu->de + 3]);
+
 	cycle_wait(10);
 	return 2;
 }

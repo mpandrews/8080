@@ -19,7 +19,7 @@ int main(int argc, char** argv)
 {
 	void* hw_lib_handle;
 	(void) hw_lib_handle;
-	char hw_lib_name[19] = {0};
+	char hw_lib_name[26] = {0};
 	char rom_name[50]    = {0};
 	/* Arbitrary block to keep the stack clean-ish.
 	 * Parse the command-line options.
@@ -223,7 +223,7 @@ void parse_arguments(int argc, char** argv, char* rom_name, char* hw_lib_name)
 			}
 			hw_found       = 1;
 			hw_lib_name[0] = 0;
-			strcpy(hw_lib_name, "./lib");
+			strcpy(hw_lib_name, "hardware/lib");
 			strncat(hw_lib_name, optarg, 10);
 			strcat(hw_lib_name, ".so");
 			break;
