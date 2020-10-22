@@ -11,6 +11,18 @@ set(FlagSettings "-Wall" "-Werror" "-Wextra"
 	"$<$<CONFIG:DEBUG>:-DVERBOSE -DDEBUG>"
 )
 
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/hardware)
+set(ROM_DIR ${CMAKE_BINARY_DIR}/roms)
+
+#Copy ROMs
+file(GLOB ROM_FILES ${CMAKE_SOURCE_DIR}/roms/*)
+foreach(rom ${ROM_FILES})
+	get_filename_component(name ${rom} NAME)
+	configure_file(${rom} ${ROM_DIR}/${name}
+		COPYONLY
+	)
+endforeach()
+
 add_library(SourceFiles
 	OBJECT
 		src/arithmetic_opcodes.c

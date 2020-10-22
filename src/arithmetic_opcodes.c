@@ -20,8 +20,11 @@ int add_adc(uint8_t opcode, struct cpu_state* cpu)
 			get_operand_name(GET_SOURCE_OPERAND(opcode)));
 #endif
 	uint16_t operand = fetch_operand_val(GET_SOURCE_OPERAND(opcode), cpu);
-	if (opcode & (1 << 3) && cpu->flags & CARRY_FLAG) ++operand;
-	uint16_t result = _add(cpu->a, operand, &cpu->flags);
+	// if (opcode & (1 << 3) && cpu->flags & CARRY_FLAG) ++operand;
+	uint16_t result = _add(cpu->a,
+			operand,
+			(opcode & (1 << 3) && cpu->flags & CARRY_FLAG),
+			&cpu->flags);
 	APPLY_CARRY_FLAG(result, cpu->flags);
 	cpu->a = result;
 	cycle_wait(4);
@@ -41,7 +44,7 @@ int adi(uint8_t opcode, struct cpu_state* cpu)
 	// The content of the second byte of the instruction is added to
 	// the content of the accumulator.
 	uint16_t operand = cpu->memory[cpu->pc + 1];
-	uint16_t result	 = _add(cpu->a, operand, &cpu->flags);
+	uint16_t result	 = _add(cpu->a, operand, 0, &cpu->flags);
 	APPLY_CARRY_FLAG(result, cpu->flags);
 	cpu->a = result;
 
@@ -63,8 +66,8 @@ int aci(uint8_t opcode, struct cpu_state* cpu)
 	// content of the carry flag are added to the contents of the
 	// accumulator.
 	uint16_t operand = cpu->memory[cpu->pc + 1];
-	if (cpu->flags & CARRY_FLAG) ++operand;
-	uint16_t result = _add(cpu->a, operand, &cpu->flags);
+	uint16_t result	 = _add(
+			 cpu->a, operand, cpu->flags & CARRY_FLAG, &cpu->flags);
 	APPLY_CARRY_FLAG(result, cpu->flags);
 	cpu->a = result;
 
@@ -89,9 +92,6 @@ int sub_sbb(uint8_t opcode, struct cpu_state* cpu)
 			get_operand_name(GET_SOURCE_OPERAND(opcode)));
 #endif
 	uint16_t operand = fetch_operand_val(GET_SOURCE_OPERAND(opcode), cpu);
-	// Per the manual, the carry flag is applied (if appropriate)
-	// prior to taking the two's complement.
-	if (opcode & (1 << 3) && cpu->flags & CARRY_FLAG) ++operand;
 	/* Find two's complement.  This is a little hairy: first we need
 	 * to invert the bits, and cast the inverted version to char length.
 	 * The reason is that without the cast, we'd get all the high bits,
@@ -106,27 +106,16 @@ int sub_sbb(uint8_t opcode, struct cpu_state* cpu)
 	 * because we need to be able to roll over into the ninth bit
 	 * when we do the +1, otherwise 0 becomes -1, which is ungood.
 	 */
-	operand = (uint8_t) ~operand;
-	++operand;
-	// Add exactly as we would if this were an addition.
-	uint16_t result = _add(cpu->a, operand, &cpu->flags);
+	operand		= (uint8_t) ~operand;
+	uint16_t result = _add(cpu->a,
+			operand,
+			!(opcode & (1 << 3) && cpu->flags & CARRY_FLAG),
+			&cpu->flags);
 	APPLY_CARRY_FLAG_INVERTED(result, cpu->flags);
 	cpu->a = result;
 
 	cycle_wait(4);
 	return 1;
-}
-
-int sui(uint8_t opcode, struct cpu_state* cpu)
-{
-	// TODO
-	return placeholder(opcode, cpu);
-}
-
-int sbb(uint8_t opcode, struct cpu_state* cpu)
-{
-	// TODO
-	return placeholder(opcode, cpu);
 }
 
 int sui_sbi(uint8_t opcode, struct cpu_state* cpu)
@@ -140,17 +129,15 @@ int sui_sbi(uint8_t opcode, struct cpu_state* cpu)
 			(opcode & 0b00001000 ? 'B' : 'U'));
 #endif
 	uint16_t operand = cpu->memory[cpu->pc + 1];
-	// Per the manual, the carry flag is applied (if appropriate)
-	// prior to taking the two's complement.
-	if (opcode & (1 << 3) && cpu->flags & CARRY_FLAG) ++operand;
 	/* Find two's complement.  See sub_sbb() function comments for a
 	 * detailed description about the nit-picky and many-faceted details
 	 * of this process in C that result in the following two lines of code.
 	 */
-	operand = (uint8_t) ~operand;
-	++operand;
-	// Add exactly as we would if this were an addition.
-	uint16_t result = _add(cpu->a, operand, &cpu->flags);
+	operand		= (uint8_t) ~operand;
+	uint16_t result = _add(cpu->a,
+			operand,
+			!(opcode & (1 << 3) && cpu->flags & CARRY_FLAG),
+			&cpu->flags);
 	APPLY_CARRY_FLAG_INVERTED(result, cpu->flags);
 
 	// apply the lower 8-bits of result to register A
@@ -177,7 +164,7 @@ int inr(uint8_t opcode, struct cpu_state* cpu)
 	 * The aux carry flag will be set if the lower 3 bits of the operator
 	 * are set.
 	 */
-	*op_ptr = _add(*op_ptr, 1, &cpu->flags);
+	*op_ptr = _add(*op_ptr, 1, 0, &cpu->flags);
 
 	// If the operand was OPERAND_MEM, then this opcode takes 10 clock
 	// cycles. Otherwise, it takes 5.
@@ -203,7 +190,7 @@ int dcr(uint8_t opcode, struct cpu_state* cpu)
 	 * The aux carry flag will be set iff the lower 4 bits of the operator
 	 * are reset.
 	 */
-	*op_ptr = _add(*op_ptr, -1, &cpu->flags);
+	*op_ptr = _add(*op_ptr, -1, 0, &cpu->flags);
 
 	// If the operand was OPERAND_MEM, then this opcode takes 10 clock
 	// cycles. Otherwise, it takes 5.
@@ -264,33 +251,26 @@ int daa(uint8_t opcode, struct cpu_state* cpu)
 #endif
 
 	(void) opcode;
-	uint16_t working = cpu->a;
-	// uint8_t aux_carry_set = 0;
 	// If the low nibble > 9, OR aux carry is set, add six to the low
 	// nibble.
-	if ((working & 0x0f) > 9 || (cpu->flags & AUX_CARRY_FLAG))
-	{
-		working += 0x06;
-		APPLY_AUX_CARRY_FLAG(cpu->a, 6, working, cpu->flags);
-	}
-	// Clear the AC if we did nothing.
-	else
-		cpu->flags &= ~AUX_CARRY_FLAG;
-	// If the high nibble is now >9, or regular carry is set,
-	// add six to the high nibble.
-	if ((working & 0xf0) > 0x90 || (cpu->flags & CARRY_FLAG))
+	uint8_t working = 0;
+	if ((cpu->a & 0x0f) > 9 || (cpu->flags & AUX_CARRY_FLAG))
+	{ working += 0x06; }
+	// If the carry flag is set, OR if the high nibble is above 9, OR
+	// if the high nibble is equal to nine AND the low nibble is ABOVE
+	// nine, then we add six to the high nibble and set the carry flag.
+	//
+	// Note that we can SET the CF here, but never clear it.  The exerciser
+	// ROM gets cranky if we ever clear it.
+	if (((cpu->a & 0xf0) >= 0x90 && (cpu->a & 0x0f) > 9)
+			|| (cpu->a & 0xf0) > 0x90 || (cpu->flags & CARRY_FLAG))
 	{
 		working += 0x60;
-		APPLY_CARRY_FLAG(working, cpu->flags);
+		cpu->flags |= CARRY_FLAG;
 	}
-	// Clear C if we did nothing.
-	else
-		cpu->flags &= ~CARRY_FLAG;
 
-	APPLY_SIGN_FLAG(working, cpu->flags);
-	APPLY_PARITY_FLAG(working, cpu->flags);
-	APPLY_ZERO_FLAG(working, cpu->flags);
-	cpu->a = working;
+	working = _add(cpu->a, working, 0, &cpu->flags);
+	cpu->a	= working;
 	cycle_wait(4);
 	return 1;
 }
