@@ -240,6 +240,6 @@ void parse_arguments(int argc, char** argv, char* rom_name, char* hw_lib_name)
 	if (!hw_found)
 	{
 		hw_lib_name[0] = 0;
-		strcpy(hw_lib_name, "./libnone.so");
+		strcpy(hw_lib_name, "hardware/libnone.so");
 	}
 }
