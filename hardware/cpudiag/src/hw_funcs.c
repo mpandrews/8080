@@ -32,13 +32,13 @@ int hw_out(uint8_t opcode, struct cpu_state* cpu)
 	if (cpu->c == 9)
 	{
 		uint8_t* s = cpu->memory + cpu->de;
-		while (s < cpu->memory + MAX_MEMORY - 1 && *s != '$'
-				&& *s <= 0x7f)
+		while (s < cpu->memory + MAX_MEMORY - 1 && *s != '$')
 			printf("%c", *s++);
 	}
 	else
 		printf("%c", cpu->e);
 
+	fflush(NULL);
 	cycle_wait(10);
 	return 2;
 }
