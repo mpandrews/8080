@@ -51,6 +51,33 @@ Note also that if `VERBOSE` is set while benchmarking, the overhead of all the p
 
 To actually run the benchmark, simply run the emulator as normal.  Do note that for benchmarking to be of any use, the ROM you choose to run will have to execute for at least `BENCH_INTERVAL` cycles of the 8080.  A simple looping ROM is recommended.
 
+### CPU Testing
+At present, the emulator passes the available 8080 test ROMs we have access to.  These are included in the repo; when the project is built, ROMs are placed in a `roms` subdirectory, relative to the executable.
+
+Three test roms are available:
+- The 1980 Microcosm Associates test, usually called TST8080.
+- - `roms/cpudiag`
+- The 1981 Supersoft Associates Diagnostic II v. 1.2, usually called CPUTEST.
+- - `roms/cputest`
+- The 1994 zexlax Z80 Exerciser by Frank Cringle, with the 2009 modifications by Ian Bartholomew.
+- - `roms/exerciser`
+
+Assembly source for all three can be found at https://altairclone.com/downloads/cpu_tests/ .
+
+All three were originally written to be run under CP/M.  For our purposes, they should be run with the `cpudiag` hardware library, which emulates two CP/M print routines by repurposing the `OUT` instruction.
+
+Note that the binaries for all three have been modified to make them suitable for our emulator: because they expect to be loaded into a running OS, they all expect to begin at `0x100`.  The modified roms place them there directly by padding the binary, and further adjust some of the low memory to emplace the call to `OUT` and to jump from `0x0` (where emulator execution begins) to `0x100` (where the programs start).  As originally designed, they also jump back to `0x0` when they finish, to return control to CP/M.  Those jumps have been replaced with `HLT`.
+
+To run one, just specify the rom and the hardware set, e.g. `./8080 -r roms/cputest --hw cpudiag`.
+
+It is strongly recommended, however, that you build an unthrottled version first:
+
+`make clean && make C_FLAGS="-DCYCLE_TIME=0 -O2"`
+
+Though this isn't mandatory, be aware that at 2MHz, `cputest` will take several minutes, and `exerciser` will take several hours.  If your system is slow enough that the debug disassembly drives speed below 2MHz, it will of course take even longer.
+
+Because we end execution by halting, you will need to manually terminate the emulator when execution finishes.  There is, after all, no way to quit an 8080 except to cut the power.
+
 ### Contributing Guidelines
 - Branch from master and make a pull request when ready to review.
 - Make sure to run `clang-format --style=file -i include/* src/* test/*`
