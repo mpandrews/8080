@@ -35,10 +35,9 @@ int hw_out(uint8_t opcode, struct cpu_state* cpu)
 		while (s < cpu->memory + MAX_MEMORY - 1 && *s != '$'
 				&& *s <= 0x7f)
 			printf("%c", *s++);
-		printf("\n");
 	}
 	else
-		printf("%c\n", cpu->e);
+		printf("%c", cpu->e);
 
 	cycle_wait(10);
 	return 2;
