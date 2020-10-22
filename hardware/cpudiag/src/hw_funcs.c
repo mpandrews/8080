@@ -31,14 +31,14 @@ int hw_out(uint8_t opcode, struct cpu_state* cpu)
 	// print.
 	if (cpu->c == 9)
 	{
-		uint8_t* s = cpu->memory + cpu->de + 3;
+		uint8_t* s = cpu->memory + cpu->de;
 		while (s < cpu->memory + MAX_MEMORY - 1 && *s != '$'
 				&& *s <= 0x7f)
 			printf("%c", *s++);
 		printf("\n");
 	}
 	else
-		printf("%1.1x\n", cpu->memory[cpu->de + 3]);
+		printf("%c\n", cpu->e);
 
 	cycle_wait(10);
 	return 2;
