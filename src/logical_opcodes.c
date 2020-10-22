@@ -60,14 +60,19 @@ int ani(uint8_t opcode, struct cpu_state* cpu)
 	fprintf(stderr, "0x%4.4x: ANI\n", cpu->pc);
 #endif
 
+	uint8_t operand = cpu->memory[cpu->pc + 1];
+	cpu->flags	= ((1 << 3) & (cpu->a | operand)
+					     ? cpu->flags | AUX_CARRY_FLAG
+					     : cpu->flags & ~AUX_CARRY_FLAG);
+
 	// AND immediate
-	cpu->a &= cpu->memory[cpu->pc + 1];
+	cpu->a &= operand;
 
 	APPLY_ZERO_FLAG(cpu->a, cpu->flags);
 	APPLY_SIGN_FLAG(cpu->a, cpu->flags);
 	APPLY_PARITY_FLAG(cpu->a, cpu->flags);
 	// Clear CY and AC flags
-	cpu->flags &= (~CARRY_FLAG & ~AUX_CARRY_FLAG);
+	cpu->flags &= ~CARRY_FLAG;
 
 	cycle_wait(7);
 	return 2;
@@ -201,9 +206,8 @@ int cmp(uint8_t opcode, struct cpu_state* cpu)
 	// The accumulator remains UNCHANGED.
 	// The condition flags are set as a result of the subtraction
 	// Subtraction - take two's complement and then add
-	operand = (uint8_t) ~operand;
-	++operand;
-	uint16_t result = _add(cpu->a, operand, &cpu->flags);
+	operand		= (uint8_t) ~operand;
+	uint16_t result = _add(cpu->a, operand, 1, &cpu->flags);
 	APPLY_CARRY_FLAG_INVERTED(result, cpu->flags);
 
 	// If CMP memory, wait 7 cycles. If CMP register, wait 4 cycles
@@ -228,13 +232,12 @@ int cpi(uint8_t opcode, struct cpu_state* cpu)
 	 * of the flags are set normally based upon the result.
 	 */
 
-	// get two's complement of the operand
-	uint8_t operand = cpu->memory[cpu->pc + 1];
-	operand		= (uint8_t) ~operand;
-	++operand;
+	// get one's complement of the operand
+	uint16_t operand = cpu->memory[cpu->pc + 1];
+	operand		 = (uint8_t) ~operand;
 
 	// get the result and set the flags, and then discard the result
-	uint16_t result = _add(cpu->a, operand, &cpu->flags);
+	uint16_t result = _add(cpu->a, operand, 1, &cpu->flags);
 	APPLY_CARRY_FLAG_INVERTED(result, cpu->flags);
 
 	cycle_wait(7);

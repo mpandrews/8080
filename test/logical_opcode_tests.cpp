@@ -125,15 +125,15 @@ TEST(ANI, All)
 	cpu.pc += ani(0xe6, &cpu);
 	EXPECT_EQ(cpu.pc, 2);
 	EXPECT_EQ(cpu.a, 0xab);
-	// Only sign flag is set
-	EXPECT_EQ(cpu.flags, 0b10000000);
+	// Sign and AC.
+	EXPECT_EQ(cpu.flags, SIGN_FLAG | AUX_CARRY_FLAG);
 
 	cpu.memory[cpu.pc + 1] = 0x00;
 	cpu.pc += ani(0xe6, &cpu);
 	EXPECT_EQ(cpu.pc, 4);
 	EXPECT_EQ(cpu.a, 0x00);
 	// Zero and parity flags are set
-	EXPECT_EQ(cpu.flags, 0b01000100);
+	EXPECT_EQ(cpu.flags, ZERO_FLAG | AUX_CARRY_FLAG | PARITY_FLAG);
 }
 
 TEST(XRA, Registers_and_Memory)
@@ -422,7 +422,7 @@ TEST(CMP, All)
 	cpu.pc += cmp(0xb8, &cpu);
 	EXPECT_EQ(cpu.pc, 1);
 	// Zero and parity flags are set.
-	EXPECT_EQ(cpu.flags, 0b01000100);
+	EXPECT_EQ(cpu.flags, ZERO_FLAG | PARITY_FLAG | AUX_CARRY_FLAG);
 
 	// CMP C
 	// A < operand_val
@@ -447,7 +447,7 @@ TEST(CMP, All)
 	cpu.pc += cmp(0xbb, &cpu);
 	EXPECT_EQ(cpu.pc, 4);
 	// Zero and parity flags are set.
-	EXPECT_EQ(cpu.flags, 0b01000100);
+	EXPECT_EQ(cpu.flags, ZERO_FLAG | PARITY_FLAG | AUX_CARRY_FLAG);
 
 	// CMP H
 	// A < operand_val

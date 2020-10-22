@@ -114,7 +114,7 @@ TEST(ADC, All)
 	cpu.pc += add_adc(0x88, &cpu);
 	// 1 + -1 + 1 from carry == 1
 	EXPECT_EQ(cpu.a, 1);
-	EXPECT_EQ(cpu.flags, 0b00000001);
+	EXPECT_EQ(cpu.flags, CARRY_FLAG | AUX_CARRY_FLAG);
 	// And now we make sure we're not spuriously adding in the carry bit
 	// when it's not set.
 	// A is still 1, B is still 255/-1
@@ -188,16 +188,16 @@ TEST(SUB, All)
 	cpu.pc += sub_sbb(0x97, &cpu);
 	EXPECT_EQ(cpu.a, 0);
 	// SZ-A-P-C
-	// Zero and Parity should be set.
-	EXPECT_EQ(cpu.flags, 0b01000100);
+	// Zero, Parity, and AC should be set.
+	EXPECT_EQ(cpu.flags, ZERO_FLAG | PARITY_FLAG | AUX_CARRY_FLAG);
 
 	cpu.a = 1;
 	cpu.b = 0;
 	// SUB B
 	cpu.pc += sub_sbb(0x90, &cpu);
 	EXPECT_EQ(cpu.a, 1);
-	// No flags should be set.
-	EXPECT_EQ(cpu.flags, 0b00000000);
+	// AC should be set.
+	EXPECT_EQ(cpu.flags, AUX_CARRY_FLAG);
 
 	cpu.a = 0;
 	cpu.b = 1;
@@ -405,7 +405,7 @@ TEST(DAA, All)
 	cpu.pc += daa(0x27, &cpu);
 	EXPECT_EQ(cpu.pc, 6);
 	EXPECT_EQ(cpu.a, 0x71);
-	EXPECT_EQ(cpu.flags, PARITY_FLAG);
+	EXPECT_EQ(cpu.flags, PARITY_FLAG | CARRY_FLAG);
 
 	// 1 and 1, A and AC.
 	cpu.a	  = 0x11;
@@ -413,7 +413,7 @@ TEST(DAA, All)
 	cpu.pc += daa(0x27, &cpu);
 	EXPECT_EQ(cpu.pc, 7);
 	EXPECT_EQ(cpu.a, 0x77);
-	EXPECT_EQ(cpu.flags, PARITY_FLAG);
+	EXPECT_EQ(cpu.flags, PARITY_FLAG | CARRY_FLAG);
 }
 
 TEST(DAD, All)

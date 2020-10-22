@@ -288,9 +288,10 @@ static inline const char* get_register_pair_name_other(const uint8_t opcode)
 	}
 }
 
-static inline uint16_t _add(uint16_t left, uint16_t right, uint8_t* flags)
+static inline uint16_t _add(
+		uint16_t left, uint16_t right, uint8_t carry, uint8_t* flags)
 {
-	uint16_t result = left + right;
+	uint16_t result = left + right + carry;
 	APPLY_AUX_CARRY_FLAG(left, right, result, *flags);
 	APPLY_ZERO_FLAG((uint8_t) result, *flags);
 	APPLY_PARITY_FLAG(result, *flags);
