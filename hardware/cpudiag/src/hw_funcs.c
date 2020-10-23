@@ -44,11 +44,14 @@ int hw_out(const uint8_t* opcode, struct cpu_state* cpu)
 }
 
 // Interrupt Hook
-void hw_interrupt_hook(const uint8_t* opcode, struct cpu_state* cpu)
+int hw_interrupt_hook(const uint8_t* opcode,
+		struct cpu_state* cpu,
+		int (*op_func)(const uint8_t*, struct cpu_state*))
 {
-	(void) opcode;
-	(void) cpu;
-	return;
+#ifdef VERBOSE
+	fprintf(stderr, "INT   : ");
+#endif
+	return op_func(opcode, cpu);
 }
 
 // Init Struct
