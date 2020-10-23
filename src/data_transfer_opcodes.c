@@ -74,7 +74,7 @@ int lxi(const uint8_t* opcode, struct cpu_state* cpu)
 	assert((opcode[0] & 0b11001111) == 0b00000001);
 #ifdef VERBOSE
 	fprintf(stderr,
-			"LXI %s\n 0x%4.4x",
+			"LXI %s 0x%4.4x\n",
 			get_register_pair_name_other(opcode[0]),
 			IMM16(opcode));
 #endif
