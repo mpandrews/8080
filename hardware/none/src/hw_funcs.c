@@ -32,11 +32,11 @@ int hw_out(uint8_t opcode, struct cpu_state* cpu)
 }
 
 // Interrupt Hook
-void hw_interrupt_hook(uint8_t opcode, struct cpu_state* cpu)
+int hw_interrupt_hook(uint8_t opcode, struct cpu_state* cpu)
 {
 	(void) opcode;
 	(void) cpu;
-	return;
+	return 0;
 }
 
 // Init Struct

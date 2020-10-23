@@ -5,10 +5,10 @@
 #include <stdint.h>
 struct rom_struct
 {
-	// Pointers for the two display buffers.
-	uint8_t* pingpong_buffer[2];
-	pthread_mutex_t* pingpong_lock;
-	pthread_cond_t* pingpong_condition;
+	// Pointers for the display buffers.
+	uint8_t* video_buffer;
+	pthread_mutex_t* vbuffer_lock;
+	pthread_cond_t* vbuffer_condition;
 	pthread_mutex_t* keystate_lock;
 	// Keystates.  The player controls should be
 	// toggled to on on press, and toggled to off on release.
@@ -25,6 +25,9 @@ struct rom_struct
 			// Instead, the CPU thread should clear them after
 			// reading them.
 			coin : 1, reset : 1;
+	uint8_t shift_old;
+	uint8_t shift_new;
+	uint8_t shift_offset;
 };
 
 #endif
