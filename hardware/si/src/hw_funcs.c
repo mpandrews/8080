@@ -41,8 +41,8 @@ int hw_in(uint8_t opcode, struct cpu_state* cpu)
 		// JEN
 		break;
 	case 3:
-		cpu->a = (rstruct->shift_new << rstruct->shift_offset)
-			 | (rstruct->shift_old >> (8 - rstruct->shift_offset));
+		cpu->a = rstruct->shift_new << rstruct->shift_offset;
+		cpu->a |= rstruct->shift_old >> (8 - rstruct->shift_offset);
 	}
 	cycle_wait(10);
 	return 2;

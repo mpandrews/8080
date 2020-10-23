@@ -36,7 +36,7 @@ int hw_interrupt_hook(uint8_t opcode, struct cpu_state* cpu)
 {
 	(void) opcode;
 	(void) cpu;
-	return;
+	return 0;
 }
 
 // Init Struct
