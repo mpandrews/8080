@@ -8,6 +8,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define VIDEO_MEMORY_OFFSET    0x2400
+#define VIDEO_MEMORY_HALF_SIZE 0xe00
+
 extern void cycle_wait(int);
 
 static inline void check_malloc(void* arg)
@@ -87,7 +90,9 @@ int hw_interrupt_hook(uint8_t opcode, struct cpu_state* cpu)
 	if (opcode == 0xcf)
 	{
 		pthread_mutex_lock(rstruct->vbuffer_lock);
-		memcpy(rstruct->video_buffer, cpu->memory + 0x2400, 0xe00);
+		memcpy(rstruct->video_buffer,
+				cpu->memory + VIDEO_MEMORY_OFFSET,
+				VIDEO_MEMORY_HALF_SIZE);
 		pthread_mutex_unlock(rstruct->vbuffer_lock);
 		pthread_cond_signal(rstruct->vbuffer_condition);
 	}
@@ -97,8 +102,9 @@ int hw_interrupt_hook(uint8_t opcode, struct cpu_state* cpu)
 	{
 		pthread_mutex_lock(rstruct->vbuffer_lock);
 		memcpy(rstruct->video_buffer,
-				cpu->memory + 0x2400 + 0xe00,
-				0xe00);
+				cpu->memory + VIDEO_MEMORY_OFFSET
+						+ VIDEO_MEMORY_HALF_SIZE,
+				VIDEO_MEMORY_HALF_SIZE);
 		pthread_mutex_unlock(rstruct->vbuffer_lock);
 		pthread_cond_signal(rstruct->vbuffer_condition);
 	}
@@ -110,9 +116,9 @@ int hw_interrupt_hook(uint8_t opcode, struct cpu_state* cpu)
 void* hw_init_struct()
 {
 	struct rom_struct* rstruct = malloc(sizeof(struct rom_struct));
-	rstruct->video_buffer	   = malloc(0xe00);
+	rstruct->video_buffer	   = malloc(VIDEO_MEMORY_HALF_SIZE);
 	check_malloc(rstruct->video_buffer);
-	memset(rstruct->video_buffer, 0, 0xe00);
+	memset(rstruct->video_buffer, 0, VIDEO_MEMORY_HALF_SIZE);
 	rstruct->vbuffer_lock = malloc(sizeof(pthread_mutex_t));
 	check_malloc(rstruct->video_buffer);
 	pthread_mutex_init(rstruct->vbuffer_lock, NULL);
