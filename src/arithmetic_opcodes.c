@@ -5,25 +5,25 @@
 
 #include <assert.h>
 
-int add_adc(uint8_t opcode, struct cpu_state* cpu)
+int add_adc(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert((opcode & 0b11110000) == 0b10000000);
+	assert((opcode[0] & 0b11110000) == 0b10000000);
 #ifdef VERBOSE
 	// This looks funky, but the idea is: if bit 3 of the opcode
 	// is set, then this is ADC.  If it's not, this is ADD.
 	// So we add the reverse of that bit to the character C, and if we have
 	// add, we end up with D.
 	fprintf(stderr,
-			"0x%4.4x: AD%c %c\n",
-			cpu->pc,
-			!(opcode & (1 << 3)) + 'C',
-			get_operand_name(GET_SOURCE_OPERAND(opcode)));
+			"AD%c %c\n",
+			!(opcode[0] & (1 << 3)) + 'C',
+			get_operand_name(GET_SOURCE_OPERAND(opcode[0])));
 #endif
-	uint16_t operand = fetch_operand_val(GET_SOURCE_OPERAND(opcode), cpu);
+	uint16_t operand =
+			fetch_operand_val(GET_SOURCE_OPERAND(opcode[0]), cpu);
 	// if (opcode & (1 << 3) && cpu->flags & CARRY_FLAG) ++operand;
 	uint16_t result = _add(cpu->a,
 			operand,
-			(opcode & (1 << 3) && cpu->flags & CARRY_FLAG),
+			(opcode[0] & (1 << 3) && cpu->flags & CARRY_FLAG),
 			&cpu->flags);
 	APPLY_CARRY_FLAG(result, cpu->flags);
 	cpu->a = result;
@@ -31,19 +31,19 @@ int add_adc(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int adi(uint8_t opcode, struct cpu_state* cpu)
+int adi(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert(opcode == 0xc6);
+	assert(opcode[0] == 0xc6);
 	(void) opcode;
 
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: ADI\n", cpu->pc);
+	fprintf(stderr, "ADI 0x%2.2x\n", opcode[1]);
 #endif
 
 	// Add immediate
 	// The content of the second byte of the instruction is added to
 	// the content of the accumulator.
-	uint16_t operand = cpu->memory[cpu->pc + 1];
+	uint16_t operand = opcode[1];
 	uint16_t result	 = _add(cpu->a, operand, 0, &cpu->flags);
 	APPLY_CARRY_FLAG(result, cpu->flags);
 	cpu->a = result;
@@ -52,20 +52,20 @@ int adi(uint8_t opcode, struct cpu_state* cpu)
 	return 2;
 }
 
-int aci(uint8_t opcode, struct cpu_state* cpu)
+int aci(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert(opcode == 0xce);
+	assert(opcode[0] == 0xce);
 	(void) opcode;
 
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: ACI\n", cpu->pc);
+	fprintf(stderr, "ACI 0x%2.2x\n", opcode[1]);
 #endif
 
 	// Add immediate with carry
 	// The content of the second byte of the instruction and the
 	// content of the carry flag are added to the contents of the
 	// accumulator.
-	uint16_t operand = cpu->memory[cpu->pc + 1];
+	uint16_t operand = opcode[1];
 	uint16_t result	 = _add(
 			 cpu->a, operand, cpu->flags & CARRY_FLAG, &cpu->flags);
 	APPLY_CARRY_FLAG(result, cpu->flags);
@@ -75,23 +75,17 @@ int aci(uint8_t opcode, struct cpu_state* cpu)
 	return 2;
 }
 
-int adc(uint8_t opcode, struct cpu_state* cpu)
+int sub_sbb(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	// TODO
-	return placeholder(opcode, cpu);
-}
-
-int sub_sbb(uint8_t opcode, struct cpu_state* cpu)
-{
-	assert((opcode & 0b11110000) == 0b10010000);
+	assert((opcode[0] & 0b11110000) == 0b10010000);
 #ifdef VERBOSE
 	fprintf(stderr,
-			"0x%4.4x: S%cB %c\n",
-			cpu->pc,
-			(opcode & 0b00001000 ? 'B' : 'U'),
-			get_operand_name(GET_SOURCE_OPERAND(opcode)));
+			"S%cB %c\n",
+			(opcode[0] & 0b00001000 ? 'B' : 'U'),
+			get_operand_name(GET_SOURCE_OPERAND(opcode[0])));
 #endif
-	uint16_t operand = fetch_operand_val(GET_SOURCE_OPERAND(opcode), cpu);
+	uint16_t operand =
+			fetch_operand_val(GET_SOURCE_OPERAND(opcode[0]), cpu);
 	/* Find two's complement.  This is a little hairy: first we need
 	 * to invert the bits, and cast the inverted version to char length.
 	 * The reason is that without the cast, we'd get all the high bits,
@@ -109,7 +103,7 @@ int sub_sbb(uint8_t opcode, struct cpu_state* cpu)
 	operand		= (uint8_t) ~operand;
 	uint16_t result = _add(cpu->a,
 			operand,
-			!(opcode & (1 << 3) && cpu->flags & CARRY_FLAG),
+			!(opcode[0] & (1 << 3) && cpu->flags & CARRY_FLAG),
 			&cpu->flags);
 	APPLY_CARRY_FLAG_INVERTED(result, cpu->flags);
 	cpu->a = result;
@@ -118,17 +112,17 @@ int sub_sbb(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int sui_sbi(uint8_t opcode, struct cpu_state* cpu)
+int sui_sbi(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// SUI is 0xd6 and SBI is 0xde
-	assert((opcode & 0b11110111) == 0b11010110);
+	assert((opcode[0] & 0b11110111) == 0b11010110);
 #ifdef VERBOSE
 	fprintf(stderr,
-			"0x%4.4x: S%cI\n",
-			cpu->pc,
-			(opcode & 0b00001000 ? 'B' : 'U'));
+			"S%cI 0x%2.2x\n",
+			opcode[1],
+			(opcode[0] & 0b00001000 ? 'B' : 'U'));
 #endif
-	uint16_t operand = cpu->memory[cpu->pc + 1];
+	uint16_t operand = opcode[1];
 	/* Find two's complement.  See sub_sbb() function comments for a
 	 * detailed description about the nit-picky and many-faceted details
 	 * of this process in C that result in the following two lines of code.
@@ -136,7 +130,7 @@ int sui_sbi(uint8_t opcode, struct cpu_state* cpu)
 	operand		= (uint8_t) ~operand;
 	uint16_t result = _add(cpu->a,
 			operand,
-			!(opcode & (1 << 3) && cpu->flags & CARRY_FLAG),
+			!(opcode[0] & (1 << 3) && cpu->flags & CARRY_FLAG),
 			&cpu->flags);
 	APPLY_CARRY_FLAG_INVERTED(result, cpu->flags);
 
@@ -147,19 +141,18 @@ int sui_sbi(uint8_t opcode, struct cpu_state* cpu)
 	return 2;
 }
 
-int inr(uint8_t opcode, struct cpu_state* cpu)
+int inr(const uint8_t* opcode, struct cpu_state* cpu)
 {
 
 	(void) opcode;
-	assert((opcode & 0b11000111) == 0b000000100);
+	assert((opcode[0] & 0b11000111) == 0b000000100);
 #ifdef VERBOSE
 	fprintf(stderr,
-			"0x%4.4x: INR %c\n",
-			cpu->pc,
-			get_operand_name(GET_DESTINATION_OPERAND(opcode)));
+			"INR %c\n",
+			get_operand_name(GET_DESTINATION_OPERAND(opcode[0])));
 #endif
-	uint8_t* op_ptr =
-			fetch_operand_ptr(GET_DESTINATION_OPERAND(opcode), cpu);
+	uint8_t* op_ptr = fetch_operand_ptr(
+			GET_DESTINATION_OPERAND(opcode[0]), cpu);
 	/* INR increments an 8-bit register or a location in memory.
 	 * The aux carry flag will be set if the lower 3 bits of the operator
 	 * are set.
@@ -168,24 +161,23 @@ int inr(uint8_t opcode, struct cpu_state* cpu)
 
 	// If the operand was OPERAND_MEM, then this opcode takes 10 clock
 	// cycles. Otherwise, it takes 5.
-	(GET_DESTINATION_OPERAND(opcode) == OPERAND_MEM) ? cycle_wait(10)
-							 : cycle_wait(5);
+	(GET_DESTINATION_OPERAND(opcode[0]) == OPERAND_MEM) ? cycle_wait(10)
+							    : cycle_wait(5);
 
 	return 1;
 }
 
-int dcr(uint8_t opcode, struct cpu_state* cpu)
+int dcr(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	(void) opcode;
-	assert((opcode & 0b11000111) == 0b000000101);
+	assert((opcode[0] & 0b11000111) == 0b000000101);
 #ifdef VERBOSE
 	fprintf(stderr,
-			"0x%4.4x: DCR %c\n",
-			cpu->pc,
-			get_operand_name(GET_DESTINATION_OPERAND(opcode)));
+			"DCR %c\n",
+			get_operand_name(GET_DESTINATION_OPERAND(opcode[0])));
 #endif
-	uint8_t* op_ptr =
-			fetch_operand_ptr(GET_DESTINATION_OPERAND(opcode), cpu);
+	uint8_t* op_ptr = fetch_operand_ptr(
+			GET_DESTINATION_OPERAND(opcode[0]), cpu);
 	/* DCR decremtns an 8-bit register or a location in memory.
 	 * The aux carry flag will be set iff the lower 4 bits of the operator
 	 * are reset.
@@ -194,46 +186,42 @@ int dcr(uint8_t opcode, struct cpu_state* cpu)
 
 	// If the operand was OPERAND_MEM, then this opcode takes 10 clock
 	// cycles. Otherwise, it takes 5.
-	(GET_DESTINATION_OPERAND(opcode) == OPERAND_MEM) ? cycle_wait(10)
-							 : cycle_wait(5);
+	(GET_DESTINATION_OPERAND(opcode[0]) == OPERAND_MEM) ? cycle_wait(10)
+							    : cycle_wait(5);
 
 	return 1;
 }
 
-int inx_dcx(uint8_t opcode, struct cpu_state* cpu)
+int inx_dcx(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	(void) opcode;
-	assert((opcode & 0b11000111) == 0b00000011);
+	assert((opcode[0] & 0b11000111) == 0b00000011);
 	/* INX and DCX are increment register pair and derement register pair,
 	 * respectively. Bit 3 determines whether it is INX or DCX.
 	 */
 #ifdef VERBOSE
 	fprintf(stderr,
-			"0x%4.4x: %sX %s\n",
-			cpu->pc,
-			opcode & 0b00001000 ? "DC" : "IN",
-			get_register_pair_name_other(opcode));
+			"%sX %s\n",
+			opcode[0] & 0b00001000 ? "DC" : "IN",
+			get_register_pair_name_other(opcode[0]));
 #endif
 	// INX and DCX increment or decrement the register without affecting
 	// any condition flags. they take 5 clock cycles and advance the
 	// program counter one byte.
-	uint16_t* operand = get_register_pair_other(opcode, cpu);
-	opcode & 0b00001000 ? --*operand : ++*operand;
+	uint16_t* operand = get_register_pair_other(opcode[0], cpu);
+	opcode[0] & 0b00001000 ? --*operand : ++*operand;
 	cycle_wait(5);
 	return 1;
 }
 
-int dad(uint8_t opcode, struct cpu_state* cpu)
+int dad(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert((opcode & 0b11001111) == 0b00001001);
+	assert((opcode[0] & 0b11001111) == 0b00001001);
 #ifdef VERBOSE
-	fprintf(stderr,
-			"0x%4.4x DAD %s\n",
-			cpu->pc,
-			get_register_pair_name_other(opcode));
+	fprintf(stderr, "DAD %s\n", get_register_pair_name_other(opcode[0]));
 #endif
 	// Add the indicated register pair to HL.
-	uint32_t result = cpu->hl + *get_register_pair_other(opcode, cpu);
+	uint32_t result = cpu->hl + *get_register_pair_other(opcode[0], cpu);
 	// Set the carry flag if we carried out of the pair.
 	// We don't touch any other flags.
 	cpu->flags = (result & (1 << 16)) ? cpu->flags | CARRY_FLAG
@@ -243,11 +231,11 @@ int dad(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int daa(uint8_t opcode, struct cpu_state* cpu)
+int daa(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert(opcode == 0x27);
+	assert(opcode[0] == 0x27);
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: DAA\n", cpu->pc);
+	fprintf(stderr, "DAA\n");
 #endif
 
 	(void) opcode;

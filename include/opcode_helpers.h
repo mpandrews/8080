@@ -60,6 +60,8 @@
 #define CONDITION_NO_SIGN     (0b110)
 #define CONDITION_SIGN	      (0b111)
 
+#define IMM16(opcode_ptr) (*(const uint16_t*) (opcode_ptr + 1))
+
 // Returns 1 if even parity, 0 if odd parity.
 static inline uint8_t check_parity(uint8_t value)
 {

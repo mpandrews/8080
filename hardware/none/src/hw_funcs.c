@@ -6,33 +6,33 @@
 extern void cycle_wait(int);
 
 // IN
-int hw_in(uint8_t opcode, struct cpu_state* cpu)
+int hw_in(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert(opcode == 0b11011011);
+	assert(opcode[0] == 0b11011011);
 	(void) cpu;
 	(void) opcode;
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: IN (Hardware: none)\n", cpu->pc);
+	fprintf(stderr, "IN (Hardware: none)\n");
 #endif
 	cycle_wait(10);
 	return 2;
 }
 
 // OUT
-int hw_out(uint8_t opcode, struct cpu_state* cpu)
+int hw_out(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert(opcode == 0b11010011);
+	assert(opcode[0] == 0b11010011);
 	(void) cpu;
 	(void) opcode;
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: OUT (Hardware: none)\n", cpu->pc);
+	fprintf(stderr, "OUT (Hardware: none)\n");
 #endif
 	cycle_wait(10);
 	return 2;
 }
 
 // Interrupt Hook
-int hw_interrupt_hook(uint8_t opcode, struct cpu_state* cpu)
+int hw_interrupt_hook(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	(void) opcode;
 	(void) cpu;

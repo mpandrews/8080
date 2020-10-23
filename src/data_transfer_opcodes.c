@@ -7,7 +7,7 @@
 #include <pthread.h>
 #include <stdio.h>
 
-int mov(uint8_t opcode, struct cpu_state* cpu)
+int mov(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// Sanity check: make sure the opcode that got us here is actually
 	// MOV, unless NDEBUG is defined.  A MOV instruction byte always
@@ -16,20 +16,20 @@ int mov(uint8_t opcode, struct cpu_state* cpu)
 
 	// Note that I'm using binary literals here, because it's easier
 	// to cross-reference them against the manual.
-	assert((opcode & 0b11000000) == 0b01000000 && opcode != 0x76);
+	assert((opcode[0] & 0b11000000) == 0b01000000 && opcode[0] != 0x76);
 
 	// Our nice verbose debug information, slow, but we don't care
 	// for debug purposes.
 #ifdef VERBOSE
 	fprintf(stderr,
-			"0x%4.4x: MOV %c,%c\n",
-			cpu->pc,
-			get_operand_name(GET_DESTINATION_OPERAND(opcode)),
-			get_operand_name(GET_SOURCE_OPERAND(opcode)));
+			"MOV %c,%c\n",
+			get_operand_name(GET_DESTINATION_OPERAND(opcode[0])),
+			get_operand_name(GET_SOURCE_OPERAND(opcode[0])));
 #endif
 	// Fetch pointers to the operands.
-	uint8_t source = fetch_operand_val(GET_SOURCE_OPERAND(opcode), cpu);
-	uint8_t* dest = fetch_operand_ptr(GET_DESTINATION_OPERAND(opcode), cpu);
+	uint8_t source = fetch_operand_val(GET_SOURCE_OPERAND(opcode[0]), cpu);
+	uint8_t* dest  = fetch_operand_ptr(
+			 GET_DESTINATION_OPERAND(opcode[0]), cpu);
 
 	*dest = source;
 	// Increment the program counter, since this is a one-byte
@@ -37,32 +37,31 @@ int mov(uint8_t opcode, struct cpu_state* cpu)
 
 	// If either operand is memory, the instruction takes
 	// an additional two cycles.
-	if (GET_SOURCE_OPERAND(opcode) == OPERAND_MEM
-			|| GET_DESTINATION_OPERAND(opcode) == OPERAND_MEM)
+	if (GET_SOURCE_OPERAND(opcode[0]) == OPERAND_MEM
+			|| GET_DESTINATION_OPERAND(opcode[0]) == OPERAND_MEM)
 		cycle_wait(7);
 	else
 		cycle_wait(5);
 	return 1;
 }
 
-int mvi(uint8_t opcode, struct cpu_state* cpu)
+int mvi(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// Check that we're in the right opcode.
-	assert((opcode & 0b11000111) == 0b00000110);
+	assert((opcode[0] & 0b11000111) == 0b00000110);
 
 #ifdef VERBOSE
 	fprintf(stderr,
-			"0x%4.4x: MVI %c\n",
-			cpu->pc,
-			get_operand_name(GET_DESTINATION_OPERAND(opcode)));
+			"MVI %c 0x%2.2x\n",
+			get_operand_name(GET_DESTINATION_OPERAND(opcode[0])),
+			opcode[1]);
 #endif
 	// Write the byte following the opcode to the destination.
-	*fetch_operand_ptr(GET_DESTINATION_OPERAND(opcode), cpu) =
-			cpu->memory[cpu->pc + 1];
+	*fetch_operand_ptr(GET_DESTINATION_OPERAND(opcode[0]), cpu) = opcode[1];
 
 	// Two-byte opcode, counting the immediate value.
 	// Takes longer if writing to memory.
-	if (GET_DESTINATION_OPERAND(opcode) == OPERAND_MEM)
+	if (GET_DESTINATION_OPERAND(opcode[0]) == OPERAND_MEM)
 		cycle_wait(10);
 	else
 		cycle_wait(7);
@@ -70,14 +69,14 @@ int mvi(uint8_t opcode, struct cpu_state* cpu)
 	return 2;
 }
 
-int lxi(uint8_t opcode, struct cpu_state* cpu)
+int lxi(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert((opcode & 0b11001111) == 0b00000001);
+	assert((opcode[0] & 0b11001111) == 0b00000001);
 #ifdef VERBOSE
 	fprintf(stderr,
-			"0x%4.4x: LXI %s\n",
-			cpu->pc,
-			get_register_pair_name_other(opcode));
+			"LXI %s\n 0x%4.4x",
+			get_register_pair_name_other(opcode[0]),
+			IMM16(opcode));
 #endif
 
 	/* LXI takes its argument (the next two bytes in memory after the
@@ -85,100 +84,97 @@ int lxi(uint8_t opcode, struct cpu_state* cpu)
 	 * It takes 10 clock cycles and advances the program counter 3 bytes.
 	 * It does not affect any condition flags.
 	 */
-	uint16_t* reg = get_register_pair_other(opcode, cpu);
-	*reg	      = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
+	uint16_t* reg = get_register_pair_other(opcode[0], cpu);
+	*reg	      = IMM16(opcode);
 	cycle_wait(10);
 	return 3;
 }
 
-int lda(uint8_t opcode, struct cpu_state* cpu)
+int lda(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// LDA is opcode 0x3A
-	assert(opcode == 0b00111010);
+	assert(opcode[0] == 0b00111010);
 	(void) opcode;
 
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: LDA\n", cpu->pc);
+	fprintf(stderr, "LDA 0x%4.4x\n", IMM16(opcode));
 #endif
 
 	// Load content of the memory location specified in the instruction
 	// to register A
-	uint16_t address = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
+	uint16_t address = *(const uint16_t*) (opcode + 1);
 	cpu->a		 = cpu->memory[address];
 
 	cycle_wait(13);
 	return 3;
 }
 
-int sta(uint8_t opcode, struct cpu_state* cpu)
+int sta(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// STA is opcode 0x32
-	assert(opcode == 0b00110010);
+	assert(opcode[0] == 0b00110010);
 	(void) opcode;
 
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: STA\n", cpu->pc);
+	fprintf(stderr, "STA 0x%4.4x\n", IMM16(opcode));
 #endif
 
 	// Store the content of the accumulator to memory location specified
 	// in the instruction
-	uint16_t address     = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
+	uint16_t address     = *(const uint16_t*) (opcode + 1);
 	cpu->memory[address] = cpu->a;
 
 	cycle_wait(13);
 	return 3;
 }
 
-int lhld(uint8_t opcode, struct cpu_state* cpu)
+int lhld(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert(opcode == 0x2a);
+	assert(opcode[0] == 0x2a);
 	(void) opcode;
 
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: LHLD\n", cpu->pc);
+	fprintf(stderr, "LHLD 0x%4.4x\n", IMM16(opcode));
 #endif
 
 	// Load H and L direct
 	// The content of the memory location specified by the next 2 bytes of
 	// the instruction is loaded to register HL.
-	uint16_t address = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
+	uint16_t address = IMM16(opcode);
 	cpu->hl		 = *((uint16_t*) &cpu->memory[address]);
 
 	cycle_wait(16);
 	return 3;
 }
-int shld(uint8_t opcode, struct cpu_state* cpu)
+int shld(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert(opcode == 0x22);
+	assert(opcode[0] == 0x22);
 	(void) opcode;
 
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: SHLD\n", cpu->pc);
+	fprintf(stderr, "SHLD 0x%4.4x\n", *(const uint16_t*) (opcode + 1));
 #endif
 
 	// Store H and L direct
 	// The content of register HL is moved to the memory location
 	// specified in the next 2 bytes of the instruction.
-	uint16_t address = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
+	uint16_t address		     = IMM16(opcode);
 	*((uint16_t*) &cpu->memory[address]) = cpu->hl;
 
 	cycle_wait(16);
 	return 3;
 }
 
-int ldax(uint8_t opcode, struct cpu_state* cpu)
+int ldax(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// LDAX opcodes are either 0x0A or 0x1A
-	assert(opcode == 0b00001010 || opcode == 0b00011010);
+	assert(opcode[0] == 0b00001010 || opcode[0] == 0b00011010);
 
 #ifdef VERBOSE
-	fprintf(stderr,
-			"0x%4.4x: LDAX %s\n",
-			cpu->pc,
-			get_register_pair_name_other(opcode));
+	fprintf(stderr, "LDAX %s\n", get_register_pair_name_other(opcode[0]));
 #endif
 
-	uint16_t* rp = get_register_pair_other(opcode, cpu);
+	uint16_t* rp = get_register_pair_other(opcode[0], cpu);
 	// load content of the byte at the address found at RP to register A
 	cpu->a = cpu->memory[*rp];
 
@@ -186,19 +182,16 @@ int ldax(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int stax(uint8_t opcode, struct cpu_state* cpu)
+int stax(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// STAX opcodes are either 0x02 or 0x12
-	assert(opcode == 0b00000010 || opcode == 0b00010010);
+	assert(opcode[0] == 0b00000010 || opcode[0] == 0b00010010);
 
 #ifdef VERBOSE
-	fprintf(stderr,
-			"0x%4.4x: STAX %s\n",
-			cpu->pc,
-			get_register_pair_name_other(opcode));
+	fprintf(stderr, "STAX %s\n", get_register_pair_name_other(opcode[0]));
 #endif
 
-	uint16_t* rp = get_register_pair_other(opcode, cpu);
+	uint16_t* rp = get_register_pair_other(opcode[0], cpu);
 	// load register A to memory at the address found in RP
 	cpu->memory[*rp] = cpu->a;
 
@@ -206,14 +199,14 @@ int stax(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int xchg(uint8_t opcode, struct cpu_state* cpu)
+int xchg(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// Check XCHG opcode is 0xEB
-	assert(opcode == 0b11101011);
+	assert(opcode[0] == 0b11101011);
 	(void) opcode;
 
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: XCHG\n", cpu->pc);
+	fprintf(stderr, "XCHG\n");
 #endif
 
 	uint16_t temp = cpu->de;
