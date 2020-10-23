@@ -117,10 +117,8 @@ int sui_sbi(const uint8_t* opcode, struct cpu_state* cpu)
 	// SUI is 0xd6 and SBI is 0xde
 	assert((opcode[0] & 0b11110111) == 0b11010110);
 #ifdef VERBOSE
-	fprintf(stderr,
-			"S%cI 0x%2.2x\n",
-			opcode[1],
-			(opcode[0] & 0b00001000 ? 'B' : 'U'));
+	fprintf(stderr, "S%cI 0x%2.2x\n", (opcode[0] & 0b00001000 ? 'B' : 'U')),
+			opcode[1];
 #endif
 	uint16_t operand = opcode[1];
 	/* Find two's complement.  See sub_sbb() function comments for a

@@ -9,11 +9,10 @@ extern "C"
 
 TEST(MOV, RegisterToRegister)
 {
-	struct cpu_state cpu
-	{};
-	cpu.bc = 0;
-	cpu.de = 0xFFFF;
-	cpu.hl = 0;
+	struct cpu_state cpu = {};
+	cpu.bc		     = 0;
+	cpu.de		     = 0xFFFF;
+	cpu.hl		     = 0;
 
 	// MOV B,D
 	mov(0x42, &cpu);

@@ -25,8 +25,7 @@ TEST(Add, BasicCheck)
 	// SZ-A-P-C
 	// Here we expect the Zero and Parity flags to be set, and all others
 	// to be cleared;
-	EXPECT_EQ(cpu.flags, 0b01000100);
-	EXPECT_EQ(cpu.pc, 1);
+	EXPECT_EQ(cpu.flags, ZERO_FLAG | PARITY_FLAG);
 }
 
 TEST(ADD, AdditionalChecks)
@@ -311,7 +310,6 @@ TEST(SBI, All)
 	opcode[1] = 0x01;
 	cpu.flags = CARRY_FLAG;
 	sui_sbi(opcode, &cpu);
-	EXPECT_EQ(cpu.pc, 4);
 	EXPECT_EQ(cpu.flags, SIGN_FLAG | PARITY_FLAG | CARRY_FLAG);
 }
 
@@ -564,22 +562,22 @@ TEST(DCR, All)
 	cpu.d  = 1;
 	opcode = 0x15;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	cpu.pc += dcr(&opcode, &cpu);
+	dcr(&opcode, &cpu);
 	EXPECT_EQ(cpu.d, 0x00);
 	EXPECT_EQ(cpu.flags,
 			ZERO_FLAG | AUX_CARRY_FLAG | PARITY_FLAG | CARRY_FLAG);
 
 	// Lastly, reset the flags manually, induce a carry(borrow) and assert
-	// that the carry flag and aux carry flags were not set. The zero and
+	// that the carry flag and aux carry flags were not set. The sign and
 	// parity should be set by this operation.
 	cpu.flags = 0;
 	cpu.c	  = 0x00;
 
 	opcode = 0x0d;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	cpu.pc += dcr(&opcode, &cpu);
+	dcr(&opcode, &cpu);
 	EXPECT_EQ(cpu.c, 0xff);
-	EXPECT_EQ(cpu.flags, ZERO_FLAG | PARITY_FLAG);
+	EXPECT_EQ(cpu.flags, SIGN_FLAG | PARITY_FLAG);
 }
 
 TEST(DCX, All)
