@@ -4,6 +4,7 @@ extern "C"
 #include "cpu.h"
 #include "opcode_array.h"
 #include "opcode_decls.h"
+#include "opcode_size.h"
 #include "si/include/rom_struct.h"
 }
 
@@ -50,8 +51,8 @@ TEST(HW_IN, Space_Invaders)
 		exit(1);
 	}
 	// Assign the IN opcode function.
-	opcodes[0xdb] = (int (*)(uint8_t, cpu_state*)) dlsym(
-			hw_lib_handle, "hw_in");
+	opcodes[0xdb] = (int (*)(const uint8_t *, cpu_state *)) dlsym(
+            hw_lib_handle, "hw_in");
 	if (!opcodes[0xdb])
 	{
 		fprintf(stderr,
@@ -61,34 +62,32 @@ TEST(HW_IN, Space_Invaders)
 		exit(1);
 	}
 
+    uint8_t opcode[2] = {0xdb, 1};
+
 	// IN port 1
-	cpu.memory[cpu.pc + 1] = 1;
-	cpu.pc += opcodes[0xdb](0xdb, &cpu);
-	EXPECT_EQ(cpu.pc, 2);
+	opcodes[opcode[0]](opcode, &cpu);
+    EXPECT_EQ(get_opcode_size(opcode[0]), 2);
 	EXPECT_EQ(cpu.a, 0b00001111);
 	EXPECT_EQ(rstruct.coin, 0); // check the coin has been cleared
 
 	// IN port 2
-	cpu.memory[cpu.pc + 1] = 2;
-	cpu.pc += opcodes[0xdb](0xdb, &cpu);
-	EXPECT_EQ(cpu.pc, 4);
+	opcode[1] = 2;
+    opcodes[opcode[0]](opcode, &cpu);
 	EXPECT_EQ(cpu.a, 0b01000000);
 
 	// IN port 3: shift offset 3
 	// 10101011 11001101
 	//    rrrrr rrr
-	cpu.memory[cpu.pc + 1] = 3;
-	cpu.pc += opcodes[0xdb](0xdb, &cpu);
-	EXPECT_EQ(cpu.pc, 6);
+    opcode[1] = 3;
+    opcodes[opcode[0]](opcode, &cpu);
 	EXPECT_EQ(cpu.a, 0b01011110);
 
 	// IN port 3: shift offset 7
 	// 10101011 11001101
 	//        r rrrrrrr
 	rstruct.shift_offset   = 7;
-	cpu.memory[cpu.pc + 1] = 3;
-	cpu.pc += opcodes[0xdb](0xdb, &cpu);
-	EXPECT_EQ(cpu.pc, 8);
+    opcode[1] = 3;
+    opcodes[opcode[0]](opcode, &cpu);
 	EXPECT_EQ(cpu.a, 0b11100110);
 
 	pthread_mutex_destroy(&keystate_lock);

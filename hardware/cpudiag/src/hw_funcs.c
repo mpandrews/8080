@@ -6,26 +6,26 @@
 extern void cycle_wait(int);
 
 // IN
-int hw_in(uint8_t opcode, struct cpu_state* cpu)
+int hw_in(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert(opcode == 0b11011011);
+	assert(opcode[0] == 0b11011011);
 	(void) cpu;
 	(void) opcode;
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: IN (Hardware: cpudiag)\n", cpu->pc);
+	fprintf(stderr, "IN 0x%2.2x (Hardware: cpudiag)\n", opcode[1]);
 #endif
 	cycle_wait(10);
 	return 2;
 }
 
 // OUT
-int hw_out(uint8_t opcode, struct cpu_state* cpu)
+int hw_out(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert(opcode == 0b11010011);
+	assert(opcode[0] == 0b11010011);
 	(void) cpu;
 	(void) opcode;
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: OUT (Hardware: cpudiag)\n", cpu->pc);
+	fprintf(stderr, "OUT 0x%2.2x (Hardware: cpudiag)\n", opcode[1]);
 #endif
 	// Thanks to emulator101.com for figuring out how the ROM tries to
 	// print.
@@ -44,11 +44,14 @@ int hw_out(uint8_t opcode, struct cpu_state* cpu)
 }
 
 // Interrupt Hook
-void hw_interrupt_hook(uint8_t opcode, struct cpu_state* cpu)
+int hw_interrupt_hook(const uint8_t* opcode,
+		struct cpu_state* cpu,
+		int (*op_func)(const uint8_t*, struct cpu_state*))
 {
-	(void) opcode;
-	(void) cpu;
-	return;
+#ifdef VERBOSE
+	fprintf(stderr, "INT   : ");
+#endif
+	return op_func(opcode, cpu);
 }
 
 // Init Struct

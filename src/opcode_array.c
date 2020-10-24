@@ -36,7 +36,7 @@
  * with an extern declaration in the accompanying header file.
  */
 
-int (*opcodes[256])(uint8_t opcode, struct cpu_state* cpu) = {
+int (*opcodes[256])(const uint8_t* opcode, struct cpu_state* cpu) = {
 		nop,	 // 0x00	NOP
 		lxi,	 // 0x01	LXI	B
 		stax,	 // 0x02	STAX	B

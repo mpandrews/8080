@@ -6,7 +6,7 @@
 #include <pthread.h>
 #include <stdio.h>
 
-int placeholder(uint8_t opcode, struct cpu_state* cpu)
+int placeholder(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	(void) cpu;
 	fprintf(stderr,
@@ -14,20 +14,18 @@ int placeholder(uint8_t opcode, struct cpu_state* cpu)
 			"We're not here to take your call right now.\n"
 			"Please implement me, or leave a message after the "
 			"tone.\n",
-			opcode);
+			opcode[0]);
 	exit(1);
 }
+__attribute__ ((deprecated))
 
-int push(uint8_t opcode, struct cpu_state* cpu)
+int push(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert((opcode & 0b11001111) == 0b11000101);
+	assert((opcode[0] & 0b11001111) == 0b11000101);
 #ifdef VERBOSE
-	fprintf(stderr,
-			"0x%4.4x: PUSH %s\n",
-			cpu->pc,
-			get_register_pair_name_pushpop(opcode));
+	fprintf(stderr, "PUSH %s\n", get_register_pair_name_pushpop(opcode[0]));
 #endif
-	uint16_t value = *get_register_pair_pushpop(opcode, cpu);
+	uint16_t value = *get_register_pair_pushpop(opcode[0], cpu);
 	/* Special case to handle fixed bits in PUSH PSW.
 	 * For whatever reason, bits 1, 3, and 5 of flags take fixed
 	 * values when PSW is pushed onto the stack.  1 takes 1,
@@ -40,7 +38,7 @@ int push(uint8_t opcode, struct cpu_state* cpu)
 	 * and'ing zeroes into the high byte.  Hence the ~, since
 	 * that will get us a nice 1-padded high byte.
 	 */
-	if (opcode == 0b11110101)
+	if (opcode[0] == 0b11110101)
 	{
 		value |= 0b00000010;
 		value &= ~0b00101000;
@@ -52,20 +50,17 @@ int push(uint8_t opcode, struct cpu_state* cpu)
 	cycle_wait(11);
 	return 1;
 }
-int pop(uint8_t opcode, struct cpu_state* cpu)
+int pop(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// Check POP opcode is one of: 0xC1, 0xD1, 0xE1, 0xF1
 	// POP opcode should look like: 11RP0001, where RP is a register pair
-	assert((opcode & 0b11001111) == 0b11000001);
+	assert((opcode[0] & 0b11001111) == 0b11000001);
 
 #ifdef VERBOSE
-	fprintf(stderr,
-			"0x%4.4x: POP %s\n",
-			cpu->pc,
-			get_register_pair_name_pushpop(opcode));
+	fprintf(stderr, "POP %s\n", get_register_pair_name_pushpop(opcode[0]));
 #endif
 
-	uint16_t* rp = get_register_pair_pushpop(opcode, cpu);
+	uint16_t* rp = get_register_pair_pushpop(opcode[0], cpu);
 	*rp	     = *((uint16_t*) &cpu->memory[cpu->sp]);
 
 	cpu->sp += 2;
@@ -74,13 +69,13 @@ int pop(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int xthl(uint8_t opcode, struct cpu_state* cpu)
+int xthl(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// assert that this is the correct opcode
-	assert(opcode == 0b11100011);
+	assert(opcode[0] == 0b11100011);
 	(void) opcode;
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: XTHL\n", opcode);
+	fprintf(stderr, "XTHL\n");
 #endif
 
 	// swap the contents of hl and memory[sp]
@@ -92,13 +87,13 @@ int xthl(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int sphl(uint8_t opcode, struct cpu_state* cpu)
+int sphl(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// assert that this is the correct opcode
-	assert(opcode == 0b11111001);
+	assert(opcode[0] == 0b11111001);
 	(void) opcode;
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: SPHL\n", opcode);
+	fprintf(stderr, "SPHL\n");
 #endif
 
 	// replace sp with the contents of hl
@@ -108,13 +103,13 @@ int sphl(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int ei(uint8_t opcode, struct cpu_state* cpu)
+int ei(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert(opcode == 0xFB);
+	assert(opcode[0] == 0xFB);
 	(void) opcode;
 
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: EI\n", opcode);
+	fprintf(stderr, "EI\n");
 #endif
 
 	// Enable interrupts
@@ -124,13 +119,13 @@ int ei(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int di(uint8_t opcode, struct cpu_state* cpu)
+int di(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert(opcode == 0xF3);
+	assert(opcode[0] == 0xF3);
 	(void) opcode;
 
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: DI\n", opcode);
+	fprintf(stderr, "DI\n");
 #endif
 
 	// Disable interrupts
@@ -140,13 +135,13 @@ int di(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int hlt(uint8_t opcode, struct cpu_state* cpu)
+int hlt(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// Check HLT opcode is 0x76
-	assert(opcode == 0b01110110);
+	assert(opcode[0] == 0b01110110);
 	(void) opcode;
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: HLT\n", cpu->pc);
+	fprintf(stderr, "HLT\n");
 #endif
 
 	cpu->halt_flag = 1;
@@ -154,16 +149,16 @@ int hlt(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int nop(uint8_t opcode, struct cpu_state* cpu)
+int nop(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// Check NOP opcode is one of:
 	// 0x00, 0x10, 0x20, 0x30, 0x08, 0x18 0x28, 0x38
-	assert((opcode & 0b11000111) == 0b00000000);
+	assert((opcode[0] & 0b11000111) == 0b00000000);
 	(void) opcode;
 	(void) cpu;
 
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: NOP\n", cpu->pc);
+	fprintf(stderr, "NOP\n");
 #endif
 
 	cycle_wait(4);
