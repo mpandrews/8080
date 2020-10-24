@@ -4,9 +4,8 @@ extern "C"
 #include "cpu.h"
 #include "opcode_array.h"
 #include "opcode_decls.h"
+#include "si/include/rom_struct.h"
 }
-
-#include "../hardware/si/include/rom_struct.h"
 
 #include "gtest/gtest.h"
 #include <dlfcn.h>

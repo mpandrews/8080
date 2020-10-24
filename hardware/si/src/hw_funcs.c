@@ -33,6 +33,7 @@ int hw_in(uint8_t opcode, struct cpu_state* cpu)
 #endif
 	struct rom_struct* rstruct = (struct rom_struct*) cpu->hw_struct;
 	uint8_t result		   = 0;
+	pthread_mutex_lock(rstruct->keystate_lock);
 
 	switch (cpu->memory[cpu->pc + 1])
 	{
@@ -55,6 +56,7 @@ int hw_in(uint8_t opcode, struct cpu_state* cpu)
 	}
 
 	cpu->a = result;
+	pthread_mutex_unlock(rstruct->keystate_lock);
 	cycle_wait(10);
 	return 2;
 }

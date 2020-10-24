@@ -69,6 +69,7 @@ target_include_directories(Tests
 	PRIVATE 
 		include
 		${GTEST_INCLUDE_DIRS}
+		hardware
 )
 target_link_libraries(Tests
 	PRIVATE
