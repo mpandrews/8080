@@ -3,6 +3,7 @@ extern "C"
 {
 #include "cpu.h"
 #include "opcode_decls.h"
+#include "opcode_size.h"
 }
 
 #include "gtest/gtest.h"
@@ -15,13 +16,19 @@ TEST(MOV, RegisterToRegister)
 	cpu.hl		     = 0;
 
 	// MOV B,D
-	mov(0x42, &cpu);
+	uint8_t opcode = 0x42;
+	EXPECT_EQ(get_opcode_size(opcode), 1);
+	mov(&opcode, &cpu);
 	EXPECT_EQ(cpu.bc, 0xFF00);
 
 	// MOV H,B
-	mov(0x60, &cpu);
+	opcode = 0x60;
+	EXPECT_EQ(get_opcode_size(opcode), 1);
+	mov(&opcode, &cpu);
 	// MOV L,B
-	mov(0x68, &cpu);
+	opcode = 0x68;
+	EXPECT_EQ(get_opcode_size(opcode), 1);
+	mov(&opcode, &cpu);
 
 	EXPECT_EQ(cpu.hl, 0xFFFF);
 }
@@ -40,10 +47,14 @@ TEST(MOV, RegisterToMem)
 
 	memset(memory, 0, MAX_MEMORY);
 	// MOV M,C
-	mov(0x71, &cpu);
+	uint8_t opcode = 0x71;
+	EXPECT_EQ(get_opcode_size(opcode), 1);
+	mov(&opcode, &cpu);
 	EXPECT_EQ(cpu.memory[cpu.hl], 1);
 	// MOV A,M
-	mov(0x7E, &cpu);
+	opcode = 0x7e;
+	mov(&opcode, &cpu);
+	EXPECT_EQ(get_opcode_size(opcode), 1);
 	EXPECT_EQ(cpu.psw, 0x0100);
 }
 
@@ -59,58 +70,58 @@ TEST(MVI, ToRegister)
 	};
 	memset(memory, 0, MAX_MEMORY);
 
+	uint8_t opcode[2] = {0x06, 0x01};
 	// MVI B
-	cpu.memory[0] = 0x06;
-	cpu.memory[1] = 0x01;
-	cpu.pc += mvi(0x06, &cpu);
-	EXPECT_EQ(cpu.b, cpu.memory[1]);
-	EXPECT_EQ(cpu.pc, 2);
+	EXPECT_EQ(get_opcode_size(opcode[0]), 2);
+	mvi(opcode, &cpu);
+	EXPECT_EQ(cpu.b, 0x01);
 
 	// MVI C
-	cpu.memory[2] = 0x0e;
-	cpu.memory[3] = 0x02;
-	cpu.pc += mvi(0x0e, &cpu);
-	EXPECT_EQ(cpu.c, cpu.memory[3]);
-	EXPECT_EQ(cpu.pc, 4);
+	opcode[0] = 0x0e;
+	opcode[1] = 0x02;
+	EXPECT_EQ(get_opcode_size(opcode[0]), 2);
+	mvi(opcode, &cpu);
+	EXPECT_EQ(cpu.c, 0x02);
 	// Check that the whole register is correct.
 	EXPECT_EQ(cpu.bc, 0x0102);
 
 	// MVI D
-	cpu.memory[4] = 0x16;
-	cpu.memory[5] = 0x03;
-	cpu.pc += mvi(0x16, &cpu);
-	EXPECT_EQ(cpu.d, cpu.memory[5]);
-	EXPECT_EQ(cpu.pc, 6);
+	opcode[0] = 0x16;
+	opcode[1] = 0x03;
+	EXPECT_EQ(get_opcode_size(opcode[0]), 2);
+	mvi(opcode, &cpu);
+	EXPECT_EQ(cpu.d, 0x03);
 
 	// MVI E
-	cpu.memory[6] = 0x1e;
-	cpu.memory[7] = 0x04;
-	cpu.pc += mvi(0x1e, &cpu);
-	EXPECT_EQ(cpu.e, cpu.memory[7]);
-	EXPECT_EQ(cpu.pc, 8);
+	opcode[0] = 0x1e;
+	opcode[1] = 0x04;
+	EXPECT_EQ(get_opcode_size(opcode[0]), 2);
+	mvi(opcode, &cpu);
+	EXPECT_EQ(cpu.e, 0x04);
 	EXPECT_EQ(cpu.de, 0x0304);
 
 	// For HL, we'll reverse the order: write the low then the high.
 	// MVI L
-	cpu.memory[8] = 0x2e;
-	cpu.memory[9] = 0x05;
-	cpu.pc += mvi(0x2e, &cpu);
-	EXPECT_EQ(cpu.l, cpu.memory[9]);
-	EXPECT_EQ(cpu.pc, 10);
+	opcode[0] = 0x2e;
+	opcode[1] = 0x05;
+	EXPECT_EQ(get_opcode_size(opcode[0]), 2);
+	mvi(opcode, &cpu);
+	EXPECT_EQ(cpu.l, 0x05);
 	// MVI H
-	cpu.memory[10] = 0x26;
-	cpu.memory[11] = 0x06;
-	cpu.pc += mvi(0x26, &cpu);
-	EXPECT_EQ(cpu.h, cpu.memory[11]);
+
+	opcode[0] = 0x26;
+	opcode[1] = 0x06;
+	EXPECT_EQ(get_opcode_size(opcode[0]), 2);
+	mvi(opcode, &cpu);
+	EXPECT_EQ(cpu.h, 0x06);
 	EXPECT_EQ(cpu.hl, 0x0605);
-	EXPECT_EQ(cpu.pc, 12);
 
 	// MVI A
-	cpu.memory[12] = 0x3e;
-	cpu.memory[13] = 0x07;
-	cpu.pc += mvi(0x3e, &cpu);
-	EXPECT_EQ(cpu.a, cpu.memory[13]);
-	EXPECT_EQ(cpu.pc, 14);
+	opcode[0] = 0x3e;
+	opcode[1] = 0x07;
+	EXPECT_EQ(get_opcode_size(opcode[0]), 2);
+	mvi(opcode, &cpu);
+	EXPECT_EQ(cpu.a, 0x07);
 }
 
 TEST(MVI, ToMem)
@@ -124,18 +135,17 @@ TEST(MVI, ToMem)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 	memset(memory, 0, MAX_MEMORY);
-	cpu.hl	      = 12345;
-	cpu.memory[0] = 0x36;
-	cpu.memory[1] = 255;
-	cpu.pc += mvi(0x36, &cpu);
-	EXPECT_EQ(cpu.memory[12345], 255);
-	EXPECT_EQ(cpu.pc, 2);
+	cpu.hl		  = 12345;
+	uint8_t opcode[2] = {0x36, 0xff};
+	EXPECT_EQ(get_opcode_size(opcode[0]), 2);
+	mvi(opcode, &cpu);
+	EXPECT_EQ(cpu.memory[12345], 0xff);
 }
 
 TEST(LDA, All)
 {
-	unsigned char memory[(1 << 16)];
-	memset(memory, 0, 1 << 16);
+	unsigned char memory[MAX_MEMORY];
+	memset(memory, 0, MAX_MEMORY);
 
 	struct cpu_state cpu
 	{
@@ -146,19 +156,18 @@ TEST(LDA, All)
 		.interrupt_enable_flag = 0
 	};
 
-	*((uint16_t*) &cpu.memory[cpu.pc + 1]) = 0xbbaa;
-	cpu.memory[0xbbaa]		       = 0x12;
-
+	uint8_t opcode[3]  = {0x3a, 0xaa, 0xbb};
+	cpu.memory[0xbbaa] = 0x12;
+	EXPECT_EQ(get_opcode_size(opcode[0]), 3);
 	// LDA
-	cpu.pc += lda(0x3a, &cpu);
+	lda(opcode, &cpu);
 	EXPECT_EQ(cpu.a, 0x12);
-	EXPECT_EQ(cpu.pc, 3);
 }
 
 TEST(STA, All)
 {
-	unsigned char memory[(1 << 16)];
-	memset(memory, 0, 1 << 16);
+	unsigned char memory[MAX_MEMORY];
+	memset(memory, 0, MAX_MEMORY);
 
 	struct cpu_state cpu
 	{
@@ -169,13 +178,12 @@ TEST(STA, All)
 		.interrupt_enable_flag = 0
 	};
 
-	cpu.a				       = 0x12;
-	*((uint16_t*) &cpu.memory[cpu.pc + 1]) = 0xbbaa;
-
+	cpu.a		  = 0x12;
+	uint8_t opcode[3] = {0x32, 0xaa, 0xbb};
+	EXPECT_EQ(get_opcode_size(opcode[0]), 3);
 	// STA
-	cpu.pc += sta(0x32, &cpu);
+	sta(opcode, &cpu);
 	EXPECT_EQ(cpu.memory[0xbbaa], 0x12);
-	EXPECT_EQ(cpu.pc, 3);
 }
 
 TEST(LHLD, All)
@@ -191,12 +199,12 @@ TEST(LHLD, All)
 		.reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	*((uint16_t*) &cpu.memory[cpu.pc + 1]) = 0xbbaa;
-	*((uint16_t*) &cpu.memory[0xbbaa])     = 0x1234;
+	uint8_t opcode[3] = {0x2a, 0xaa, 0xbb};
+	EXPECT_EQ(get_opcode_size(opcode[0]), 3);
+	*((uint16_t*) &cpu.memory[0xbbaa]) = 0x1234;
 
 	// LHLD
-	cpu.pc += lhld(0x2a, &cpu);
-	EXPECT_EQ(cpu.pc, 3);
+	lhld(opcode, &cpu);
 	EXPECT_EQ(cpu.hl, 0x1234);
 }
 
@@ -213,18 +221,17 @@ TEST(SHLD, All)
 		.halt_flag = 0, .reset_flag = 0, .interrupt_enable_flag = 0
 	};
 
-	*((uint16_t*) &cpu.memory[cpu.pc + 1]) = 0xbbaa;
-
+	uint8_t opcode[3] = {0x22, 0xaa, 0xbb};
+	EXPECT_EQ(get_opcode_size(opcode[0]), 3);
 	// SHLD
-	cpu.pc += shld(0x22, &cpu);
-	EXPECT_EQ(cpu.pc, 3);
+	shld(opcode, &cpu);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[0xbbaa]), 0x1234);
 }
 
 TEST(LDAX, B_D)
 {
 
-	unsigned char memory[(1 << 16)];
+	unsigned char memory[MAX_MEMORY];
 	struct cpu_state cpu
 	{
 		.int_cond = 0, .int_lock = 0, .memory = memory,
@@ -232,23 +239,26 @@ TEST(LDAX, B_D)
 		.pc = 0, .bc = 0x1234, .de = 0x5678, .hl = 0, .psw = 0,
 		.halt_flag = 0, .reset_flag = 0, .interrupt_enable_flag = 0
 	};
-	memset(memory, 0, 1 << 16);
+	memset(memory, 0, MAX_MEMORY);
 	cpu.memory[cpu.bc] = 0xab;
 	cpu.memory[cpu.de] = 0xcd;
 
 	// LDAX B
-	cpu.pc += ldax(0x0a, &cpu);
+	uint8_t opcode = 0x0a;
+	EXPECT_EQ(get_opcode_size(opcode), 1);
+	ldax(&opcode, &cpu);
 	EXPECT_EQ(cpu.a, 0xab);
 
 	// LDAX D
-	ldax(0x1a, &cpu);
+	opcode = 0x1a;
+	ldax(&opcode, &cpu);
 	EXPECT_EQ(cpu.a, 0xcd);
 }
 
 TEST(STAX, B_D)
 {
 
-	unsigned char memory[(1 << 16)];
+	unsigned char memory[MAX_MEMORY];
 	struct cpu_state cpu
 	{
 		.int_cond = 0, .int_lock = 0, .memory = memory,
@@ -256,15 +266,19 @@ TEST(STAX, B_D)
 		.pc = 0, .bc = 0x1234, .de = 0x5678, .hl = 0, .psw = 0,
 		.halt_flag = 0, .reset_flag = 0, .interrupt_enable_flag = 0
 	};
-	memset(memory, 0, 1 << 16);
+	memset(memory, 0, MAX_MEMORY);
 	cpu.a = 0xab;
 
+	uint8_t opcode = 0x02;
+	EXPECT_EQ(get_opcode_size(opcode), 1);
 	// STAX B
-	cpu.pc += stax(0x02, &cpu);
+	stax(&opcode, &cpu);
 	EXPECT_EQ(cpu.memory[cpu.bc], 0xab);
 
 	// STAX D
-	cpu.pc += stax(0x12, &cpu);
+	opcode = 0x12;
+	EXPECT_EQ(get_opcode_size(opcode), 1);
+	stax(&opcode, &cpu);
 	EXPECT_EQ(cpu.memory[cpu.de], 0xab);
 }
 
@@ -280,15 +294,16 @@ TEST(XCHG, All)
 	};
 
 	// XCHG
-	cpu.pc += xchg(0xeb, &cpu);
+	uint8_t opcode = 0xeb;
+	EXPECT_EQ(get_opcode_size(opcode), 1);
+	xchg(&opcode, &cpu);
 	EXPECT_EQ(cpu.de, 0x2222);
 	EXPECT_EQ(cpu.hl, 0x1111);
-	EXPECT_EQ(cpu.pc, 1);
 }
 
 TEST(LXI, All)
 {
-	unsigned char memory[(1 << 16)];
+	unsigned char memory[MAX_MEMORY];
 	struct cpu_state cpu
 	{
 		.int_cond = nullptr, .int_lock = nullptr, .memory = memory,
@@ -301,20 +316,22 @@ TEST(LXI, All)
 	// First, set an argument of 0x8001 in memory and call lxi. The
 	// program counter should be advanced to 3, the flags should be
 	// unchanged, and the BC register should now contain 0x8001
+	uint8_t opcode[3] = {0x01, 0x01, 0x80};
+	EXPECT_EQ(get_opcode_size(opcode[0]), 3);
 	// LXI B
-	*((uint16_t*) &cpu.memory[1]) = 0x8001;
-	cpu.pc += lxi(0x01, &cpu);
+	cpu.pc += lxi(opcode, &cpu);
 	EXPECT_EQ(cpu.flags, 0);
 	EXPECT_EQ(cpu.bc, 0x8001);
-	EXPECT_EQ(cpu.pc, 3);
 
 	// Next, set an argument of 0x0203 and call LXI D. The flags register
 	// will also be set high before this operation and tested to ensure it
 	// is still high afterwards
-	*((uint16_t*) &cpu.memory[4]) = 0x0203;
-	cpu.flags		      = 0xff;
-	cpu.pc += lxi(0x11, &cpu);
+	opcode[0] = 0x11;
+	opcode[1] = 0x03;
+	opcode[2] = 0x02;
+	EXPECT_EQ(get_opcode_size(opcode[0]), 3);
+	cpu.flags = 0xff;
+	lxi(opcode, &cpu);
 	EXPECT_EQ(cpu.flags, 0xff);
 	EXPECT_EQ(cpu.de, 0x0203);
-	EXPECT_EQ(cpu.pc, 6);
 }
