@@ -32,7 +32,7 @@ int hw_in(const uint8_t* opcode, struct cpu_state* cpu)
 	fprintf(stderr, "IN 0x%2.2x (Hardware: si)\n", opcode[1]);
 #endif
 	struct rom_struct* rstruct = (struct rom_struct*) cpu->hw_struct;
-    uint8_t result		   = 0;
+	uint8_t result		   = 0;
 
 	switch (opcode[1])
 	{
