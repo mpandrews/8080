@@ -32,21 +32,29 @@ int hw_in(uint8_t opcode, struct cpu_state* cpu)
 	fprintf(stderr, "0x%4.4x: IN (Hardware: si)\n", cpu->pc);
 #endif
 	struct rom_struct* rstruct = (struct rom_struct*) cpu->hw_struct;
+	uint8_t result		   = 0;
+
 	switch (cpu->memory[cpu->pc + 1])
 	{
-	case 0:
-		// JEN
-		break;
 	case 1:
-		// JEN
+		result = rstruct->coin | rstruct->p2_start << 1
+			 | rstruct->p1_start << 2 | 1 << 3
+			 | rstruct->p1_shoot << 4 | rstruct->p1_left << 5
+			 | rstruct->p1_right << 6 | 0 << 7;
+		rstruct->coin = 0;
 		break;
 	case 2:
-		// JEN
+		result = rstruct->dip3 | rstruct->dip5 << 1 | rstruct->tilt << 2
+			 | rstruct->dip6 << 3 | rstruct->p2_shoot << 4
+			 | rstruct->p2_left << 5 | rstruct->p2_right << 6
+			 | rstruct->dip7 << 7;
 		break;
 	case 3:
-		cpu->a = rstruct->shift_new << rstruct->shift_offset;
-		cpu->a |= rstruct->shift_old >> (8 - rstruct->shift_offset);
+		result = rstruct->shift_new << rstruct->shift_offset;
+		result |= rstruct->shift_old >> (8 - rstruct->shift_offset);
 	}
+
+	cpu->a = result;
 	cycle_wait(10);
 	return 2;
 }

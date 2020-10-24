@@ -62,6 +62,9 @@ add_executable(Tests
 	test/test_main.cpp
 	$<TARGET_OBJECTS:SourceFiles>
 )
+
+set_target_properties(Tests PROPERTIES ENABLE_EXPORTS TRUE)
+
 target_include_directories(Tests 
 	PRIVATE 
 		include
@@ -71,6 +74,7 @@ target_link_libraries(Tests
 	PRIVATE
 		${CMAKE_THREAD_LIBS_INIT}
 		${GTEST_BOTH_LIBRARIES}
+		${CMAKE_DL_LIBS}
 )
 
 target_sources(Tests
@@ -80,6 +84,7 @@ target_sources(Tests
 		test/other_opcode_tests.cpp
 		test/branch_opcode_tests.cpp
 		test/arithmetic_opcode_tests.cpp
+		test/hw_funcs_tests.cpp
 )
 
 gtest_discover_tests(Tests)
