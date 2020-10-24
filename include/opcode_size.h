@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-static inline int get_opcode_size(uint8_t opcode)
+__attribute__((pure)) static inline int get_opcode_size(uint8_t opcode)
 {
 	switch (opcode)
 	{
@@ -59,6 +59,6 @@ static inline int get_opcode_size(uint8_t opcode)
 		return 2;
 	default: return 1;
 	}
-} //__attribute__((pure))
+}
 
 #endif

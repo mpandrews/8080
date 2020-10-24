@@ -63,7 +63,7 @@
 #define IMM16(opcode_ptr) (*(const uint16_t*) (opcode_ptr + 1))
 
 // Returns 1 if even parity, 0 if odd parity.
-static inline uint8_t check_parity(uint8_t value)
+__attribute__((const)) static inline uint8_t check_parity(uint8_t value)
 {
 	value ^= value >> 4;
 	value ^= value >> 2;
@@ -121,7 +121,7 @@ static inline uint8_t check_parity(uint8_t value)
  * operand_pointer = fetch_operand(GET_SOURCE_OPERAND(opcode), cpu);
  */
 
-static inline uint8_t* fetch_operand_ptr(
+__attribute__((pure)) static inline uint8_t* fetch_operand_ptr(
 		uint8_t operand_field, struct cpu_state* cpu)
 {
 	switch (operand_field)
@@ -144,7 +144,7 @@ static inline uint8_t* fetch_operand_ptr(
 	}
 }
 
-static inline uint8_t fetch_operand_val(
+__attribute__((pure)) static inline uint8_t fetch_operand_val(
 		uint8_t operand_field, struct cpu_state const* cpu)
 {
 	switch (operand_field)
@@ -167,7 +167,8 @@ static inline uint8_t fetch_operand_val(
 	}
 }
 
-static inline char get_operand_name(uint8_t operand_field)
+__attribute__((const)) static inline char get_operand_name(
+		uint8_t operand_field)
 {
 	switch (operand_field)
 	{
@@ -194,7 +195,8 @@ static inline char get_operand_name(uint8_t operand_field)
  * M  - "minus", sign bit is set
  * P - "plus", sign bit is reset
  */
-static inline char* get_condition_name(const uint8_t opcode)
+__attribute__((const)) static inline char* get_condition_name(
+		const uint8_t opcode)
 {
 	switch (GET_CONDITION(opcode))
 	{
@@ -214,7 +216,7 @@ static inline char* get_condition_name(const uint8_t opcode)
  * of the flags register as arguments. It determines which condition the opcode
  * indicates, switches on the condition, and returns the results of the
  * evaluated condition*/
-static inline uint8_t evaluate_condition(
+__attribute__((const)) static inline uint8_t evaluate_condition(
 		const uint8_t opcode, const uint16_t psw)
 {
 	switch (GET_CONDITION(opcode))
@@ -240,7 +242,7 @@ static inline uint8_t evaluate_condition(
 	return 0;
 }
 
-static inline uint16_t* get_register_pair_pushpop(
+__attribute__((pure)) static inline uint16_t* get_register_pair_pushpop(
 		const uint8_t opcode, struct cpu_state* cpu)
 {
 	switch (GET_REGISTER_PAIR(opcode))
@@ -253,7 +255,8 @@ static inline uint16_t* get_register_pair_pushpop(
 	}
 }
 
-static inline const char* get_register_pair_name_pushpop(const uint8_t opcode)
+__attribute__((const)) static inline const char* get_register_pair_name_pushpop(
+		const uint8_t opcode)
 {
 	switch (GET_REGISTER_PAIR(opcode))
 	{
@@ -265,7 +268,7 @@ static inline const char* get_register_pair_name_pushpop(const uint8_t opcode)
 	}
 }
 
-static inline uint16_t* get_register_pair_other(
+__attribute__((pure)) static inline uint16_t* get_register_pair_other(
 		const uint8_t opcode, struct cpu_state* cpu)
 {
 	switch (GET_REGISTER_PAIR(opcode))
@@ -278,7 +281,8 @@ static inline uint16_t* get_register_pair_other(
 	}
 }
 
-static inline const char* get_register_pair_name_other(const uint8_t opcode)
+__attribute__((const)) static inline const char* get_register_pair_name_other(
+		const uint8_t opcode)
 {
 	switch (GET_REGISTER_PAIR(opcode))
 	{
