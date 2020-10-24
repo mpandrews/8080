@@ -8,6 +8,6 @@
  * array.
  */
 
-extern int (*opcodes[256])(uint8_t opcode, struct cpu_state* cpu);
+extern int (*opcodes[256])(const uint8_t* opcode, struct cpu_state* cpu);
 
 #endif

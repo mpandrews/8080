@@ -7,18 +7,15 @@
 #include <pthread.h>
 #include <stdio.h>
 
-int ana(uint8_t opcode, struct cpu_state* cpu)
+int ana(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	(void) opcode;
 	// Opcodes 0xa0 through 0xa7 are ANA
-	assert((opcode & 0b11111000) == 0b10100000);
-	uint8_t source_operand = GET_SOURCE_OPERAND(opcode);
+	assert((opcode[0] & 0b11111000) == 0b10100000);
+	uint8_t source_operand = GET_SOURCE_OPERAND(opcode[0]);
 
 #ifdef VERBOSE
-	fprintf(stderr,
-			"0x%4.4x: ANA %c\n",
-			cpu->pc,
-			get_operand_name(source_operand));
+	fprintf(stderr, "ANA %c\n", get_operand_name(source_operand));
 #endif
 
 	uint8_t operand = fetch_operand_val(source_operand, cpu);
@@ -51,16 +48,16 @@ int ana(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int ani(uint8_t opcode, struct cpu_state* cpu)
+int ani(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert(opcode == 0xE6);
+	assert(opcode[0] == 0xE6);
 	(void) opcode;
 
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: ANI\n", cpu->pc);
+	fprintf(stderr, "ANI 0x%2.2x\n", opcode[1]);
 #endif
 
-	uint8_t operand = cpu->memory[cpu->pc + 1];
+	uint8_t operand = opcode[1];
 	cpu->flags	= ((1 << 3) & (cpu->a | operand)
 					     ? cpu->flags | AUX_CARRY_FLAG
 					     : cpu->flags & ~AUX_CARRY_FLAG);
@@ -78,17 +75,14 @@ int ani(uint8_t opcode, struct cpu_state* cpu)
 	return 2;
 }
 
-int xra(uint8_t opcode, struct cpu_state* cpu)
+int xra(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// XRA opcode: 0b10101SSS, where SSS = source operand
-	assert((opcode & 0b11111000) == 0b10101000);
-	uint8_t source_operand = GET_SOURCE_OPERAND(opcode);
+	assert((opcode[0] & 0b11111000) == 0b10101000);
+	uint8_t source_operand = GET_SOURCE_OPERAND(opcode[0]);
 
 #ifdef VERBOSE
-	fprintf(stderr,
-			"0x%4.4x: XRA %c\n",
-			cpu->pc,
-			get_operand_name(source_operand));
+	fprintf(stderr, "XRA %c\n", get_operand_name(source_operand));
 #endif
 
 	cpu->a ^= fetch_operand_val(source_operand, cpu);
@@ -104,17 +98,17 @@ int xra(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int xri(uint8_t opcode, struct cpu_state* cpu)
+int xri(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert(opcode == 0xEE);
+	assert(opcode[0] == 0xEE);
 	(void) opcode;
 
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: XRI\n", cpu->pc);
+	fprintf(stderr, "XRI 0x%2.2x\n", opcode[1]);
 #endif
 
 	// Exclusive OR immediate
-	cpu->a ^= cpu->memory[cpu->pc + 1];
+	cpu->a ^= opcode[1];
 
 	APPLY_ZERO_FLAG(cpu->a, cpu->flags);
 	APPLY_SIGN_FLAG(cpu->a, cpu->flags);
@@ -126,18 +120,15 @@ int xri(uint8_t opcode, struct cpu_state* cpu)
 	return 2;
 }
 
-int ora(uint8_t opcode, struct cpu_state* cpu)
+int ora(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	(void) opcode;
 	// Opcodes 0xb0 through 0xb7 are ANA
-	assert((opcode & 0b11111000) == 0b10110000);
-	uint8_t source_operand = GET_SOURCE_OPERAND(opcode);
+	assert((opcode[0] & 0b11111000) == 0b10110000);
+	uint8_t source_operand = GET_SOURCE_OPERAND(opcode[0]);
 
 #ifdef VERBOSE
-	fprintf(stderr,
-			"0x%4.4x: ORA %c\n",
-			cpu->pc,
-			get_operand_name(source_operand));
+	fprintf(stderr, "ORA %c\n", get_operand_name(source_operand));
 #endif
 
 	uint8_t operand = fetch_operand_val(source_operand, cpu);
@@ -161,14 +152,14 @@ int ora(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int ori(uint8_t opcode, struct cpu_state* cpu)
+int ori(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	(void) opcode;
-	assert(opcode == 0b11110110);
-	uint8_t operand = cpu->memory[cpu->pc + 1];
+	assert(opcode[0] == 0b11110110);
+	uint8_t operand = opcode[1];
 
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: ORI\n", cpu->pc);
+	fprintf(stderr, "ORI 0x%2.2x\n", opcode[1]);
 #endif
 
 	// Inclusive-OR the A register with ORI's argument
@@ -188,17 +179,17 @@ int ori(uint8_t opcode, struct cpu_state* cpu)
 	return 2;
 }
 
-int cmp(uint8_t opcode, struct cpu_state* cpu)
+int cmp(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// CMP is 0xB8 - 0xBF, or 0b10111SSS
-	assert((opcode & 0b11111000) == 0b10111000);
-	uint16_t operand = fetch_operand_val(GET_SOURCE_OPERAND(opcode), cpu);
+	assert((opcode[0] & 0b11111000) == 0b10111000);
+	uint16_t operand =
+			fetch_operand_val(GET_SOURCE_OPERAND(opcode[0]), cpu);
 
 #ifdef VERBOSE
 	fprintf(stderr,
-			"0x%4.4x: CMP %c\n",
-			cpu->pc,
-			get_operand_name(GET_SOURCE_OPERAND(opcode)));
+			"CMP %c\n",
+			get_operand_name(GET_SOURCE_OPERAND(opcode[0])));
 #endif
 
 	// Compare register or memory
@@ -216,13 +207,13 @@ int cmp(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int cpi(uint8_t opcode, struct cpu_state* cpu)
+int cpi(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	(void) opcode;
-	assert(opcode == 0xfe);
+	assert(opcode[0] == 0xfe);
 
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: CPI\n", cpu->pc);
+	fprintf(stderr, "CPI 0x%2.2x\n", opcode[1]);
 #endif
 
 	/* CPI compares the next byte in memory against the accumulator.
@@ -233,7 +224,7 @@ int cpi(uint8_t opcode, struct cpu_state* cpu)
 	 */
 
 	// get one's complement of the operand
-	uint16_t operand = cpu->memory[cpu->pc + 1];
+	uint16_t operand = opcode[1];
 	operand		 = (uint8_t) ~operand;
 
 	// get the result and set the flags, and then discard the result
@@ -244,11 +235,11 @@ int cpi(uint8_t opcode, struct cpu_state* cpu)
 	return 2;
 }
 
-int rlc(uint8_t opcode, struct cpu_state* cpu)
+int rlc(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert(opcode == 0x07);
+	assert(opcode[0] == 0x07);
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: RLC\n", cpu->pc);
+	fprintf(stderr, "RLC\n");
 #endif
 	(void) opcode;
 	cpu->a	   = (cpu->a << 1) | (cpu->a >> 7);
@@ -258,11 +249,11 @@ int rlc(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int rrc(uint8_t opcode, struct cpu_state* cpu)
+int rrc(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert(opcode == 0x0f);
+	assert(opcode[0] == 0x0f);
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: RRC\n", cpu->pc);
+	fprintf(stderr, "RRC\n");
 #endif
 	(void) opcode;
 	cpu->a	   = (cpu->a >> 1) | (cpu->a << 7);
@@ -272,11 +263,11 @@ int rrc(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int ral(uint8_t opcode, struct cpu_state* cpu)
+int ral(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert(opcode == 0x17);
+	assert(opcode[0] == 0x17);
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: RAL\n", cpu->pc);
+	fprintf(stderr, "RAL\n");
 #endif
 	(void) opcode;
 	uint16_t shifted = (cpu->a << 1) | (cpu->flags & CARRY_FLAG);
@@ -286,11 +277,11 @@ int ral(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int rar(uint8_t opcode, struct cpu_state* cpu)
+int rar(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert(opcode == 0x1f);
+	assert(opcode[0] == 0x1f);
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: RAR\n", cpu->pc);
+	fprintf(stderr, "RAR\n");
 #endif
 	(void) opcode;
 	uint8_t outshifted_bit = cpu->a & 1;
@@ -302,12 +293,12 @@ int rar(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int cma(uint8_t opcode, struct cpu_state* cpu)
+int cma(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	(void) opcode;
-	assert(opcode == 0x2f);
+	assert(opcode[0] == 0x2f);
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: CMA\n", cpu->pc);
+	fprintf(stderr, "CMA\n");
 #endif
 
 	// Set the A register to its complement
@@ -316,12 +307,12 @@ int cma(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int cmc(uint8_t opcode, struct cpu_state* cpu)
+int cmc(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	(void) opcode;
-	assert(opcode == 0x3f);
+	assert(opcode[0] == 0x3f);
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: CMC\n", cpu->pc);
+	fprintf(stderr, "CMC\n");
 #endif
 
 	// XOR the flags register with the carry flag bit to toggle
@@ -331,14 +322,14 @@ int cmc(uint8_t opcode, struct cpu_state* cpu)
 	return 1;
 }
 
-int stc(uint8_t opcode, struct cpu_state* cpu)
+int stc(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// Check STC opcode is 0x37
-	assert(opcode == 0b00110111);
+	assert(opcode[0] == 0b00110111);
 	(void) opcode;
 
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: STC\n", cpu->pc);
+	fprintf(stderr, "STC\n");
 #endif
 
 	// Set the carry flag

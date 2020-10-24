@@ -1,6 +1,7 @@
 #include "cpu.h"
 #include "cycle_timer.h"
 #include "opcode_array.h"
+#include "opcode_size.h"
 
 #include <pthread.h>
 #include <stdint.h>
@@ -57,7 +58,7 @@ void* cpu_thread_routine(void* resources)
 			.data_bus	  = res->data_bus,
 			.hw_struct	  = res->hw_struct};
 
-	uint8_t opcode;
+	uint8_t* opcode;
 
 	// We can remove this assignment if we want to force the user
 	// to hardware reset on CPU boot.
@@ -92,7 +93,8 @@ void* cpu_thread_routine(void* resources)
 			pthread_mutex_lock(cpu.int_lock);
 			if (cpu.interrupt_buffer)
 			{
-				opcode		      = *cpu.interrupt_buffer;
+				uint8_t int_opcode[3] = {0};
+				int_opcode[0]	      = *cpu.interrupt_buffer;
 				*cpu.interrupt_buffer = 0;
 				cpu.halt_flag	      = 0;
 				cpu.interrupt_enable_flag = 0;
@@ -100,11 +102,17 @@ void* cpu_thread_routine(void* resources)
 				pthread_mutex_unlock(cpu.int_lock);
 				// Ignore return value: we don't advance
 				// PC for interrupts, though they can jump us.
-				opcodes[opcode](opcode, &cpu);
+#ifdef VERBOSE
+				fprintf(stderr, "INTER : ");
+#endif
+				opcodes[int_opcode[0]](int_opcode, &cpu);
+#ifdef VERBOSE
+				print_registers(&cpu);
+#endif
 				continue;
 			}
 			pthread_mutex_unlock(cpu.int_lock);
-			opcode = cpu.memory[cpu.pc];
+			opcode = &cpu.memory[cpu.pc];
 			break;
 		/* If the interrupt flag is pending enablement,
 		 * which will happen if that last opcode we
@@ -117,7 +125,7 @@ void* cpu_thread_routine(void* resources)
 		case 2: // Interrupt flag is pending enable.
 			--cpu.interrupt_enable_flag;
 			// FALLTHRU
-		default: opcode = cpu.memory[cpu.pc];
+		default: opcode = &cpu.memory[cpu.pc];
 		}
 		/* If we pulled an interrupt, then the halt flag
 		 * will have been cleared, so if it's still set,
@@ -144,7 +152,12 @@ void* cpu_thread_routine(void* resources)
 		 */
 		switch (cpu.halt_flag)
 		{
-		case 0: cpu.pc += opcodes[opcode](opcode, &cpu);
+		case 0:
+#ifdef VERBOSE
+			fprintf(stderr, "0x%4.4x: ", cpu.pc);
+#endif
+			cpu.pc += get_opcode_size(opcode[0]);
+			opcodes[opcode[0]](opcode, &cpu);
 #ifdef VERBOSE
 			print_registers(&cpu);
 #endif
