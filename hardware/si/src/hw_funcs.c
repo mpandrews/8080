@@ -33,22 +33,25 @@ int hw_in(uint8_t opcode, struct cpu_state* cpu)
 #endif
 	struct rom_struct* rstruct = (struct rom_struct*) cpu->hw_struct;
 	uint8_t result		   = 0;
-	pthread_mutex_lock(rstruct->keystate_lock);
 
 	switch (cpu->memory[cpu->pc + 1])
 	{
 	case 1:
+		pthread_mutex_lock(rstruct->keystate_lock);
 		result = rstruct->coin | rstruct->p2_start << 1
 			 | rstruct->p1_start << 2 | 1 << 3
 			 | rstruct->p1_shoot << 4 | rstruct->p1_left << 5
 			 | rstruct->p1_right << 6 | 0 << 7;
 		rstruct->coin = 0;
+		pthread_mutex_unlock(rstruct->keystate_lock);
 		break;
 	case 2:
+		pthread_mutex_lock(rstruct->keystate_lock);
 		result = rstruct->dip3 | rstruct->dip5 << 1 | rstruct->tilt << 2
 			 | rstruct->dip6 << 3 | rstruct->p2_shoot << 4
 			 | rstruct->p2_left << 5 | rstruct->p2_right << 6
 			 | rstruct->dip7 << 7;
+		pthread_mutex_unlock(rstruct->keystate_lock);
 		break;
 	case 3:
 		result = rstruct->shift_new << rstruct->shift_offset;
@@ -56,7 +59,6 @@ int hw_in(uint8_t opcode, struct cpu_state* cpu)
 	}
 
 	cpu->a = result;
-	pthread_mutex_unlock(rstruct->keystate_lock);
 	cycle_wait(10);
 	return 2;
 }

@@ -12,11 +12,13 @@ extern "C"
 
 TEST(HW_IN, Space_Invaders)
 {
+	pthread_mutex_t keystate_lock;
+	pthread_mutex_init(&keystate_lock, NULL);
 
 	struct rom_struct rstruct
 	{
 		.video_buffer = nullptr, .vbuffer_lock = nullptr,
-		.vbuffer_condition = nullptr, .keystate_lock = nullptr,
+		.vbuffer_condition = nullptr, .keystate_lock = &keystate_lock,
 		.p1_start = 1, .p1_shoot = 0, .p1_left = 0, .p1_right = 0,
 		.p2_start = 1, .p2_shoot = 0, .p2_left = 0, .p2_right = 1,
 		.tilt = 0, .dip0 = 0, .dip1 = 0, .dip2 = 0, .dip3 = 0,
@@ -88,4 +90,6 @@ TEST(HW_IN, Space_Invaders)
 	cpu.pc += opcodes[0xdb](0xdb, &cpu);
 	EXPECT_EQ(cpu.pc, 8);
 	EXPECT_EQ(cpu.a, 0b11100110);
+
+	pthread_mutex_destroy(&keystate_lock);
 }
