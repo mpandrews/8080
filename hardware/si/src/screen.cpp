@@ -21,10 +21,10 @@ Screen::Screen(const unsigned char* SIVideoBuffer)
 	 * the next 3 significant bits set green, and the 2 least significant
 	 * bits determine the blue component.
 	 */
-	this->topScreenColorFilter    = 0b11100000; // very red
-	this->bottomScreenColorFilter = 0b00011100; // very green
-	this->topScreenFilterEnd      = 38;
-	this->bottomScreenFilterBegin = SI_SCREEN_WIDTH - 50;
+	this->topFilterColor    = 0b00011100; // very green
+	this->bottomFilterColor = 0b11100000; // very red
+	this->topFilterWidth      = TOP_FILTER_WIDTH;
+	this->bottomFilterWidth    = BOTTOM_FILTER_WIDTH;
 	this->currentScreenSide	      = TOP;
 
 	// The window is the SDL object that gets a window from the OS and
@@ -32,8 +32,8 @@ Screen::Screen(const unsigned char* SIVideoBuffer)
 	this->window = SDL_CreateWindow("Space Invaders", // window name
 			SDL_WINDOWPOS_CENTERED,		  // horizontal pos
 			SDL_WINDOWPOS_CENTERED,		  // vertical pos
-			SI_SCREEN_WIDTH * 3,		  // width
-			SI_SCREEN_HEIGHT * 3,		  // height
+			SI_SCREEN_HEIGHT * WINDOW_SCALE_FACTOR,		  // width
+			SI_SCREEN_WIDTH * WINDOW_SCALE_FACTOR,		  // height
 			(SDL_WINDOW_SHOWN | SDL_WINDOW_INPUT_FOCUS) // flags
 	);
 	if (window == NULL)
@@ -60,17 +60,46 @@ Screen::Screen(const unsigned char* SIVideoBuffer)
 	// not declared/maintained here) to hand off the memory-mapped data to
 	// the renderer.
 	this->surface = SDL_CreateRGBSurfaceWithFormatFrom(this->displayBuffer,
-			SI_SCREEN_WIDTH,
-			SI_SCREEN_HEIGHT,
-			0,
-			256,
-			SDL_PIXELFORMAT_RGB332);
+			SI_SCREEN_WIDTH,            // width of surface
+			SI_SCREEN_HEIGHT,             // height of surface
+			8,                           // depth - bits-per-pixel
+			SI_SCREEN_WIDTH,            // pitch - width of one row of pixels
+			SDL_PIXELFORMAT_RGB332);     // format
 	if (surface == NULL)
 	{
 		std::cout << "Could not load SDL surface. " << SDL_GetError()
 			  << std::endl;
 		exit(1);
 	}
+}
+
+void Screen::renderFrame()
+{
+	// generate a texture from the surface
+	SDL_Texture* texture = SDL_CreateTextureFromSurface(
+			this->renderer, this->surface);
+	if (texture == NULL)
+	{
+		std::cout << "Could not create texture. " << SDL_GetError()
+			  << std::endl;
+	}
+
+	// Create SDL_Rect to scale the rotated screen to our window
+	SDL_Rect dest;
+	dest.x = (WINDOW_SCALE_FACTOR * (SI_SCREEN_HEIGHT - SI_SCREEN_WIDTH)) / 2;
+	dest.y = (WINDOW_SCALE_FACTOR * (SI_SCREEN_WIDTH - SI_SCREEN_HEIGHT)) / 2;
+	dest.w = WINDOW_SCALE_FACTOR * SI_SCREEN_WIDTH;
+	dest.h = WINDOW_SCALE_FACTOR * SI_SCREEN_HEIGHT;
+
+	// clear the previous render and display the new one
+	SDL_RenderClear(this->renderer);
+	if (SDL_RenderCopyEx(this->renderer, texture, NULL, &dest, 270, NULL, SDL_FLIP_NONE) < 0)
+	{
+		std::cout << "Error rendering texture. " << SDL_GetError()
+			  << std::endl;
+	}
+	SDL_RenderPresent(this->renderer);
+	SDL_DestroyTexture(texture);
 }
 
 Screen::~Screen()
@@ -114,44 +143,23 @@ void Screen::translateVideoRamToBuffer()
 		// expand each byte into one byte for each of the 8 bits
 		for (int j = 0; j < 8; ++j)
 		{
+			int col = (i * 8 + j) % SI_SCREEN_WIDTH;
 			// determine and set color for this byte
 			if (pixels & bitMasks[j])
 			{
-				int col = ((i + 1) * 8) / SI_SCREEN_HEIGHT;
-				if (col < this->topScreenFilterEnd)
+				if (col < this->bottomFilterWidth)
 					colorPixelValue =
-							this->topScreenColorFilter;
-				else if (col > this->bottomScreenFilterBegin)
+							this->topFilterColor;
+				else if (col >= SI_SCREEN_WIDTH - this->topFilterWidth)
 					colorPixelValue =
-							this->bottomScreenColorFilter;
+							this->bottomFilterColor;
 				else
 					colorPixelValue = WHITE_PIXEL;
 			}
 			else
 				colorPixelValue = BLACK_PIXEL;
-			this->displayBuffer[i * 8 + j] = colorPixelValue;
+			this->displayBuffer[(i * 8) + j] = colorPixelValue;
 		}
 	}
 }
 
-void Screen::renderFrame()
-{
-	// generate a texture from the surface
-	SDL_Texture* texture = SDL_CreateTextureFromSurface(
-			this->renderer, this->surface);
-	if (texture == NULL)
-	{
-		std::cout << "Could not create texture. " << SDL_GetError()
-			  << std::endl;
-	}
-
-	// clear the previous render and display the new one
-	SDL_RenderClear(this->renderer);
-	if (SDL_RenderCopy(this->renderer, texture, NULL, NULL) < 0)
-	{
-		std::cout << "Error rendering texture. " << SDL_GetError()
-			  << std::endl;
-	}
-	SDL_RenderPresent(this->renderer);
-	SDL_DestroyTexture(texture);
-}
