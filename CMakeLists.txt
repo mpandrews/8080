@@ -86,6 +86,8 @@ gtest_discover_tests(Tests)
 
 #Hardware libraries
 
+find_package(SDL2 REQUIRED)
+
 #Find every file contained in the hardware subdirectory.
 file(GLOB children 
 	LIST_DIRECTORIES true 
@@ -108,9 +110,15 @@ FOREACH(item ${hw_sets})
 	add_library(${name} SHARED)
 	#Add the source file to its source list.
 	target_sources(${name} PRIVATE ${item}/src/hw_funcs.c)
+	file (GLOB libsrcs ${item}/src/*)
+	target_sources(${name} PRIVATE ${libsrcs})
+
 	#Give it the compiler flags we're using, whatever those are.
 	target_compile_options(${name} PRIVATE ${FlagSettings})
 	target_include_directories(${name} PRIVATE 
 		include
-		${item}/include)
+		${item}/include
+		${SDL2_INCLUDE_DIRS})
+	target_link_libraries(${name} PRIVATE ${SDL2_LIBRARIES})
+
 ENDFOREACH()
