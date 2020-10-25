@@ -53,8 +53,8 @@ int hw_in(const uint8_t* opcode, struct cpu_state* cpu)
 		pthread_mutex_unlock(rstruct->keystate_lock);
 		break;
 	case 3:
-        cpu->a = rstruct->shift_new << rstruct->shift_offset;
-        cpu->a |= rstruct->shift_old >> (8 - rstruct->shift_offset);
+		cpu->a = rstruct->shift_new << rstruct->shift_offset;
+		cpu->a |= rstruct->shift_old >> (8 - rstruct->shift_offset);
 	}
 
 	cycle_wait(10);
