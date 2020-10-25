@@ -135,15 +135,21 @@ struct cpu_state
 // The system resources struct is just all the shared pointer members
 // of the CPU struct wrapped into a package by themselves, for passing into
 // thread initializers.
+// It also contains a pointer to the interrupt hook and the struct defined
+// by the hardware.
 struct system_resources
 {
 	pthread_cond_t* interrupt_cond;
 	pthread_mutex_t* interrupt_lock;
+	int (*interrupt_hook)(const uint8_t*,
+			struct cpu_state*,
+			int (*op_func)(const uint8_t*, struct cpu_state*));
 	uint8_t* memory;	   // Points to an array containing the memory.
 	uint8_t* interrupt_buffer; // Points to the buffer where pending
 	uint8_t* data_bus;
 	uint16_t* address_bus;
 	void* hw_struct;
+	void* hw_lib;
 };
 
 // Declaration of the CPU thread.

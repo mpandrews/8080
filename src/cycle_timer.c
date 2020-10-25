@@ -4,23 +4,26 @@
 #include <stdio.h>
 #include <time.h>
 
+#ifdef UNTHROTTLED
+void cycle_wait(int cycles) { (void) cycles; }
+#else // ifndef UNTHROTTLED
 void cycle_wait(int cycles)
 {
 	static int count;
 	static struct timespec target;
-#ifdef BENCHMARK
+#	ifdef BENCHMARK
 	static int bench_count;
 	static struct timespec bench_last;
-#endif
+#	endif
 	// If we haven't yet initialized the timer, we need to.
 	if (target.tv_sec == 0 && target.tv_nsec == 0)
 	{ clock_gettime(CLOCK_MONOTONIC, &target); }
 	count += cycles;
-#ifdef BENCHMARK
+#	ifdef BENCHMARK
 	if (bench_last.tv_sec == 0 && bench_last.tv_nsec == 0)
 	{ clock_gettime(CLOCK_MONOTONIC, &bench_last); }
 	bench_count += cycles;
-#endif
+#	endif
 	// If a chunk's worth of cycles have elapsed, it's time to sleep.
 	if (count >= CYCLE_CHUNK)
 	{
@@ -45,7 +48,7 @@ void cycle_wait(int cycles)
 				&& errno == EINTR)
 			;
 	}
-#ifdef BENCHMARK
+#	ifdef BENCHMARK
 	if (bench_count >= BENCH_INTERVAL) //~8 million unless overridden
 	{
 		struct timespec new;
@@ -60,5 +63,6 @@ void cycle_wait(int cycles)
 		bench_count = 0;
 		bench_last  = new;
 	}
-#endif
+#	endif // BENCHMARK
 }
+#endif	       // ifndef UNTHROTTLED
