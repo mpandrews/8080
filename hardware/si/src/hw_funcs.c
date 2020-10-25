@@ -23,16 +23,16 @@ static inline void check_malloc(void* arg)
 	}
 }
 
-int hw_in(uint8_t opcode, struct cpu_state* cpu)
+int hw_in(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert(opcode == 0b11011011);
+	assert(opcode[0] == 0b11011011);
 	(void) opcode;
 
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: IN (Hardware: si)\n", cpu->pc);
+	fprintf(stderr, "IN 0x%2.2x (Hardware: si)\n", opcode[1]);
 #endif
 	struct rom_struct* rstruct = (struct rom_struct*) cpu->hw_struct;
-	switch (cpu->memory[cpu->pc + 1])
+	switch (opcode[1])
 	{
 	case 0:
 		// JEN
@@ -51,15 +51,15 @@ int hw_in(uint8_t opcode, struct cpu_state* cpu)
 	return 2;
 }
 
-int hw_out(uint8_t opcode, struct cpu_state* cpu)
+int hw_out(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert(opcode == 0b11010011);
+	assert(opcode[0] == 0b11010011);
 	(void) opcode;
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: OUT (Hardware: si)\n", cpu->pc);
+	fprintf(stderr, "OUT 0x%2.2x (Hardware: si)\n", opcode[1]);
 #endif
 	struct rom_struct* rstruct = (struct rom_struct*) cpu->hw_struct;
-	switch (cpu->memory[cpu->pc + 1])
+	switch (opcode[1])
 	{
 	case 2: rstruct->shift_offset = cpu->a & 0x07; break;
 	case 3:
@@ -80,14 +80,16 @@ int hw_out(uint8_t opcode, struct cpu_state* cpu)
 	return 2;
 }
 
-int hw_interrupt_hook(uint8_t opcode, struct cpu_state* cpu)
+int hw_interrupt_hook(const uint8_t* opcode,
+		struct cpu_state* cpu,
+		int (*op_func)(const uint8_t*, struct cpu_state*))
 {
 	struct rom_struct* rstruct = (struct rom_struct*) cpu->hw_struct;
 
 	// If the interrupt is RST 8, the screen is telling us that we're at
 	// the middle of the screen, so it's time to copy the top half of the
 	// buffer.
-	if (opcode == 0xcf)
+	if (opcode[0] == 0xcf)
 	{
 		pthread_mutex_lock(rstruct->vbuffer_lock);
 		memcpy(rstruct->video_buffer,
@@ -98,7 +100,7 @@ int hw_interrupt_hook(uint8_t opcode, struct cpu_state* cpu)
 	}
 	// If the interrupt is RST 10, the screen is telling us that we've hit
 	// the bottom, so it's time to copy the top half of the buffer.
-	else if (opcode == 0xd7)
+	else if (opcode[0] == 0xd7)
 	{
 		pthread_mutex_lock(rstruct->vbuffer_lock);
 		memcpy(rstruct->video_buffer,
@@ -110,7 +112,10 @@ int hw_interrupt_hook(uint8_t opcode, struct cpu_state* cpu)
 	}
 	// Whether we updated the video buffer or not, we still execute the
 	// interrupt.
-	return opcodes[opcode](opcode, cpu);
+#ifdef VERBOSE
+	fprintf(stderr, "INT   : ");
+#endif
+	return op_func(opcode, cpu);
 }
 
 void* hw_init_struct()

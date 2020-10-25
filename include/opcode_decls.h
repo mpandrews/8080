@@ -10,75 +10,73 @@
 
 // Special placeholder function, to catch unimplemented
 // opcodes without segfaulting. Definition is in other_opcodes.c
-int placeholder(uint8_t, struct cpu_state*);
+int placeholder(const uint8_t*, struct cpu_state*);
 
 // DATA TRANSFER GROUP
 
-int mov(uint8_t, struct cpu_state*);
-int mvi(uint8_t, struct cpu_state*);
-int lxi(uint8_t, struct cpu_state*);
-int lda(uint8_t, struct cpu_state*);
-int sta(uint8_t, struct cpu_state*);
-int lhld(uint8_t, struct cpu_state*);
-int shld(uint8_t, struct cpu_state*);
-int ldax(uint8_t, struct cpu_state*);
-int stax(uint8_t, struct cpu_state*);
-int xchg(uint8_t, struct cpu_state*);
+int mov(const uint8_t*, struct cpu_state*);
+int mvi(const uint8_t*, struct cpu_state*);
+int lxi(const uint8_t*, struct cpu_state*);
+int lda(const uint8_t*, struct cpu_state*);
+int sta(const uint8_t*, struct cpu_state*);
+int lhld(const uint8_t*, struct cpu_state*);
+int shld(const uint8_t*, struct cpu_state*);
+int ldax(const uint8_t*, struct cpu_state*);
+int stax(const uint8_t*, struct cpu_state*);
+int xchg(const uint8_t*, struct cpu_state*);
 
 // ARITHMETIC GROUP
 
-int add_adc(uint8_t, struct cpu_state*);
-int adi(uint8_t, struct cpu_state*);
-int aci(uint8_t, struct cpu_state*);
-int sub_sbb(uint8_t, struct cpu_state*);
-int sui_sbi(uint8_t, struct cpu_state*);
-int sbi(uint8_t, struct cpu_state*);
-int inr(uint8_t, struct cpu_state*);
-int dcr(uint8_t, struct cpu_state*);
-int inx_dcx(uint8_t, struct cpu_state*);
-int dad(uint8_t, struct cpu_state*);
-int daa(uint8_t, struct cpu_state*);
+int add_adc(const uint8_t*, struct cpu_state*);
+int adi(const uint8_t*, struct cpu_state*);
+int aci(const uint8_t*, struct cpu_state*);
+int sub_sbb(const uint8_t*, struct cpu_state*);
+int sui_sbi(const uint8_t*, struct cpu_state*);
+int sbi(const uint8_t*, struct cpu_state*);
+int inr(const uint8_t*, struct cpu_state*);
+int dcr(const uint8_t*, struct cpu_state*);
+int inx_dcx(const uint8_t*, struct cpu_state*);
+int dad(const uint8_t*, struct cpu_state*);
+int daa(const uint8_t*, struct cpu_state*);
 
 // LOGICAL GROUP
 
-int ana(uint8_t, struct cpu_state*);
-int ani(uint8_t, struct cpu_state*);
-int xra(uint8_t, struct cpu_state*);
-int xri(uint8_t, struct cpu_state*);
-int ora(uint8_t, struct cpu_state*);
-int ori(uint8_t, struct cpu_state*);
-int cmp(uint8_t, struct cpu_state*);
-int cpi(uint8_t, struct cpu_state*);
-int rlc(uint8_t, struct cpu_state*);
-int rrc(uint8_t, struct cpu_state*);
-int ral(uint8_t, struct cpu_state*);
-int rar(uint8_t, struct cpu_state*);
-int cma(uint8_t, struct cpu_state*);
-int cmc(uint8_t, struct cpu_state*);
-int stc(uint8_t, struct cpu_state*);
+int ana(const uint8_t*, struct cpu_state*);
+int ani(const uint8_t*, struct cpu_state*);
+int xra(const uint8_t*, struct cpu_state*);
+int xri(const uint8_t*, struct cpu_state*);
+int ora(const uint8_t*, struct cpu_state*);
+int ori(const uint8_t*, struct cpu_state*);
+int cmp(const uint8_t*, struct cpu_state*);
+int cpi(const uint8_t*, struct cpu_state*);
+int rlc(const uint8_t*, struct cpu_state*);
+int rrc(const uint8_t*, struct cpu_state*);
+int ral(const uint8_t*, struct cpu_state*);
+int rar(const uint8_t*, struct cpu_state*);
+int cma(const uint8_t*, struct cpu_state*);
+int cmc(const uint8_t*, struct cpu_state*);
+int stc(const uint8_t*, struct cpu_state*);
 
 // BRANCH GROUP
 
-int jmp(uint8_t, struct cpu_state*);
-int jcond(uint8_t, struct cpu_state*);
-int call(uint8_t, struct cpu_state*);
-int ccond(uint8_t, struct cpu_state*);
-int ret(uint8_t, struct cpu_state*);
-int retcond(uint8_t, struct cpu_state*);
-int rst(uint8_t, struct cpu_state*);
-int pchl(uint8_t, struct cpu_state*);
+int jmp(const uint8_t*, struct cpu_state*);
+int jcond(const uint8_t*, struct cpu_state*);
+int call(const uint8_t*, struct cpu_state*);
+int ccond(const uint8_t*, struct cpu_state*);
+int ret(const uint8_t*, struct cpu_state*);
+int retcond(const uint8_t*, struct cpu_state*);
+int rst(const uint8_t*, struct cpu_state*);
+int pchl(const uint8_t*, struct cpu_state*);
 
 // STACK, I/O, AND MACHINE CONTROL (OTHER) GROUP
 
-int push(uint8_t, struct cpu_state*);
-int pop(uint8_t, struct cpu_state*);
-int xthl(uint8_t, struct cpu_state*);
-int sphl(uint8_t, struct cpu_state*);
-// int in(uint8_t, struct cpu_state*);
-// int out(uint8_t, struct cpu_state*);
-int ei(uint8_t, struct cpu_state*);
-int di(uint8_t, struct cpu_state*);
-int hlt(uint8_t, struct cpu_state*);
-int nop(uint8_t, struct cpu_state*);
+int push(const uint8_t*, struct cpu_state*);
+int pop(const uint8_t*, struct cpu_state*);
+int xthl(const uint8_t*, struct cpu_state*);
+int sphl(const uint8_t*, struct cpu_state*);
+int ei(const uint8_t*, struct cpu_state*);
+int di(const uint8_t*, struct cpu_state*);
+int hlt(const uint8_t*, struct cpu_state*);
+int nop(const uint8_t*, struct cpu_state*);
 
 #endif

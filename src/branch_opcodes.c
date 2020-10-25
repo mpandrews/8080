@@ -7,16 +7,16 @@
 #include <pthread.h>
 #include <stdio.h>
 
-int jmp(uint8_t opcode, struct cpu_state* cpu)
+int jmp(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// Check JMP opcodes are either 0xC3 or 0xCB
-	assert(opcode == 0b11000011 || opcode == 0b11001011);
+	assert(opcode[0] == 0b11000011 || opcode[0] == 0b11001011);
 	(void) opcode;
 
-	uint16_t memory_address = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
+	uint16_t memory_address = IMM16(opcode);
 
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: JMP 0x%4.4x\n", cpu->pc, memory_address);
+	fprintf(stderr, "JMP 0x%4.4x\n", memory_address);
 #endif
 
 	cpu->pc = memory_address;
@@ -25,21 +25,24 @@ int jmp(uint8_t opcode, struct cpu_state* cpu)
 	return 0;
 }
 
-int jcond(uint8_t opcode, struct cpu_state* cpu)
+int jcond(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// Assert that this is the correct opcode
 	// all 8 conditional jump opcodes have the two highest-order bits set,
 	// and the three lowest order bits are 010.
-	assert((opcode & 0b11000111) == 0b11000010);
+	assert((opcode[0] & 0b11000111) == 0b11000010);
 
 	// Verbose debug info
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: J%s\n", cpu->pc, get_condition_name(opcode));
+	fprintf(stderr,
+			"J%s 0x%4.4x\n",
+			get_condition_name(opcode[0]),
+			IMM16(opcode));
 #endif
 
 	// Determine which condition this version of jcond is meant to check.
 	// Set conditionMet flag if the corresponding condition is.. met.
-	uint8_t conditionMet = evaluate_condition(opcode, cpu->psw);
+	uint8_t conditionMet = evaluate_condition(opcode[0], cpu->psw);
 
 	// If the condition was met, set the program counter to the argument
 	// which is the next 2 bytes after the jcond opcode. If the condition
@@ -48,42 +51,44 @@ int jcond(uint8_t opcode, struct cpu_state* cpu)
 	cycle_wait(10);
 	if (conditionMet)
 	{
-		cpu->pc = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
+		cpu->pc = IMM16(opcode);
 		return 0;
 	}
 	else
 		return 3;
 }
 
-int call(uint8_t opcode, struct cpu_state* cpu)
+int call(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// The 'proper' CALL opcode is 0xcd, but 0xdd, 0xed, 0xfd are also
 	// CALL opcodes, though they aren't supposed to be used
-	assert((opcode & 0b11001111) == 0b11001101);
+	assert((opcode[0] & 0b11001111) == 0b11001101);
 	(void) opcode;
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: CALL\n", cpu->pc);
+	fprintf(stderr, "CALL 0x%4.4x\n", IMM16(opcode));
 #endif
 
 	// move the stack pointer
-	// push the next instruction onto the stack. This is 3 bytes past the
-	// current program counter to omit the CALL opcode and argument
+	// push the next instruction onto the stack.
 	cpu->sp -= 2;
-	*((uint16_t*) &cpu->memory[cpu->sp]) = cpu->pc + 3;
+	*((uint16_t*) &cpu->memory[cpu->sp]) = cpu->pc;
 
 	// set the program counter to the argument supplied to by call
-	cpu->pc = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
+	cpu->pc = IMM16(opcode);
 	cycle_wait(17);
 	return 0;
 }
 
-int ccond(uint8_t opcode, struct cpu_state* cpu)
+int ccond(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// assert that this is the right opcode!
-	assert((opcode & 0b11000111) == 0b11000100);
+	assert((opcode[0] & 0b11000111) == 0b11000100);
 
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: C%s\n", cpu->pc, get_condition_name(opcode));
+	fprintf(stderr,
+			"C%s 0x%4.4x\n",
+			get_condition_name(opcode[0]),
+			IMM16(opcode));
 #endif
 
 	// Evaluate whether the given condition has been met. If the condition
@@ -92,14 +97,14 @@ int ccond(uint8_t opcode, struct cpu_state* cpu)
 	// setting the program counter to point to the address of the call. If
 	// the condition was not met, just advance the program counter to the
 	// next opcode
-	uint8_t conditionMet = evaluate_condition(opcode, cpu->psw);
+	uint8_t conditionMet = evaluate_condition(opcode[0], cpu->psw);
 	if (conditionMet)
 	{
 		cpu->sp -= 2;
-		*((uint16_t*) &cpu->memory[cpu->sp]) = cpu->pc + 3;
+		*((uint16_t*) &cpu->memory[cpu->sp]) = cpu->pc;
 		// put CALL's argument which is at cpu->pc + 1 in memory
 		// into the program counter
-		cpu->pc = *((uint16_t*) &cpu->memory[cpu->pc + 1]);
+		cpu->pc = IMM16(opcode);
 		cycle_wait(17);
 		return 0;
 	}
@@ -110,15 +115,15 @@ int ccond(uint8_t opcode, struct cpu_state* cpu)
 	}
 }
 
-int ret(uint8_t opcode, struct cpu_state* cpu)
+int ret(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// Assert that this is the correct opcode. RET should be 0xc9, but
 	// 0xd9 can also be RET
-	assert((opcode & 0b11101111) == 0b11001001);
+	assert((opcode[0] & 0b11101111) == 0b11001001);
 	(void) opcode;
 	// print debugging info
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: RET\n", cpu->pc);
+	fprintf(stderr, "RET\n");
 #endif
 	// perform the ret:
 	// 1. Take the contents the memory at the stack pointer and put it into
@@ -132,13 +137,13 @@ int ret(uint8_t opcode, struct cpu_state* cpu)
 	return 0;
 }
 
-int retcond(uint8_t opcode, struct cpu_state* cpu)
+int retcond(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// assert that this is the right opcode!
-	assert((opcode & 0b11000111) == 0b11000000);
+	assert((opcode[0] & 0b11000111) == 0b11000000);
 
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: R%s\n", cpu->pc, get_condition_name(opcode));
+	fprintf(stderr, "R%s\n", get_condition_name(opcode[0]));
 #endif
 
 	// Evaluate whether the given condition has been met. If the condition
@@ -146,7 +151,7 @@ int retcond(uint8_t opcode, struct cpu_state* cpu)
 	// at the stack pointer into the program counter and incrementing the
 	// stack pointer. If the conditon is not met, just move on to the next
 	// instruction.
-	uint8_t conditionMet = evaluate_condition(opcode, cpu->psw);
+	uint8_t conditionMet = evaluate_condition(opcode[0], cpu->psw);
 	if (conditionMet)
 	{
 		cpu->pc = *((uint16_t*) &cpu->memory[cpu->sp]);
@@ -161,41 +166,34 @@ int retcond(uint8_t opcode, struct cpu_state* cpu)
 	}
 }
 
-int rst(uint8_t opcode, struct cpu_state* cpu)
+int rst(const uint8_t* opcode, struct cpu_state* cpu)
 {
-	assert((opcode & 0b11000111) == 0b11000111);
+	assert((opcode[0] & 0b11000111) == 0b11000111);
 
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: RST 0x%4.4x\n", cpu->pc, opcode & 0b111000);
+	fprintf(stderr, "RST 0x%4.4x\n", opcode[0] & 0b111000);
 #endif
 
-	// Push PC onto the stack.  If the opcode we're executing doesn't
-	// match the opcode pointed to by PC, this is an interrupt and we
-	// need to push the current value in PC onto the stack.
-	// Otherwise, this is a normal execution and we need to push the opcode
-	// after it.
+	// Push PC onto the stack.
 	cpu->sp -= 2;
-	if (opcode != cpu->memory[cpu->pc])
-		*((uint16_t*) cpu->memory + cpu->sp) = cpu->pc;
-	else
-		*((uint16_t*) cpu->memory + cpu->sp) = cpu->pc + 1;
+	*((uint16_t*) cpu->memory + cpu->sp) = cpu->pc;
 	// RST jumps to the address signified in bits 3, 4, and 5 of the opcode,
 	// multiplied by eight.  As it happens, bit 3 is already the 8s place,
 	// so we can just filter out all the other bits and assign that
 	// directly. Neat.
-	cpu->pc = opcode & 0b111000;
+	cpu->pc = opcode[0] & 0b111000;
 	cycle_wait(11);
 	return 0;
 }
 
-int pchl(uint8_t opcode, struct cpu_state* cpu)
+int pchl(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	// PCHL opcode should be 0xE9
-	assert(opcode == 0b11101001);
+	assert(opcode[0] == 0b11101001);
 	(void) opcode;
 
 #ifdef VERBOSE
-	fprintf(stderr, "0x%4.4x: PCHL\n", cpu->pc);
+	fprintf(stderr, "PCHL\n");
 #endif
 
 	// The contents of register pair HL are copied to the PC
