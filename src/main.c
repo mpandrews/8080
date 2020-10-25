@@ -142,11 +142,10 @@ int main(int argc, char** argv)
 			.interrupt_buffer	       = &interrupt_buffer,
 			.data_bus		       = &data_bus,
 			.address_bus		       = &address_bus,
-			.hw_struct		       = hw_struct};
+			.hw_struct		       = hw_struct,
+			.hw_lib			       = hw_lib_handle};
 
-	pthread_t cpu_thread, front_end_thread;
-	// We always create a CPU thread.
-	pthread_create(&cpu_thread, NULL, cpu_thread_routine, (void*) &res);
+	pthread_t front_end_thread;
 
 	// We check to see if the hardware library defines a front_end function:
 	// if we do, we spin it up in a second thread.  If not, there's
@@ -154,11 +153,17 @@ int main(int argc, char** argv)
 	void* (*front_end)(void*) = dlsym(hw_lib_handle, "front_end");
 	if (front_end)
 	{ pthread_create(&front_end_thread, NULL, front_end, (void*) &res); }
-	pthread_join(cpu_thread, NULL);
-	// pthread_join returns with an error if there is no such thread,
-	// as in the case of a hardware set that didn't define front_end().
-	pthread_join(front_end_thread, NULL);
 
+	// Run the CPU routine in this thread.
+	cpu_thread_routine(&res);
+
+	// If we have a front_end, then we'll cancel and join it after
+	// the cpu routine routines.
+	if (front_end)
+	{
+		pthread_cancel(front_end_thread);
+		pthread_join(front_end_thread, NULL);
+	}
 	// Cleanup.
 	free(memory_space);
 	hw_destroy_struct(hw_struct);

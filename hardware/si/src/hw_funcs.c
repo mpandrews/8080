@@ -122,9 +122,6 @@ int hw_interrupt_hook(const uint8_t* opcode,
 	}
 	// Whether we updated the video buffer or not, we still execute the
 	// interrupt.
-#ifdef VERBOSE
-	fprintf(stderr, "INT   : ");
-#endif
 	return op_func(opcode, cpu);
 }
 

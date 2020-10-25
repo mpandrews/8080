@@ -36,9 +36,6 @@ int hw_interrupt_hook(const uint8_t* opcode,
 		struct cpu_state* cpu,
 		int (*op_func)(const uint8_t*, struct cpu_state*))
 {
-#ifdef VERBOSE
-	fprintf(stderr, "INT   : ");
-#endif
 	return op_func(opcode, cpu);
 }
 
