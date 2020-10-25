@@ -12,9 +12,12 @@ target_sources(taito PRIVATE ${srcs})
 
 target_include_directories(taito PRIVATE
 	${INCLUDE_DIR}
-	${CMAKE_CURRENT_LIST_DIR}/include
 	${SDL2_INCLUDE_DIRS}
 	)
+target_include_directories(taito PUBLIC
+	${CMAKE_CURRENT_LIST_DIR}/include
+	)
+
 target_compile_options(taito PRIVATE ${FlagSettings})
 
 target_link_libraries(taito ${SDL2_LIBRARIES})

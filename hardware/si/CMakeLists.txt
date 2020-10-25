@@ -10,6 +10,7 @@ target_sources(si PRIVATE ${srcs})
 target_include_directories(si PRIVATE
 	${INCLUDE_DIR}
 	${CMAKE_CURRENT_LIST_DIR}/include
+	$<TARGET_PROPERTY:taito,INTERFACE_INCLUDE_DIRECTORIES>
 	)
 target_compile_options(si PRIVATE ${FlagSettings})
 
