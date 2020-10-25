@@ -142,7 +142,8 @@ int main(int argc, char** argv)
 			.interrupt_buffer	       = &interrupt_buffer,
 			.data_bus		       = &data_bus,
 			.address_bus		       = &address_bus,
-			.hw_struct		       = hw_struct};
+			.hw_struct		       = hw_struct,
+			.hw_lib			       = hw_lib_handle};
 
 	pthread_t front_end_thread;
 

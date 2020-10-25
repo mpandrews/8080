@@ -3,9 +3,11 @@
 #include "opcode_array.h"
 #include "opcode_size.h"
 
+#include <dlfcn.h>
 #include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 // Diagnostic print function to dump the CPU's state to stderr.
 static inline void print_registers(const struct cpu_state* cpu)
@@ -58,11 +60,24 @@ void* cpu_thread_routine(void* resources)
 			.data_bus	  = res->data_bus,
 			.hw_struct	  = res->hw_struct};
 
-	uint8_t* opcode;
+	int (*interrupt_hook)(const uint8_t* opcode,
+			struct cpu_state* cpu,
+			int (*op_func)(const uint8_t*, struct cpu_state*)) =
+			dlsym(res->hw_lib, "hw_interrupt_hook");
+	if (!interrupt_hook)
+	{
+		fprintf(stderr,
+				"Error finding function 'hw_interrupt_hook' in "
+				"hardware"
+				" library:\n\t%s\n",
+				dlerror());
+		exit(1);
+	}
 
 	// We can remove this assignment if we want to force the user
 	// to hardware reset on CPU boot.
 	cpu.reset_flag = 1;
+	const uint8_t* opcode;
 	for (;;)
 	{
 		// If the reset flag is set, reset and clear it.
@@ -76,83 +91,34 @@ void* cpu_thread_routine(void* resources)
 			cycle_wait(3);
 			continue;
 		}
-		switch (cpu.interrupt_enable_flag)
+
+		switch (cpu.interrupt_enable_flag << 1 | cpu.halt_flag)
 		{
-		/* If the interrupt flag is currently enabled,
-		 * then we take our opcode from the interrupt buffer
-		 * if there's anything there, otherwise we
-		 * fetch normally.
-		 *
-		 * Note that we also clear the halt flag, if it was
-		 * set.  That way the interrupt will actually execute
-		 * as expected.  Not that if the halt flag
-		 * is set and interrupts are disabled, the CPU
-		 * can only resume execution via hardware reset.
-		 */
-		case 1: // Interrupt flag is enabled.
-			pthread_mutex_lock(cpu.int_lock);
-			if (cpu.interrupt_buffer)
-			{
-				uint8_t int_opcode[3] = {0};
-				int_opcode[0]	      = *cpu.interrupt_buffer;
-				*cpu.interrupt_buffer = 0;
-				cpu.halt_flag	      = 0;
-				cpu.interrupt_enable_flag = 0;
-				pthread_cond_signal(cpu.int_cond);
-				pthread_mutex_unlock(cpu.int_lock);
-				// Ignore return value: we don't advance
-				// PC for interrupts, though they can jump us.
-#ifdef VERBOSE
-				fprintf(stderr, "INTER : ");
-#endif
-				opcodes[int_opcode[0]](int_opcode, &cpu);
-#ifdef VERBOSE
-				print_registers(&cpu);
-#endif
-				continue;
-			}
-			pthread_mutex_unlock(cpu.int_lock);
-			opcode = &cpu.memory[cpu.pc];
-			break;
-		/* If the interrupt flag is pending enablement,
-		 * which will happen if that last opcode we
-		 * ran was EI, then we decrement it and fetch
-		 * normally.  That way, when the next
-		 * opcode gets its turn, the flag will be set.
-		 * If the flag is clear, we just
-		 * fetch normally.
-		 */
-		case 2: // Interrupt flag is pending enable.
+		case 4: // Interrupt pending, not halted.
 			--cpu.interrupt_enable_flag;
 			// FALLTHRU
-		default: opcode = &cpu.memory[cpu.pc];
-		}
-		/* If we pulled an interrupt, then the halt flag
-		 * will have been cleared, so if it's still set,
-		 * then we need to spinlock.  If interrupts are enabled,
-		 * then we'll spin for 10 cycles, in case someone wants
-		 * to throw something on our buffer.  If they're not,
-		 * the only way out is via hardware reset, so we'll wait
-		 * a full timechunk to make sure the keyboard has been
-		 * polled again before we go through the loop.
-		 *
-		 * We may consider switching this out for a more elaborate
-		 * system of locks and pthread conds to avoid spinlocking,
-		 * but it's also not the end of the world if the (real)
-		 * CPU spinlocks when the (fake) CPU wedges itself.
-		 *
-		 * We can chalk it up to 'technically, if unhelpfully,
-		 * faithful.'
-		 *
-		 * One possibility for improvement if we implement a global
-		 * keyboard-state struct is that we can put a lock around it
-		 * and add a condition flag for hardware reset, so that the CPU
-		 * can simply block while waiting for it, if we're in the
-		 * full wedge state.
-		 */
-		switch (cpu.halt_flag)
-		{
-		case 0:
+		case 0: // Interrupt disabled, not halted.
+			goto normal_execution;
+		case 5: // Interrupt pending, halted.
+			--cpu.interrupt_enable_flag;
+			// FALLTHRU
+		case 3: // Interrupt enabled, halted.
+			pthread_mutex_lock(cpu.int_lock);
+			if (cpu.interrupt_buffer) goto interrupt_execution;
+			pthread_mutex_unlock(cpu.int_lock);
+			cycle_wait(10);
+			break;
+		case 2: // Interrupt enabled, not halted.
+			pthread_mutex_lock(cpu.int_lock);
+			if (cpu.interrupt_buffer) goto interrupt_execution;
+			pthread_mutex_unlock(cpu.int_lock);
+			goto normal_execution;
+			break;
+		case 1: // Interrupt disabled, halted.
+			cycle_wait(CYCLE_CHUNK);
+			break;
+normal_execution:
+			opcode = cpu.memory + cpu.pc;
 #ifdef VERBOSE
 			fprintf(stderr, "0x%4.4x: ", cpu.pc);
 #endif
@@ -162,17 +128,34 @@ void* cpu_thread_routine(void* resources)
 			print_registers(&cpu);
 #endif
 			break;
-		default:
-			if (cpu.interrupt_enable_flag)
-				// Strictly speaking, halt should
-				// spin for 1 cycle, but given
-				// our timechunking, that will just
-				// burn more (real) CPU without
-				// increasing responsiveness.
-				cycle_wait(10);
-			else
-				// Full-wedge.
-				cycle_wait(CYCLE_CHUNK);
+interrupt_execution:
+			// The 8080 only supports single-byte opcodes
+			// as interrupts.  So if we get a multi-byte,
+			// we'll just clear it and move on.
+			if (get_opcode_size(*cpu.interrupt_buffer) > 1)
+			{
+				*cpu.interrupt_buffer = 0;
+				pthread_mutex_unlock(cpu.int_lock);
+				pthread_cond_signal(cpu.int_cond);
+				break;
+			}
+			cpu.halt_flag		  = 0;
+			cpu.interrupt_enable_flag = 0;
+			// Ignore return value: we don't advance
+			// PC for interrupts, though they can jump us.
+#ifdef VERBOSE
+			fprintf(stderr, "INTRPT: ");
+#endif
+			interrupt_hook(cpu.interrupt_buffer,
+					&cpu,
+					opcodes[*cpu.interrupt_buffer]);
+			*cpu.interrupt_buffer = 0;
+			pthread_mutex_unlock(cpu.int_lock);
+			pthread_cond_signal(cpu.int_cond);
+#ifdef VERBOSE
+			print_registers(&cpu);
+#endif
+			break;
 		}
 	}
 	return NULL;

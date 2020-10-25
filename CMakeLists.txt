@@ -71,6 +71,7 @@ target_link_libraries(Tests
 	PRIVATE
 		${CMAKE_THREAD_LIBS_INIT}
 		${GTEST_BOTH_LIBRARIES}
+		${CMAKE_DL_LIBS}
 )
 
 target_sources(Tests
