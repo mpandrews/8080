@@ -21,19 +21,19 @@ Screen::Screen(const unsigned char* SIVideoBuffer)
 	 * the next 3 significant bits set green, and the 2 least significant
 	 * bits determine the blue component.
 	 */
-	this->topFilterColor    = 0b00011100; // very green
+	this->topFilterColor	= 0b00011100; // very green
 	this->bottomFilterColor = 0b11100000; // very red
-	this->topFilterWidth      = TOP_FILTER_WIDTH;
-	this->bottomFilterWidth    = BOTTOM_FILTER_WIDTH;
-	this->currentScreenSide	      = TOP;
+	this->topFilterWidth	= TOP_FILTER_WIDTH;
+	this->bottomFilterWidth = BOTTOM_FILTER_WIDTH;
+	this->currentScreenSide = TOP;
 
 	// The window is the SDL object that gets a window from the OS and
 	// manages it.
 	this->window = SDL_CreateWindow("Space Invaders", // window name
 			SDL_WINDOWPOS_CENTERED,		  // horizontal pos
 			SDL_WINDOWPOS_CENTERED,		  // vertical pos
-			SI_SCREEN_HEIGHT * WINDOW_SCALE_FACTOR,		  // width
-			SI_SCREEN_WIDTH * WINDOW_SCALE_FACTOR,		  // height
+			SI_SCREEN_HEIGHT * WINDOW_SCALE_FACTOR,	    // width
+			SI_SCREEN_WIDTH * WINDOW_SCALE_FACTOR,	    // height
 			(SDL_WINDOW_SHOWN | SDL_WINDOW_INPUT_FOCUS) // flags
 	);
 	if (window == NULL)
@@ -60,11 +60,11 @@ Screen::Screen(const unsigned char* SIVideoBuffer)
 	// not declared/maintained here) to hand off the memory-mapped data to
 	// the renderer.
 	this->surface = SDL_CreateRGBSurfaceWithFormatFrom(this->displayBuffer,
-			SI_SCREEN_WIDTH,            // width of surface
-			SI_SCREEN_HEIGHT,             // height of surface
-			8,                           // depth - bits-per-pixel
-			SI_SCREEN_WIDTH,            // pitch - width of one row of pixels
-			SDL_PIXELFORMAT_RGB332);     // format
+			SI_SCREEN_WIDTH,  // width of surface
+			SI_SCREEN_HEIGHT, // height of surface
+			8,		  // depth - bits-per-pixel
+			SI_SCREEN_WIDTH,  // pitch - width of one row of pixels
+			SDL_PIXELFORMAT_RGB332); // format
 	if (surface == NULL)
 	{
 		std::cout << "Could not load SDL surface. " << SDL_GetError()
@@ -86,14 +86,23 @@ void Screen::renderFrame()
 
 	// Create SDL_Rect to scale the rotated screen to our window
 	SDL_Rect dest;
-	dest.x = (WINDOW_SCALE_FACTOR * (SI_SCREEN_HEIGHT - SI_SCREEN_WIDTH)) / 2;
-	dest.y = (WINDOW_SCALE_FACTOR * (SI_SCREEN_WIDTH - SI_SCREEN_HEIGHT)) / 2;
+	dest.x = (WINDOW_SCALE_FACTOR * (SI_SCREEN_HEIGHT - SI_SCREEN_WIDTH))
+		 / 2;
+	dest.y = (WINDOW_SCALE_FACTOR * (SI_SCREEN_WIDTH - SI_SCREEN_HEIGHT))
+		 / 2;
 	dest.w = WINDOW_SCALE_FACTOR * SI_SCREEN_WIDTH;
 	dest.h = WINDOW_SCALE_FACTOR * SI_SCREEN_HEIGHT;
 
 	// clear the previous render and display the new one
 	SDL_RenderClear(this->renderer);
-	if (SDL_RenderCopyEx(this->renderer, texture, NULL, &dest, 270, NULL, SDL_FLIP_NONE) < 0)
+	if (SDL_RenderCopyEx(this->renderer,
+			    texture,
+			    NULL,
+			    &dest,
+			    270,
+			    NULL,
+			    SDL_FLIP_NONE)
+			< 0)
 	{
 		std::cout << "Error rendering texture. " << SDL_GetError()
 			  << std::endl;
@@ -148,8 +157,7 @@ void Screen::translateVideoRamToBuffer()
 			if (pixels & bitMasks[j])
 			{
 				if (col < this->bottomFilterWidth)
-					colorPixelValue =
-							this->topFilterColor;
+					colorPixelValue = this->topFilterColor;
 				else if (col >= SI_SCREEN_WIDTH - this->topFilterWidth)
 					colorPixelValue =
 							this->bottomFilterColor;
@@ -162,4 +170,3 @@ void Screen::translateVideoRamToBuffer()
 		}
 	}
 }
-
