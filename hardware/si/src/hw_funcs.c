@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include "keystate_update.h"
 #include "opcode_array.h"
 #include "rom_struct.h"
 
@@ -21,6 +22,19 @@ static inline void check_malloc(void* arg)
 		       "initialization");
 		exit(1);
 	}
+}
+
+void* front_end(void* arg)
+{
+	(void) arg;
+#ifdef VERBOSE
+	fprintf(stderr, "SI FRONT END THREAD RUNNING!\n");
+#endif
+
+	struct rom_struct rstruct;
+	keystate_update((struct rom_struct*) &rstruct);
+
+	return NULL;
 }
 
 int hw_in(const uint8_t* opcode, struct cpu_state* cpu)
