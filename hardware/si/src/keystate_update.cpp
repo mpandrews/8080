@@ -7,7 +7,7 @@ extern "C"
 {
 	void keystate_update(struct rom_struct* rStruct)
 	{
-	    SDL_Event e;
+		SDL_Event e;
 		bool quit = false;
 
 		while (!quit && SDL_PollEvent(&e))
