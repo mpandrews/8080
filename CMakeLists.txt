@@ -74,6 +74,7 @@ target_include_directories(Tests
 		include
 		${GTEST_INCLUDE_DIRS}
 		hardware
+		hardware/taito/include
 )
 target_link_libraries(Tests
 	PRIVATE
@@ -84,12 +85,12 @@ target_link_libraries(Tests
 
 target_sources(Tests
 	PRIVATE
-		test/data_opcode_tests.cpp
-		test/logical_opcode_tests.cpp
-		test/other_opcode_tests.cpp
-		test/branch_opcode_tests.cpp
-		test/arithmetic_opcode_tests.cpp
-		test/hw_funcs_tests.cpp
+	test/data_opcode_tests.cpp
+	test/logical_opcode_tests.cpp
+	test/other_opcode_tests.cpp
+	test/branch_opcode_tests.cpp
+	test/arithmetic_opcode_tests.cpp
+	test/hw_funcs_tests.cpp
 )
 
 gtest_discover_tests(Tests)

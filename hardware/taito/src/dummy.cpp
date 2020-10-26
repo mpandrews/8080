@@ -1,2 +1,9 @@
+#include "cpu.h"
 
-int foo() { return 0; }
+extern "C" int hw_in(const uint8_t*, struct cpu_state*);
+
+int foo()
+{
+	hw_in(nullptr, nullptr);
+	return 0;
+}

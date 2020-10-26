@@ -27,8 +27,7 @@ int add_adc(const uint8_t* opcode, struct cpu_state* cpu)
 			&cpu->flags);
 	APPLY_CARRY_FLAG(result, cpu->flags);
 	cpu->a = result;
-	cycle_wait(4);
-	return 1;
+	return 4;
 }
 
 int adi(const uint8_t* opcode, struct cpu_state* cpu)
@@ -48,8 +47,7 @@ int adi(const uint8_t* opcode, struct cpu_state* cpu)
 	APPLY_CARRY_FLAG(result, cpu->flags);
 	cpu->a = result;
 
-	cycle_wait(7);
-	return 2;
+	return 7;
 }
 
 int aci(const uint8_t* opcode, struct cpu_state* cpu)
@@ -71,8 +69,7 @@ int aci(const uint8_t* opcode, struct cpu_state* cpu)
 	APPLY_CARRY_FLAG(result, cpu->flags);
 	cpu->a = result;
 
-	cycle_wait(7);
-	return 2;
+	return 7;
 }
 
 int sub_sbb(const uint8_t* opcode, struct cpu_state* cpu)
@@ -108,8 +105,7 @@ int sub_sbb(const uint8_t* opcode, struct cpu_state* cpu)
 	APPLY_CARRY_FLAG_INVERTED(result, cpu->flags);
 	cpu->a = result;
 
-	cycle_wait(4);
-	return 1;
+	return 4;
 }
 
 int sui_sbi(const uint8_t* opcode, struct cpu_state* cpu)
@@ -137,8 +133,7 @@ int sui_sbi(const uint8_t* opcode, struct cpu_state* cpu)
 	// apply the lower 8-bits of result to register A
 	cpu->a = result;
 
-	cycle_wait(7);
-	return 2;
+	return 7;
 }
 
 int inr(const uint8_t* opcode, struct cpu_state* cpu)
@@ -161,10 +156,7 @@ int inr(const uint8_t* opcode, struct cpu_state* cpu)
 
 	// If the operand was OPERAND_MEM, then this opcode takes 10 clock
 	// cycles. Otherwise, it takes 5.
-	(GET_DESTINATION_OPERAND(opcode[0]) == OPERAND_MEM) ? cycle_wait(10)
-							    : cycle_wait(5);
-
-	return 1;
+	return (GET_DESTINATION_OPERAND(opcode[0]) == OPERAND_MEM) ? 10 : 5;
 }
 
 int dcr(const uint8_t* opcode, struct cpu_state* cpu)
@@ -186,10 +178,7 @@ int dcr(const uint8_t* opcode, struct cpu_state* cpu)
 
 	// If the operand was OPERAND_MEM, then this opcode takes 10 clock
 	// cycles. Otherwise, it takes 5.
-	(GET_DESTINATION_OPERAND(opcode[0]) == OPERAND_MEM) ? cycle_wait(10)
-							    : cycle_wait(5);
-
-	return 1;
+	return (GET_DESTINATION_OPERAND(opcode[0]) == OPERAND_MEM) ? 10 : 5;
 }
 
 int inx_dcx(const uint8_t* opcode, struct cpu_state* cpu)
@@ -210,8 +199,7 @@ int inx_dcx(const uint8_t* opcode, struct cpu_state* cpu)
 	// program counter one byte.
 	uint16_t* operand = get_register_pair_other(opcode[0], cpu);
 	opcode[0] & 0b00001000 ? --*operand : ++*operand;
-	cycle_wait(5);
-	return 1;
+	return 5;
 }
 
 int dad(const uint8_t* opcode, struct cpu_state* cpu)
@@ -227,8 +215,7 @@ int dad(const uint8_t* opcode, struct cpu_state* cpu)
 	cpu->flags = (result & (1 << 16)) ? cpu->flags | CARRY_FLAG
 					  : cpu->flags & ~CARRY_FLAG;
 	cpu->hl = result;
-	cycle_wait(10);
-	return 1;
+	return 10;
 }
 
 int daa(const uint8_t* opcode, struct cpu_state* cpu)
@@ -259,6 +246,5 @@ int daa(const uint8_t* opcode, struct cpu_state* cpu)
 
 	working = _add(cpu->a, working, 0, &cpu->flags);
 	cpu->a	= working;
-	cycle_wait(4);
-	return 1;
+	return 4;
 }

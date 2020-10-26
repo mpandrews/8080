@@ -1,6 +1,8 @@
 #ifndef CYCLE_TIMER
 #define CYCLE_TIMER
 
+#include "cpu.h"
+
 // Because we're using the monotonic high-resolution clock, which
 // measures time in nanoseconds, we define one clock pulse of the
 // CPU in number of nanoseconds elapsed.  At 2MHz, one clock cycle
@@ -30,6 +32,6 @@
  * It keeps a static internal count of the number of cycles that have elapsed,
  * and it exceeds its target, it will sleep until the correct wall time.
  */
-void cycle_wait(int cycles);
+int cycle_wait(int cycles, struct cpu_state*);
 
 #endif

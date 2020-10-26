@@ -41,11 +41,9 @@ int ana(const uint8_t* opcode, struct cpu_state* cpu)
 	// Performing this operation using OPERAND MEM requires 7 cycles, and
 	// it takes 4 cycles when using register operands.
 	if (source_operand == OPERAND_MEM)
-		cycle_wait(7);
+		return 7;
 	else
-		cycle_wait(4);
-	// Advance PC by one byte
-	return 1;
+		return 4;
 }
 
 int ani(const uint8_t* opcode, struct cpu_state* cpu)
@@ -71,8 +69,7 @@ int ani(const uint8_t* opcode, struct cpu_state* cpu)
 	// Clear CY and AC flags
 	cpu->flags &= ~CARRY_FLAG;
 
-	cycle_wait(7);
-	return 2;
+	return 7;
 }
 
 int xra(const uint8_t* opcode, struct cpu_state* cpu)
@@ -94,8 +91,7 @@ int xra(const uint8_t* opcode, struct cpu_state* cpu)
 	cpu->flags &= (~CARRY_FLAG & ~AUX_CARRY_FLAG);
 
 	// If XOR memory, wait 7 cycles. If XOR register, wait 4 cycles
-	get_operand_name(source_operand) == 'M' ? cycle_wait(7) : cycle_wait(4);
-	return 1;
+	return get_operand_name(source_operand) == 'M' ? 7 : 4;
 }
 
 int xri(const uint8_t* opcode, struct cpu_state* cpu)
@@ -116,8 +112,7 @@ int xri(const uint8_t* opcode, struct cpu_state* cpu)
 	// Clear CY and AC flags
 	cpu->flags &= (~CARRY_FLAG & ~AUX_CARRY_FLAG);
 
-	cycle_wait(7);
-	return 2;
+	return 7;
 }
 
 int ora(const uint8_t* opcode, struct cpu_state* cpu)
@@ -146,10 +141,9 @@ int ora(const uint8_t* opcode, struct cpu_state* cpu)
 	// getting an operand from memory takes 7 cycles, using register
 	// operands takes 4 cycles and all are 1-byte instructions
 	if (source_operand == OPERAND_MEM)
-		cycle_wait(7);
+		return 7;
 	else
-		cycle_wait(4);
-	return 1;
+		return 4;
 }
 
 int ori(const uint8_t* opcode, struct cpu_state* cpu)
@@ -175,8 +169,7 @@ int ori(const uint8_t* opcode, struct cpu_state* cpu)
 	cpu->flags &= (~CARRY_FLAG & ~AUX_CARRY_FLAG);
 
 	// ORI always takes 7 cycles and advances the PC by 2
-	cycle_wait(7);
-	return 2;
+	return 7;
 }
 
 int cmp(const uint8_t* opcode, struct cpu_state* cpu)
@@ -202,9 +195,7 @@ int cmp(const uint8_t* opcode, struct cpu_state* cpu)
 	APPLY_CARRY_FLAG_INVERTED(result, cpu->flags);
 
 	// If CMP memory, wait 7 cycles. If CMP register, wait 4 cycles
-	get_operand_name(GET_SOURCE_OPERAND(operand)) == 'M' ? cycle_wait(7)
-							     : cycle_wait(4);
-	return 1;
+	return get_operand_name(GET_SOURCE_OPERAND(opcode[0])) == 'M' ? 7 : 4;
 }
 
 int cpi(const uint8_t* opcode, struct cpu_state* cpu)
@@ -231,8 +222,7 @@ int cpi(const uint8_t* opcode, struct cpu_state* cpu)
 	uint16_t result = _add(cpu->a, operand, 1, &cpu->flags);
 	APPLY_CARRY_FLAG_INVERTED(result, cpu->flags);
 
-	cycle_wait(7);
-	return 2;
+	return 7;
 }
 
 int rlc(const uint8_t* opcode, struct cpu_state* cpu)
@@ -245,8 +235,7 @@ int rlc(const uint8_t* opcode, struct cpu_state* cpu)
 	cpu->a	   = (cpu->a << 1) | (cpu->a >> 7);
 	cpu->flags = (cpu->a & 1) ? cpu->flags | CARRY_FLAG
 				  : cpu->flags & ~CARRY_FLAG;
-	cycle_wait(4);
-	return 1;
+	return 4;
 }
 
 int rrc(const uint8_t* opcode, struct cpu_state* cpu)
@@ -259,8 +248,7 @@ int rrc(const uint8_t* opcode, struct cpu_state* cpu)
 	cpu->a	   = (cpu->a >> 1) | (cpu->a << 7);
 	cpu->flags = (cpu->a & 0x80) ? cpu->flags | CARRY_FLAG
 				     : cpu->flags & ~CARRY_FLAG;
-	cycle_wait(4);
-	return 1;
+	return 4;
 }
 
 int ral(const uint8_t* opcode, struct cpu_state* cpu)
@@ -273,8 +261,7 @@ int ral(const uint8_t* opcode, struct cpu_state* cpu)
 	uint16_t shifted = (cpu->a << 1) | (cpu->flags & CARRY_FLAG);
 	APPLY_CARRY_FLAG(shifted, cpu->flags);
 	cpu->a = shifted;
-	cycle_wait(4);
-	return 1;
+	return 4;
 }
 
 int rar(const uint8_t* opcode, struct cpu_state* cpu)
@@ -289,8 +276,7 @@ int rar(const uint8_t* opcode, struct cpu_state* cpu)
 	cpu->a		 = shifted;
 	cpu->flags	 = outshifted_bit ? cpu->flags | CARRY_FLAG
 				    : cpu->flags & ~CARRY_FLAG;
-	cycle_wait(4);
-	return 1;
+	return 4;
 }
 
 int cma(const uint8_t* opcode, struct cpu_state* cpu)
@@ -303,8 +289,7 @@ int cma(const uint8_t* opcode, struct cpu_state* cpu)
 
 	// Set the A register to its complement
 	cpu->a = ~cpu->a;
-	cycle_wait(4);
-	return 1;
+	return 4;
 }
 
 int cmc(const uint8_t* opcode, struct cpu_state* cpu)
@@ -318,8 +303,7 @@ int cmc(const uint8_t* opcode, struct cpu_state* cpu)
 	// XOR the flags register with the carry flag bit to toggle
 	// just that one bit
 	cpu->flags ^= CARRY_FLAG;
-	cycle_wait(4);
-	return 1;
+	return 4;
 }
 
 int stc(const uint8_t* opcode, struct cpu_state* cpu)
@@ -335,6 +319,5 @@ int stc(const uint8_t* opcode, struct cpu_state* cpu)
 	// Set the carry flag
 	cpu->flags |= CARRY_FLAG;
 
-	cycle_wait(4);
-	return 1;
+	return 4;
 }

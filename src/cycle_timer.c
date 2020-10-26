@@ -1,13 +1,19 @@
 #include "cycle_timer.h"
 
 #include <errno.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <time.h>
 
 #ifdef UNTHROTTLED
-void cycle_wait(int cycles) { (void) cycles; }
+int cycle_wait(int cycles, struct cpu_state* cpu)
+{
+	(void) cycles;
+	(void) cpu;
+	return 0;
+}
 #else // ifndef UNTHROTTLED
-void cycle_wait(int cycles)
+int cycle_wait(int cycles, struct cpu_state* cpu)
 {
 	static int count;
 	static struct timespec target;
@@ -23,12 +29,43 @@ void cycle_wait(int cycles)
 	if (bench_last.tv_sec == 0 && bench_last.tv_nsec == 0)
 	{ clock_gettime(CLOCK_MONOTONIC, &bench_last); }
 	bench_count += cycles;
-#	endif
+	if (bench_count >= BENCH_INTERVAL) //~8 million unless overridden
+	{
+		struct timespec new;
+		clock_gettime(CLOCK_MONOTONIC, &new);
+		double elapsed = new.tv_sec;
+		elapsed += (double) new.tv_nsec / 1000000000.0;
+		elapsed -= bench_last.tv_sec;
+		elapsed -= (double) bench_last.tv_nsec / 1000000000.0;
+		fprintf(stderr,
+				"Effective speed: %lfMHz\n",
+				(double) bench_count / elapsed / 1000000.0);
+		bench_count = 0;
+		bench_last  = new;
+	}
+#	endif // BENCHMARK
 	// If a chunk's worth of cycles have elapsed, it's time to sleep.
 	if (count >= CYCLE_CHUNK)
 	{
+
+		pthread_mutex_lock(cpu->reset_quit_lock);
+		if (*cpu->reset_flag)
+		{
+			cpu->pc			   = 0;
+			*cpu->reset_flag	   = 0;
+			cpu->halt_flag		   = 0;
+			cpu->interrupt_enable_flag = 0;
+		}
+		if (*cpu->quit_flag)
+		{
+			pthread_mutex_unlock(cpu->reset_quit_lock);
+			return 1;
+		}
+		pthread_mutex_unlock(cpu->reset_quit_lock);
+
 		// Adjust the target time upward by the amount of time
 		// the elapsed cycle count should have taken.
+
 		target.tv_nsec += count * CYCLE_TIME;
 		if (target.tv_nsec > 999999999)
 		{
@@ -48,21 +85,6 @@ void cycle_wait(int cycles)
 				&& errno == EINTR)
 			;
 	}
-#	ifdef BENCHMARK
-	if (bench_count >= BENCH_INTERVAL) //~8 million unless overridden
-	{
-		struct timespec new;
-		clock_gettime(CLOCK_MONOTONIC, &new);
-		double elapsed = new.tv_sec;
-		elapsed += (double) new.tv_nsec / 1000000000.0;
-		elapsed -= bench_last.tv_sec;
-		elapsed -= (double) bench_last.tv_nsec / 1000000000.0;
-		fprintf(stderr,
-				"Effective speed: %lfMHz\n",
-				(double) bench_count / elapsed / 1000000.0);
-		bench_count = 0;
-		bench_last  = new;
-	}
-#	endif // BENCHMARK
+	return 0;
 }
 #endif	       // ifndef UNTHROTTLED
