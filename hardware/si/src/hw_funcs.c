@@ -2,7 +2,6 @@
 #include "opcode_array.h"
 #include "rom_struct.h"
 #include "taito_struct.h"
-#include "update_keystates.h"
 
 #include <assert.h>
 #include <pthread.h>
