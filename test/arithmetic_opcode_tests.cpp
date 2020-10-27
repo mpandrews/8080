@@ -11,16 +11,12 @@ TEST(Add, BasicCheck)
 {
 	struct cpu_state cpu
 	{
-		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
-		.interrupt_buffer = nullptr, .data_bus = nullptr,
-		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0x1111,
-		.hl = 0x2222, .psw = 0, .halt_flag = 0, .reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.de = 0x1111, .hl = 0x2222,
 	};
 	// ADD A.
 	uint8_t opcode = 0x87;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	add_adc(&opcode, &cpu);
+	EXPECT_EQ(add_adc(&opcode, &cpu), 4);
 	EXPECT_EQ(cpu.a, 0);
 	// SZ-A-P-C
 	// Here we expect the Zero and Parity flags to be set, and all others
@@ -32,18 +28,14 @@ TEST(ADD, AdditionalChecks)
 {
 	struct cpu_state cpu
 	{
-		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
-		.interrupt_buffer = nullptr, .data_bus = nullptr,
-		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0x1111,
-		.hl = 0x2222, .psw = 0, .halt_flag = 0, .reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.de = 0x1111, .hl = 0x2222,
 	};
 	cpu.a = 16;
 	cpu.b = 1;
 	// ADD B.
 	uint8_t opcode = 0x80;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	add_adc(&opcode, &cpu);
+	EXPECT_EQ(add_adc(&opcode, &cpu), 4);
 	EXPECT_EQ(cpu.a, 17);
 	// SZ-A-P-C
 	// Only parity should be set.
@@ -59,7 +51,7 @@ TEST(ADD, AdditionalChecks)
 	// ADD H.
 	opcode = 0x8c;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	add_adc(&opcode, &cpu);
+	EXPECT_EQ(add_adc(&opcode, &cpu), 4);
 	// Parity and aux carry should be set: bit 3 (8) is set in both
 	// operands.
 	EXPECT_EQ(cpu.a, 33);
@@ -69,7 +61,7 @@ TEST(ADD, AdditionalChecks)
 	// ADD L
 	// This will overflow quite a bit.  Obviously.
 	opcode = 0x85;
-	add_adc(&opcode, &cpu);
+	EXPECT_EQ(add_adc(&opcode, &cpu), 4);
 	EXPECT_EQ(get_opcode_size(opcode), 1);
 	EXPECT_EQ(cpu.a, 32);
 	// Carry and aux carry flags should be set.
@@ -81,7 +73,7 @@ TEST(ADD, AdditionalChecks)
 	// set the sign flag.  (Since it's also parseable as -97).
 	opcode = 0x82;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	add_adc(&opcode, &cpu);
+	EXPECT_EQ(add_adc(&opcode, &cpu), 4);
 	EXPECT_EQ((signed char) cpu.a, -97);
 	EXPECT_EQ(cpu.a, 159);
 	// Only the sign and parity bits should be set.
@@ -94,17 +86,13 @@ TEST(ADC, All)
 	// we'll test that and make sure it works.
 	struct cpu_state cpu
 	{
-		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
-		.interrupt_buffer = nullptr, .data_bus = nullptr,
-		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0x1111,
-		.hl = 0x2222, .psw = 0, .halt_flag = 0, .reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.de = 0x1111, .hl = 0x2222,
 	};
 	// Set the carry bit.
 	cpu.flags = 1;
 	// ADD A;
 	uint8_t opcode = 0x87;
-	add_adc(&opcode, &cpu);
+	EXPECT_EQ(add_adc(&opcode, &cpu), 4);
 	EXPECT_EQ(cpu.a, 0);
 	// SZ-A-P-C
 	// Zero and Parity should be set.
@@ -123,7 +111,7 @@ TEST(ADC, All)
 	cpu.b	  = 255;
 	opcode	  = 0x88;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	add_adc(&opcode, &cpu);
+	EXPECT_EQ(add_adc(&opcode, &cpu), 4);
 	// 1 + -1 + 1 from carry == 1
 	EXPECT_EQ(cpu.a, 1);
 	EXPECT_EQ(cpu.flags, CARRY_FLAG | AUX_CARRY_FLAG);
@@ -131,7 +119,7 @@ TEST(ADC, All)
 	// when it's not set.
 	// A is still 1, B is still 255/-1
 	cpu.flags = 0;
-	add_adc(&opcode, &cpu);
+	EXPECT_EQ(add_adc(&opcode, &cpu), 4);
 	EXPECT_EQ(cpu.a, 0);
 	// Zero, parity, aux carry, carry.
 	EXPECT_EQ(cpu.flags,
@@ -142,18 +130,14 @@ TEST(ADI, All)
 {
 	struct cpu_state cpu
 	{
-		.int_cond = nullptr, .int_lock = nullptr, .memory = 0,
-		.interrupt_buffer = nullptr, .data_bus = nullptr,
-		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
-		.hl = 0, .psw = 0x1200, .halt_flag = 0, .reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.psw = 0x1200
 	};
 
 	// ADI
 	uint8_t opcode[2] = {0xc6, 0xab};
 
 	EXPECT_EQ(get_opcode_size(opcode[0]), 2);
-	adi(opcode, &cpu);
+	EXPECT_EQ(adi(opcode, &cpu), 7);
 	EXPECT_EQ(cpu.a, 0xbd);
 	// SZ-A-P-C
 	// Sign and parity flags are set
@@ -164,18 +148,14 @@ TEST(ACI, All)
 {
 	struct cpu_state cpu
 	{
-		.int_cond = nullptr, .int_lock = nullptr, .memory = 0,
-		.interrupt_buffer = nullptr, .data_bus = nullptr,
-		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
-		.hl = 0, .psw = 0x1a01, .halt_flag = 0, .reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.psw = 0x1a01
 	};
 
 	uint8_t opcode[2] = {0xce, 0xab};
 
 	EXPECT_EQ(get_opcode_size(opcode[0]), 2);
 	// ACI
-	aci(opcode, &cpu);
+	EXPECT_EQ(aci(opcode, &cpu), 7);
 	EXPECT_EQ(cpu.a, 0xc6);
 	// SZ-A-P-C
 	// Sign, AC, and parity flags are set
@@ -186,17 +166,13 @@ TEST(SUB, All)
 {
 	struct cpu_state cpu
 	{
-		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
-		.interrupt_buffer = nullptr, .data_bus = nullptr,
-		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
-		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
-		.interrupt_enable_flag = 0
+		0
 	};
 
 	// SUB A
 	uint8_t opcode = 0x97;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	sub_sbb(&opcode, &cpu);
+	EXPECT_EQ(sub_sbb(&opcode, &cpu), 4);
 	EXPECT_EQ(cpu.a, 0);
 	// SZ-A-P-C
 	// Zero, Parity, and AC should be set.
@@ -207,21 +183,21 @@ TEST(SUB, All)
 	// SUB B
 	opcode = 0x90;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	sub_sbb(&opcode, &cpu);
+	EXPECT_EQ(sub_sbb(&opcode, &cpu), 4);
 	EXPECT_EQ(cpu.a, 1);
 	// AC should be set.
 	EXPECT_EQ(cpu.flags, AUX_CARRY_FLAG);
 
 	cpu.a = 0;
 	cpu.b = 1;
-	sub_sbb(&opcode, &cpu);
+	EXPECT_EQ(sub_sbb(&opcode, &cpu), 4);
 	EXPECT_EQ((signed char) cpu.a, -1);
 	// Sign, Parity, Carry.  See p. 28 of the programmer's manual.
 	EXPECT_EQ(cpu.flags, SIGN_FLAG | PARITY_FLAG | CARRY_FLAG);
 
 	cpu.a = 16;
 	cpu.b = -23;
-	sub_sbb(&opcode, &cpu);
+	EXPECT_EQ(sub_sbb(&opcode, &cpu), 4);
 	EXPECT_EQ(cpu.a, 39);
 	// Parity and Carry.  It might seem like carry shouldn't be set,
 	// but operands are always treated as unsigned, so from the perspective
@@ -230,7 +206,7 @@ TEST(SUB, All)
 
 	cpu.a = 8;
 	cpu.b = 8;
-	sub_sbb(&opcode, &cpu);
+	EXPECT_EQ(sub_sbb(&opcode, &cpu), 4);
 	EXPECT_EQ(cpu.a, 0);
 	/*Zero, Aux Carry, Parity.
 	 * This may also require some explanation.
@@ -251,11 +227,7 @@ TEST(SBB, All)
 	// manual: 0x1301 - 0x0503.  It's on page 56.
 	struct cpu_state cpu
 	{
-		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
-		.interrupt_buffer = nullptr, .data_bus = nullptr,
-		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
-		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
-		.interrupt_enable_flag = 0
+		0
 	};
 
 	cpu.a = 0x01;
@@ -263,7 +235,7 @@ TEST(SBB, All)
 	// SBB B
 	uint8_t opcode = 0x98;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	sub_sbb(&opcode, &cpu);
+	EXPECT_EQ(sub_sbb(&opcode, &cpu), 4);
 	EXPECT_EQ(cpu.a, 0xfe);
 	// SZ-A-P-C
 	// Sign, Carry.
@@ -271,7 +243,7 @@ TEST(SBB, All)
 	cpu.a = 0x13;
 	cpu.b = 0x05;
 	// Now because the borrow is set, we should get 0x0d.
-	sub_sbb(&opcode, &cpu);
+	EXPECT_EQ(sub_sbb(&opcode, &cpu), 4);
 	EXPECT_EQ(cpu.a, 0x0d);
 	// No flags set.
 	EXPECT_EQ(cpu.flags, 0b00000000);
@@ -282,12 +254,10 @@ TEST(SBI, All)
 
 	struct cpu_state cpu
 	{
-		.int_cond = nullptr, .int_lock = nullptr, .memory = 0,
-		.interrupt_buffer = nullptr, .data_bus = nullptr,
-		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0x1111,
-		.hl = 0, .psw = 0xff00, .halt_flag = 0, .reset_flag = 0,
-		.interrupt_enable_flag = 0
+		0
 	};
+	cpu.de	= 0x1111;
+	cpu.psw = 0xff00;
 
 	// give sbi an argument of 0xff to subtract from the accumulator which
 	// is set to 0xff. This should result cpu->a being set to 0x00.
@@ -295,7 +265,7 @@ TEST(SBI, All)
 	// the Sign and Carry flags should be reset.
 	uint8_t opcode[2] = {0xde, 0xff};
 	EXPECT_EQ(get_opcode_size(opcode[0]), 2);
-	sui_sbi(opcode, &cpu);
+	EXPECT_EQ(sui_sbi(opcode, &cpu), 7);
 	EXPECT_EQ(cpu.a, 0);
 	EXPECT_EQ(cpu.flags, ZERO_FLAG | AUX_CARRY_FLAG | PARITY_FLAG);
 
@@ -309,7 +279,7 @@ TEST(SBI, All)
 	cpu.a	  = 0x01;
 	opcode[1] = 0x01;
 	cpu.flags = CARRY_FLAG;
-	sui_sbi(opcode, &cpu);
+	EXPECT_EQ(sui_sbi(opcode, &cpu), 7);
 	EXPECT_EQ(cpu.flags, SIGN_FLAG | PARITY_FLAG | CARRY_FLAG);
 }
 
@@ -317,12 +287,10 @@ TEST(SUI, All)
 {
 	struct cpu_state cpu
 	{
-		.int_cond = nullptr, .int_lock = nullptr, .memory = 0,
-		.interrupt_buffer = nullptr, .data_bus = nullptr,
-		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0x1111,
-		.hl = 0, .psw = 0xff00, .halt_flag = 0, .reset_flag = 0,
-		.interrupt_enable_flag = 0
+		0
 	};
+	cpu.de	= 0x1111;
+	cpu.psw = 0xff00;
 
 	// give sui an argument of 0xfe to subtract from the accumulator which
 	// is set to 0xff. This should result in cpu->a being set to 0x01.
@@ -331,7 +299,7 @@ TEST(SUI, All)
 	uint8_t opcode[2] = {0xd6, 0xfe};
 	EXPECT_EQ(get_opcode_size(opcode[0]), 2);
 	cpu.a = 0xff;
-	sui_sbi(opcode, &cpu);
+	EXPECT_EQ(sui_sbi(opcode, &cpu), 7);
 	EXPECT_EQ(cpu.a, 1);
 	EXPECT_EQ(cpu.flags, AUX_CARRY_FLAG);
 
@@ -344,7 +312,7 @@ TEST(SUI, All)
 	cpu.a	  = 0x01;
 	opcode[1] = 0x01;
 	cpu.flags = CARRY_FLAG;
-	sui_sbi(opcode, &cpu);
+	EXPECT_EQ(sui_sbi(opcode, &cpu), 7);
 	EXPECT_EQ(cpu.a, 0x00);
 	EXPECT_EQ(cpu.flags, ZERO_FLAG | AUX_CARRY_FLAG | PARITY_FLAG);
 }
@@ -353,18 +321,14 @@ TEST(DAA, All)
 {
 	struct cpu_state cpu
 	{
-		.int_cond = nullptr, .int_lock = nullptr, .memory = 0,
-		.interrupt_buffer = nullptr, .data_bus = nullptr,
-		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
-		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
-		.interrupt_enable_flag = 0
+		0
 	};
 
 	// This is the example on page 22 (pdf) of the 1975 Programmer's Manual.
 	cpu.a	       = 0x9B;
 	uint8_t opcode = 0x27;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	daa(&opcode, &cpu);
+	EXPECT_EQ(daa(&opcode, &cpu), 4);
 	EXPECT_EQ(cpu.a, 1);
 	// SZ-A-P-C
 	EXPECT_EQ(cpu.flags, AUX_CARRY_FLAG | CARRY_FLAG);
@@ -420,11 +384,7 @@ TEST(DAD, All)
 
 	struct cpu_state cpu
 	{
-		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
-		.interrupt_buffer = nullptr, .data_bus = nullptr,
-		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
-		.hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
-		.interrupt_enable_flag = 0
+		0
 	};
 
 	cpu.bc	  = 0x10;
@@ -432,7 +392,7 @@ TEST(DAD, All)
 	// DAD B
 	uint8_t opcode = 0x09;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	dad(&opcode, &cpu);
+	EXPECT_EQ(dad(&opcode, &cpu), 10);
 	EXPECT_EQ(cpu.hl, 0x10);
 	// Should clear the carry, but only that.
 	EXPECT_EQ(cpu.flags, (uint8_t) ~CARRY_FLAG);
@@ -440,7 +400,7 @@ TEST(DAD, All)
 	// DAD H
 	opcode = 0x29;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	dad(&opcode, &cpu);
+	EXPECT_EQ(dad(&opcode, &cpu), 10);
 	EXPECT_EQ(cpu.hl, 0x20);
 	EXPECT_EQ(cpu.flags, (uint8_t) ~CARRY_FLAG);
 
@@ -448,7 +408,7 @@ TEST(DAD, All)
 	cpu.sp = 0xf0;
 	opcode = 0x39;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	dad(&opcode, &cpu);
+	EXPECT_EQ(dad(&opcode, &cpu), 10);
 	EXPECT_EQ(cpu.hl, 0x0110);
 	EXPECT_EQ(cpu.flags, (uint8_t) ~CARRY_FLAG);
 
@@ -457,23 +417,21 @@ TEST(DAD, All)
 	cpu.de = 0xf000;
 	opcode = 0x19;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	dad(&opcode, &cpu);
+	EXPECT_EQ(dad(&opcode, &cpu), 10);
 	EXPECT_EQ(cpu.hl, 0xe000);
 	EXPECT_EQ(cpu.flags, 0xff);
 }
 
 TEST(INR, All)
 {
-	unsigned char memory[(1 << 16)];
-	memset(memory, 0, 1 << 16);
+	unsigned char memory[MAX_MEMORY];
+	memset(memory, 0, MAX_MEMORY);
 	struct cpu_state cpu
 	{
-		.int_cond = nullptr, .int_lock = nullptr, .memory = memory,
-		.interrupt_buffer = nullptr, .data_bus = nullptr,
-		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0x0,
-		.hl = 0x8001, .psw = 0xd5, .halt_flag = 0, .reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.memory = memory
 	};
+	cpu.hl	= 0x8001;
+	cpu.psw = 0xd5;
 
 	// First call INR on register B which is set to 0. Assert that it is
 	// set to 1 afterwards. Also assert that the pc advanced one byte and
@@ -481,7 +439,7 @@ TEST(INR, All)
 	// be unaffected by INR. All flags are set to one at this point
 	uint8_t opcode = 0x04;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	inr(&opcode, &cpu);
+	EXPECT_EQ(inr(&opcode, &cpu), 5);
 	EXPECT_EQ(cpu.b, 1);
 	EXPECT_EQ(cpu.flags, CARRY_FLAG);
 
@@ -502,7 +460,7 @@ TEST(INR, All)
 	cpu.memory[0x8001] = 0xff;
 	opcode		   = 0x34;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	inr(&opcode, &cpu);
+	EXPECT_EQ(inr(&opcode, &cpu), 10);
 	EXPECT_EQ(cpu.memory[cpu.hl], 0x00);
 	EXPECT_EQ(cpu.flags,
 			ZERO_FLAG | AUX_CARRY_FLAG | PARITY_FLAG | CARRY_FLAG);
@@ -521,17 +479,14 @@ TEST(INR, All)
 
 TEST(DCR, All)
 {
-	unsigned char memory[(1 << 16)];
-	memset(memory, 0, 1 << 16);
+	unsigned char memory[MAX_MEMORY];
+	memset(memory, 0, MAX_MEMORY);
 	struct cpu_state cpu
 	{
-		.int_cond = nullptr, .int_lock = nullptr, .memory = memory,
-		.interrupt_buffer = nullptr, .data_bus = nullptr,
-		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0x0,
-		.hl = 0x8001, .psw = 0xd5, .halt_flag = 0, .reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.memory = memory
 	};
-
+	cpu.hl	= 0x8001;
+	cpu.psw = 0xd5;
 	// First decrement the A register which will be set to 0x02. Then,
 	// assert that it holds the value 1 afterwards. Additionally, the
 	// sign, zero, and parity flags should be reset. the aux carry flag
@@ -541,7 +496,7 @@ TEST(DCR, All)
 	uint8_t opcode = 0x3d;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
 
-	dcr(&opcode, &cpu);
+	EXPECT_EQ(dcr(&opcode, &cpu), 5);
 	EXPECT_EQ(cpu.a, 1);
 	EXPECT_EQ(cpu.flags, AUX_CARRY_FLAG | CARRY_FLAG);
 
@@ -552,7 +507,7 @@ TEST(DCR, All)
 	cpu.memory[0x8001] = 0x00;
 	opcode		   = 0x35;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	dcr(&opcode, &cpu);
+	EXPECT_EQ(dcr(&opcode, &cpu), 10);
 	EXPECT_EQ(cpu.memory[cpu.hl], 0xff);
 	EXPECT_EQ(cpu.flags, SIGN_FLAG | PARITY_FLAG | CARRY_FLAG);
 
@@ -584,20 +539,17 @@ TEST(DCX, All)
 {
 	struct cpu_state cpu
 	{
-		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
-		.interrupt_buffer = nullptr, .data_bus = nullptr,
-		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0x8000,
-		.hl = 1, .psw = 0, .halt_flag = 0, .reset_flag = 0,
-		.interrupt_enable_flag = 0
+		0
 	};
+	cpu.de = 0x8000;
+	cpu.hl = 1;
 
 	// Decrement the bc register. Since it is 0 right now, we should expect
 	// it to be 0xffff after the instruction. No condition flags are
 	// affected by DCX
 	uint8_t opcode = 0x0b;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-
-	inx_dcx(&opcode, &cpu);
+	EXPECT_EQ(inx_dcx(&opcode, &cpu), 5);
 	EXPECT_EQ(cpu.bc, 0xffff);
 	EXPECT_EQ(cpu.flags, 0x00);
 
@@ -607,7 +559,7 @@ TEST(DCX, All)
 	cpu.flags = 0xff;
 	opcode	  = 0x2b;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	inx_dcx(&opcode, &cpu);
+	EXPECT_EQ(inx_dcx(&opcode, &cpu), 5);
 	EXPECT_EQ(cpu.hl, 0);
 	EXPECT_EQ(cpu.flags, 0xff);
 
@@ -615,7 +567,7 @@ TEST(DCX, All)
 	// it to contain 0x7fff afterwards.
 	opcode = 0x1b;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	inx_dcx(&opcode, &cpu);
+	EXPECT_EQ(inx_dcx(&opcode, &cpu), 5);
 	EXPECT_EQ(cpu.de, 0x7fff);
 	EXPECT_EQ(cpu.flags, 0xff);
 
@@ -626,7 +578,7 @@ TEST(DCX, All)
 	cpu.flags = 0;
 	opcode	  = 0x3b;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	inx_dcx(&opcode, &cpu);
+	EXPECT_EQ(inx_dcx(&opcode, &cpu), 5);
 	EXPECT_EQ(cpu.sp, 0x00ff);
 	EXPECT_EQ(cpu.flags, 0);
 }
@@ -635,19 +587,17 @@ TEST(INX, All)
 {
 	struct cpu_state cpu
 	{
-		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
-		.interrupt_buffer = nullptr, .data_bus = nullptr,
-		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0xffff,
-		.de = 0x7fff, .hl = 0, .psw = 0, .halt_flag = 0,
-		.reset_flag = 0, .interrupt_enable_flag = 0
+		0
 	};
+	cpu.bc = 0xffff;
+	cpu.de = 0x7fff;
 
 	// Increment the BC register. Since it is 0xffff right now, we should
 	// expect it to be 0x0000 after the instruction. No condition flags are
 	// affected by DCX
 	uint8_t opcode = 0x03;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	inx_dcx(&opcode, &cpu);
+	EXPECT_EQ(inx_dcx(&opcode, &cpu), 5);
 	EXPECT_EQ(cpu.bc, 0x0000);
 	EXPECT_EQ(cpu.flags, 0x00);
 
@@ -657,7 +607,7 @@ TEST(INX, All)
 	cpu.flags = 0xff;
 	opcode	  = 0x23;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	inx_dcx(&opcode, &cpu);
+	EXPECT_EQ(inx_dcx(&opcode, &cpu), 5);
 	EXPECT_EQ(cpu.hl, 1);
 	EXPECT_EQ(cpu.flags, 0xff);
 
@@ -665,7 +615,7 @@ TEST(INX, All)
 	// it to contain 0x8000 afterwards.
 	opcode = 0x13;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	inx_dcx(&opcode, &cpu);
+	EXPECT_EQ(inx_dcx(&opcode, &cpu), 5);
 	EXPECT_EQ(cpu.de, 0x8000);
 	EXPECT_EQ(cpu.flags, 0xff);
 
@@ -676,7 +626,7 @@ TEST(INX, All)
 	cpu.flags = 0;
 	opcode	  = 0x33;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	inx_dcx(&opcode, &cpu);
+	EXPECT_EQ(inx_dcx(&opcode, &cpu), 5);
 	EXPECT_EQ(cpu.sp, 0x0201);
 	EXPECT_EQ(cpu.flags, 0);
 }

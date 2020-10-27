@@ -65,11 +65,14 @@ struct cpu_state
 	 */
 	pthread_cond_t* const int_cond;
 	pthread_mutex_t* const int_lock;
+	pthread_mutex_t* const reset_quit_lock;
 
 	uint8_t* const memory; // Points to an array containing the memory.
 	uint8_t* const interrupt_buffer; // Points to the buffer where pending
 	// interrupts are stored.
 	uint8_t* const data_bus;
+	uint8_t* const reset_flag;
+	uint8_t* const quit_flag;
 	uint16_t* const address_bus;
 	void* hw_struct;
 	// Registers!
@@ -118,7 +121,6 @@ struct cpu_state
 		};
 	};
 	uint8_t halt_flag; // Flag for the HLT state.
-	uint8_t reset_flag;
 	/*
 	 * The interrupt enable flag has three states, rather than just two:
 	 * 0: interrupts disabled
@@ -141,6 +143,7 @@ struct system_resources
 {
 	pthread_cond_t* interrupt_cond;
 	pthread_mutex_t* interrupt_lock;
+	pthread_mutex_t* reset_quit_lock;
 	int (*interrupt_hook)(const uint8_t*,
 			struct cpu_state*,
 			int (*op_func)(const uint8_t*, struct cpu_state*));
@@ -150,6 +153,8 @@ struct system_resources
 	uint16_t* address_bus;
 	void* hw_struct;
 	void* hw_lib;
+	uint8_t* reset_flag;
+	uint8_t* quit_flag;
 };
 
 // Declaration of the CPU thread.

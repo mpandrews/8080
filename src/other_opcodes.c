@@ -47,8 +47,7 @@ int push(const uint8_t* opcode, struct cpu_state* cpu)
 
 	*((uint16_t*) (cpu->memory + cpu->sp)) = value;
 
-	cycle_wait(11);
-	return 1;
+	return 11;
 }
 int pop(const uint8_t* opcode, struct cpu_state* cpu)
 {
@@ -65,8 +64,7 @@ int pop(const uint8_t* opcode, struct cpu_state* cpu)
 
 	cpu->sp += 2;
 
-	cycle_wait(10);
-	return 1;
+	return 10;
 }
 
 int xthl(const uint8_t* opcode, struct cpu_state* cpu)
@@ -83,8 +81,7 @@ int xthl(const uint8_t* opcode, struct cpu_state* cpu)
 	*((uint16_t*) &cpu->memory[cpu->sp]) = cpu->hl;
 	cpu->hl				     = temp;
 
-	cycle_wait(18);
-	return 1;
+	return 18;
 }
 
 int sphl(const uint8_t* opcode, struct cpu_state* cpu)
@@ -99,8 +96,7 @@ int sphl(const uint8_t* opcode, struct cpu_state* cpu)
 	// replace sp with the contents of hl
 	cpu->sp = cpu->hl;
 
-	cycle_wait(5);
-	return 1;
+	return 5;
 }
 
 int ei(const uint8_t* opcode, struct cpu_state* cpu)
@@ -115,8 +111,7 @@ int ei(const uint8_t* opcode, struct cpu_state* cpu)
 	// Enable interrupts
 	cpu->interrupt_enable_flag = 2;
 
-	cycle_wait(4);
-	return 1;
+	return 4;
 }
 
 int di(const uint8_t* opcode, struct cpu_state* cpu)
@@ -131,8 +126,7 @@ int di(const uint8_t* opcode, struct cpu_state* cpu)
 	// Disable interrupts
 	cpu->interrupt_enable_flag = 0;
 
-	cycle_wait(4);
-	return 1;
+	return 4;
 }
 
 int hlt(const uint8_t* opcode, struct cpu_state* cpu)
@@ -145,8 +139,7 @@ int hlt(const uint8_t* opcode, struct cpu_state* cpu)
 #endif
 
 	cpu->halt_flag = 1;
-	cycle_wait(7);
-	return 1;
+	return 7;
 }
 
 int nop(const uint8_t* opcode, struct cpu_state* cpu)
@@ -161,6 +154,5 @@ int nop(const uint8_t* opcode, struct cpu_state* cpu)
 	fprintf(stderr, "NOP\n");
 #endif
 
-	cycle_wait(4);
-	return 1;
+	return 4;
 }

@@ -131,19 +131,26 @@ int main(int argc, char** argv)
 	pthread_cond_init(&interrupt_condition, NULL);
 	pthread_mutex_t interrupt_lock;
 	pthread_mutex_init(&interrupt_lock, NULL);
+	pthread_mutex_t reset_quit_lock;
+	pthread_mutex_init(&reset_quit_lock, NULL);
 	uint8_t data_bus;
 	uint16_t address_bus;
+	uint8_t reset_flag = 0;
+	uint8_t quit_flag  = 0;
 	uint8_t interrupt_buffer;
 	void* hw_struct = hw_init_struct();
 
 	struct system_resources res = {.interrupt_cond = &interrupt_condition,
 			.interrupt_lock		       = &interrupt_lock,
+			.reset_quit_lock	       = &reset_quit_lock,
 			.memory			       = memory_space,
 			.interrupt_buffer	       = &interrupt_buffer,
 			.data_bus		       = &data_bus,
 			.address_bus		       = &address_bus,
 			.hw_struct		       = hw_struct,
-			.hw_lib			       = hw_lib_handle};
+			.hw_lib			       = hw_lib_handle,
+			.reset_flag		       = &reset_flag,
+			.quit_flag		       = &quit_flag};
 
 	pthread_t front_end_thread;
 
