@@ -2,8 +2,9 @@
 
 #include <SDL2/SDL.h>
 
-int update_keystates(struct rom_struct* rStruct)
+int update_keystates(void* rom_struct)
 {
+	struct rom_struct* rStruct = (struct rom_struct*) rom_struct;
 	SDL_Event e;
 	int quit = 0;
 
@@ -19,8 +20,7 @@ int update_keystates(struct rom_struct* rStruct)
 			*(rStruct->quit_flag) = 1;
 			quit		      = 1;
 		}
-
-		if (e.type == SDL_KEYDOWN)
+		else if (e.type == SDL_KEYDOWN)
 		{
 			switch (e.key.keysym.scancode)
 			{
@@ -41,7 +41,7 @@ int update_keystates(struct rom_struct* rStruct)
 			default: break;
 			}
 		}
-		if (e.type == SDL_KEYUP)
+		else if (e.type == SDL_KEYUP)
 		{
 			switch (e.key.keysym.scancode)
 			{
@@ -59,8 +59,8 @@ int update_keystates(struct rom_struct* rStruct)
 		}
 	}
 
-	pthread_mutex_unlock(rStruct->keystate_lock);
 	pthread_mutex_unlock(rStruct->reset_quit_lock);
+	pthread_mutex_unlock(rStruct->keystate_lock);
 
 	return quit; // return 1 if quit has been pressed
 }
