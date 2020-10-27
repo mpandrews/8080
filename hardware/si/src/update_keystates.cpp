@@ -12,7 +12,7 @@ int update_keystates(struct rom_struct* rStruct)
 	pthread_mutex_lock(rStruct->keystate_lock);
 	pthread_mutex_lock(rStruct->reset_quit_lock);
 
-	while (!quit && SDL_PollEvent(&e))
+	while (SDL_PollEvent(&e))
 	{
 		if (e.type == SDL_QUIT)
 		{
