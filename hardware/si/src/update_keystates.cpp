@@ -1,21 +1,25 @@
 #include "rom_struct.h"
 
 #include <SDL2/SDL.h>
-#include <iostream>
 
 extern "C"
 {
-	void keystate_update(struct rom_struct* rStruct)
+	int update_keystates(struct rom_struct* rStruct)
 	{
 		SDL_Event e;
-		bool quit = false;
+		int quit = 0;
+
+		// Make sure no other thread is mutating keystates or reset/quit
+		// flags at the same time.
+		pthread_mutex_lock(rStruct->keystate_lock);
+		pthread_mutex_lock(rStruct->reset_quit_lock);
 
 		while (!quit && SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT)
 			{
-				std::cout << "Quit game" << std::endl;
-				quit = true;
+				*(rStruct->quit_flag) = 1;
+				quit		      = 1;
 			}
 
 			if (e.type == SDL_KEYDOWN)
@@ -23,50 +27,35 @@ extern "C"
 				switch (e.key.keysym.scancode)
 				{
 				case SDL_SCANCODE_R:
-					std::cout << "RESET pressed"
-						  << std::endl;
-					rStruct->reset = 1;
+					*(rStruct->reset_flag) = 1;
 					break;
 				case SDL_SCANCODE_ESCAPE:
-					std::cout << "QUIT" << std::endl;
-					quit = true;
+					*(rStruct->quit_flag) = 1;
+					quit		      = 1;
 					break;
-				case SDL_SCANCODE_C:
-					std::cout << "COIN" << std::endl;
-					rStruct->coin = 1;
-					break;
+				case SDL_SCANCODE_C: rStruct->coin = 1; break;
 				case SDL_SCANCODE_1:
-					std::cout << "Player 1 Start"
-						  << std::endl;
 					rStruct->p1_start = 1;
 					break;
 				case SDL_SCANCODE_2:
-					std::cout << "Player 2 Start"
-						  << std::endl;
 					rStruct->p2_start = 1;
 					break;
 				case SDL_SCANCODE_LEFT:
-					std::cout << "P2 LEFT" << std::endl;
 					rStruct->p2_left = 1;
 					break;
 				case SDL_SCANCODE_RIGHT:
-					std::cout << "P2 RIGHT " << std::endl;
 					rStruct->p2_right = 1;
 					break;
 				case SDL_SCANCODE_UP:
-					std::cout << "P2 SHOOT" << std::endl;
 					rStruct->p2_shoot = 1;
 					break;
 				case SDL_SCANCODE_A:
-					std::cout << "P1 LEFT" << std::endl;
 					rStruct->p1_left = 1;
 					break;
 				case SDL_SCANCODE_D:
-					std::cout << "P1 RIGHT" << std::endl;
 					rStruct->p1_right = 1;
 					break;
 				case SDL_SCANCODE_W:
-					std::cout << "P1 SHOOT" << std::endl;
 					rStruct->p1_shoot = 1;
 					break;
 				default: break;
@@ -105,5 +94,10 @@ extern "C"
 				}
 			}
 		}
+
+		pthread_mutex_unlock(rStruct->keystate_lock);
+		pthread_mutex_unlock(rStruct->reset_quit_lock);
+
+		return quit; // return 1 if quit has been pressed
 	}
 }

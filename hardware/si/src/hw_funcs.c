@@ -1,8 +1,8 @@
 #include "cpu.h"
-#include "keystate_update.h"
 #include "opcode_array.h"
 #include "rom_struct.h"
 #include "taito_struct.h"
+#include "update_keystates.h"
 
 #include <assert.h>
 #include <pthread.h>
@@ -29,9 +29,6 @@ void* front_end(void* arg)
 #ifdef VERBOSE
 	fprintf(stderr, "SI FRONT END THREAD RUNNING!\n");
 #endif
-
-	struct rom_struct rstruct;
-	keystate_update((struct rom_struct*) &rstruct);
 
 	return NULL;
 }
