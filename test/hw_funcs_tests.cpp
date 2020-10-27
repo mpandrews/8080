@@ -41,7 +41,7 @@ TEST(HW_IN, Space_Invaders)
 
 	// Set up hw_in for Space Invaders
 	void* hw_lib_handle;
-	hw_lib_handle = dlopen("hardware/libsi.so", RTLD_NOW);
+	hw_lib_handle = dlopen("hw/libsi.so", RTLD_NOW);
 	// dlopen returns NULL on failure.
 	if (!hw_lib_handle)
 	{

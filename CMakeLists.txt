@@ -11,11 +11,15 @@ set(FlagSettings "-Wall" "-Werror" "-Wextra"
 	"$<$<CONFIG:DEBUG>:-DVERBOSE -DDEBUG>"
 )
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/hardware)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/hw)
 set(ROM_DIR ${CMAKE_BINARY_DIR}/roms)
+set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 
 #Copy ROMs
-file(GLOB ROM_FILES ${CMAKE_SOURCE_DIR}/roms/*)
+file(GLOB ROM_FILES 
+	CONFIGURE_DEPENDS
+	${CMAKE_SOURCE_DIR}/roms/*)
+
 foreach(rom ${ROM_FILES})
 	get_filename_component(name ${rom} NAME)
 	configure_file(${rom} ${ROM_DIR}/${name}
@@ -37,7 +41,7 @@ add_library(SourceFiles
 
 target_compile_options(SourceFiles PRIVATE ${FlagSettings})
 
-target_include_directories(SourceFiles PRIVATE include)
+target_include_directories(SourceFiles PRIVATE ${INCLUDE_DIR})
 
 add_executable(8080 
 	src/main.c
@@ -48,7 +52,7 @@ find_package(Threads)
 target_link_libraries(8080 
 	${CMAKE_THREAD_LIBS_INIT}
 	${CMAKE_DL_LIBS})
-target_include_directories(8080 PRIVATE include)
+target_include_directories(8080 PRIVATE ${INCLUDE_DIR})
 
 target_compile_options(8080 PRIVATE 
 	${FlagSettings}
@@ -97,26 +101,9 @@ file(GLOB children
 	LIST_DIRECTORIES true 
 	CONFIGURE_DEPENDS
 	${CMAKE_CURRENT_LIST_DIR}/hardware/*)
-#Create an empty list.
-SET(hw_sets "")
-#Iterate over the files we found: if it's a directory, add it to the list.
+#Iterate over the files we found: if it's a directory, add it.
 FOREACH(item ${children})
 	IF(IS_DIRECTORY ${item})
-		LIST(APPEND hw_sets ${item})
+		add_subdirectory(${item})
 	ENDIF()
-ENDFOREACH()
-
-#Create a target for the library.
-FOREACH(item ${hw_sets})
-	#Get just the final element of the path we found.
-	get_filename_component(name ${item} NAME)
-	#Create a shared library target with that name.
-	add_library(${name} SHARED)
-	#Add the source file to its source list.
-	target_sources(${name} PRIVATE ${item}/src/hw_funcs.c)
-	#Give it the compiler flags we're using, whatever those are.
-	target_compile_options(${name} PRIVATE ${FlagSettings})
-	target_include_directories(${name} PRIVATE 
-		include
-		${item}/include)
 ENDFOREACH()
