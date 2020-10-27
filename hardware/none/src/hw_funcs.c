@@ -14,8 +14,7 @@ int hw_in(const uint8_t* opcode, struct cpu_state* cpu)
 #ifdef VERBOSE
 	fprintf(stderr, "IN (Hardware: none)\n");
 #endif
-	cycle_wait(10);
-	return 2;
+	return 10;
 }
 
 // OUT
@@ -27,8 +26,7 @@ int hw_out(const uint8_t* opcode, struct cpu_state* cpu)
 #ifdef VERBOSE
 	fprintf(stderr, "OUT (Hardware: none)\n");
 #endif
-	cycle_wait(10);
-	return 2;
+	return 10;
 }
 
 // Interrupt Hook

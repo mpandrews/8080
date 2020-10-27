@@ -55,6 +55,9 @@ void* cpu_thread_routine(void* resources)
 	struct cpu_state cpu = {.memory	  = res->memory,
 			.int_lock	  = res->interrupt_lock,
 			.int_cond	  = res->interrupt_cond,
+			.reset_quit_lock  = res->reset_quit_lock,
+			.reset_flag	  = res->reset_flag,
+			.quit_flag	  = res->quit_flag,
 			.interrupt_buffer = res->interrupt_buffer,
 			.address_bus	  = res->address_bus,
 			.data_bus	  = res->data_bus,
@@ -76,22 +79,10 @@ void* cpu_thread_routine(void* resources)
 
 	// We can remove this assignment if we want to force the user
 	// to hardware reset on CPU boot.
-	cpu.reset_flag = 1;
+	cpu.pc = 0;
 	const uint8_t* opcode;
 	for (;;)
 	{
-		// If the reset flag is set, reset and clear it.
-		// This is the hardware reset.
-		if (cpu.reset_flag)
-		{
-			cpu.pc	       = 0;
-			cpu.reset_flag = 0;
-			cpu.halt_flag  = 0;
-			// Resetting is a 3-cycle operation.
-			cycle_wait(3);
-			continue;
-		}
-
 		switch (cpu.interrupt_enable_flag << 1 | cpu.halt_flag)
 		{
 		case 4: // Interrupt pending, not halted.
@@ -106,7 +97,7 @@ void* cpu_thread_routine(void* resources)
 			pthread_mutex_lock(cpu.int_lock);
 			if (cpu.interrupt_buffer) goto interrupt_execution;
 			pthread_mutex_unlock(cpu.int_lock);
-			cycle_wait(10);
+			if (cycle_wait(10, &cpu)) return 0;
 			break;
 		case 2: // Interrupt enabled, not halted.
 			pthread_mutex_lock(cpu.int_lock);
@@ -115,7 +106,7 @@ void* cpu_thread_routine(void* resources)
 			goto normal_execution;
 			break;
 		case 1: // Interrupt disabled, halted.
-			cycle_wait(CYCLE_CHUNK);
+			if (cycle_wait(CYCLE_CHUNK, &cpu)) return 0;
 			break;
 normal_execution:
 			opcode = cpu.memory + cpu.pc;
@@ -123,7 +114,9 @@ normal_execution:
 			fprintf(stderr, "0x%4.4x: ", cpu.pc);
 #endif
 			cpu.pc += get_opcode_size(opcode[0]);
-			opcodes[opcode[0]](opcode, &cpu);
+			// cycle_wait returns 1 if a quit event is pending.
+			if (cycle_wait(opcodes[opcode[0]](opcode, &cpu), &cpu))
+				return 0;
 #ifdef VERBOSE
 			print_registers(&cpu);
 #endif
@@ -146,9 +139,11 @@ interrupt_execution:
 #ifdef VERBOSE
 			fprintf(stderr, "INTRPT: ");
 #endif
-			interrupt_hook(cpu.interrupt_buffer,
-					&cpu,
-					opcodes[*cpu.interrupt_buffer]);
+			if (cycle_wait(interrupt_hook(cpu.interrupt_buffer,
+						       &cpu,
+						       opcodes[*cpu.interrupt_buffer]),
+					    &cpu))
+				return 0;
 			*cpu.interrupt_buffer = 0;
 			pthread_mutex_unlock(cpu.int_lock);
 			pthread_cond_signal(cpu.int_cond);

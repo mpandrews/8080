@@ -18,11 +18,9 @@ TEST(CALL, All)
 	memset(memory, 0, MAX_MEMORY);
 	struct cpu_state cpu
 	{
-		.int_cond = 0, .int_lock = 0, .memory = memory,
-		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0,
-		.sp = 0xff00, .pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0,
-		.halt_flag = 0, .reset_flag = 0, .interrupt_enable_flag = 0
+		.memory = memory
 	};
+	cpu.sp = 0xff00;
 
 	// Call should unconditionally perform the following actions:
 	// 	1. Decrement the stack pointer by 2
@@ -35,7 +33,7 @@ TEST(CALL, All)
 	// execute CALL with opcode 0xcd
 	uint8_t opcode[3] = {0xcd, 0x00, 0x80}; // 0x8000
 	EXPECT_EQ(get_opcode_size(opcode[0]), 3);
-	call(opcode, &cpu);
+	EXPECT_EQ(call(opcode, &cpu), 17);
 	EXPECT_EQ(cpu.pc, 0x8000);
 	EXPECT_EQ(cpu.sp, 0xfefe);
 	EXPECT_EQ(*((uint16_t*) &cpu.memory[cpu.sp]), 0x0000);
@@ -70,14 +68,11 @@ TEST(CALL, All)
 
 TEST(RET, All)
 {
-	unsigned char memory[(1 << 16)];
-	memset(memory, 0, 1 << 16);
+	unsigned char memory[MAX_MEMORY];
+	memset(memory, 0, MAX_MEMORY);
 	struct cpu_state cpu
 	{
-		.int_cond = 0, .int_lock = 0, .memory = memory,
-		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0, .sp = 0,
-		.pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
-		.reset_flag = 0, .interrupt_enable_flag = 0
+		.memory = memory
 	};
 
 	// two versions of ret: 0xc9 and 0xd9
@@ -87,7 +82,7 @@ TEST(RET, All)
 
 	uint8_t opcode = 0xc9;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	ret(&opcode, &cpu);
+	EXPECT_EQ(ret(&opcode, &cpu), 10);
 	EXPECT_EQ(cpu.sp, 0xfffe);
 	EXPECT_EQ(cpu.pc, 0x00ee);
 
@@ -109,7 +104,7 @@ TEST(JMP, All)
 	uint8_t opcode[3] = {0xc3, 0x03, 0x30};
 	EXPECT_EQ(get_opcode_size(opcode[0]), 3);
 
-	jmp(opcode, &cpu);
+	EXPECT_EQ(jmp(opcode, &cpu), 10);
 	EXPECT_EQ(cpu.pc, 0x3003);
 
 	opcode[0] = 0xcb;
@@ -131,12 +126,12 @@ void test_jcond(uint8_t flag, uint8_t op, uint8_t jump_if_not_flag)
 	// Set the cpu's zero flag and call jcond. Assert that jcond did not
 	// execute a jump.
 	cpu.psw = jump_if_not_flag ? flag : ~flag;
-	jcond(opcode, &cpu);
+	EXPECT_EQ(jcond(opcode, &cpu), 10);
 	EXPECT_EQ(cpu.pc, 0x0000);
 	// Reset zero flag and set all other cpu flags. Call jcond and assert
 	// that jcond did execute a jump.
 	cpu.psw = ~cpu.psw;
-	cpu.pc += jcond(opcode, &cpu);
+	EXPECT_EQ(jcond(opcode, &cpu), 10);
 	EXPECT_EQ(cpu.pc, 0x0405);
 }
 
@@ -163,24 +158,22 @@ void test_rcond(uint8_t flag, uint8_t opcode, uint8_t ret_if_flag_unset)
 	memset(memory, 0, MAX_MEMORY);
 	struct cpu_state cpu
 	{
-		.int_cond = 0, .int_lock = 0, .memory = memory,
-		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0,
-		.sp = 0xff00, .pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0,
-		.halt_flag = 0, .reset_flag = 0, .interrupt_enable_flag = 0
+		.memory = memory
 	};
+	cpu.sp = 0xff00;
 
 	EXPECT_EQ(get_opcode_size(opcode), 1);
 	cpu.memory[0xff00] = 0x04;
 	cpu.memory[0xff01] = 0x05;
 
 	cpu.psw = ret_if_flag_unset ? flag : ~flag;
-	retcond(&opcode, &cpu);
+	EXPECT_EQ(retcond(&opcode, &cpu), 5);
 	EXPECT_EQ(cpu.pc, 0x0000);
 
 	// Reset the zero flag and set all other cpu flags. Call RNZ and
 	// assert that RNZ did execute a return.
 	cpu.psw = ~cpu.psw;
-	retcond(&opcode, &cpu);
+	EXPECT_EQ(retcond(&opcode, &cpu), 11);
 	EXPECT_EQ(cpu.pc, 0x0504);
 }
 
@@ -210,20 +203,18 @@ void test_ccond(uint8_t flag, uint8_t opc, uint8_t call_if_flag_unset)
 	memset(memory, 0, MAX_MEMORY);
 	struct cpu_state cpu
 	{
-		.int_cond = 0, .int_lock = 0, .memory = memory,
-		.interrupt_buffer = 0, .data_bus = 0, .address_bus = 0,
-		.sp = 0xff00, .pc = 0, .bc = 0, .de = 0, .hl = 0, .psw = 0,
-		.halt_flag = 0, .reset_flag = 0, .interrupt_enable_flag = 0
+		.memory = memory
 	};
+	cpu.sp = 0xff00;
 
 	cpu.psw = call_if_flag_unset ? flag : ~flag;
 
-	ccond(opcode, &cpu);
+	EXPECT_EQ(ccond(opcode, &cpu), 11);
 	EXPECT_EQ(cpu.pc, 0);
 	EXPECT_EQ(cpu.sp, 0xff00);
 
 	cpu.psw = ~cpu.psw;
-	ccond(opcode, &cpu);
+	EXPECT_EQ(ccond(opcode, &cpu), 17);
 	EXPECT_EQ(cpu.pc, 0x8010);
 	EXPECT_EQ(cpu.sp, 0xfefe);
 }
@@ -249,17 +240,14 @@ TEST(PCHL, All)
 {
 	struct cpu_state cpu
 	{
-		.int_cond = nullptr, .int_lock = nullptr, .memory = nullptr,
-		.interrupt_buffer = nullptr, .data_bus = nullptr,
-		.address_bus = nullptr, .sp = 0, .pc = 0, .bc = 0, .de = 0,
-		.hl = 0xabcd, .psw = 0, .halt_flag = 0, .reset_flag = 0,
-		.interrupt_enable_flag = 0
+		0
 	};
+	cpu.hl = 0xabcd;
 
 	// PCHL
 	uint8_t opcode = 0xe9;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	pchl(&opcode, &cpu);
+	EXPECT_EQ(pchl(&opcode, &cpu), 5);
 	EXPECT_EQ(cpu.pc, 0xabcd);
 }
 
@@ -269,16 +257,14 @@ TEST(RST, All)
 	memset(memory, 0, MAX_MEMORY);
 	struct cpu_state cpu
 	{
-		.int_cond = nullptr, .int_lock = nullptr, .memory = memory,
-		.interrupt_buffer = nullptr, .data_bus = nullptr,
-		.address_bus = nullptr, .sp = 0x1000, .pc = 0xfff0, .bc = 0,
-		.de = 0, .hl = 0, .psw = 0, .halt_flag = 0, .reset_flag = 0,
-		.interrupt_enable_flag = 0
+		.memory = memory
 	};
+	cpu.sp = 0x1000;
+	cpu.pc = 0xfff0;
 
 	uint8_t opcode = 0xc7;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	cpu.pc += rst(&opcode, &cpu);
+	EXPECT_EQ(rst(&opcode, &cpu), 11);
 	// This should set the PC to 0.
 	EXPECT_EQ(cpu.pc, 0);
 	// It should also decrement SP by two and push PC
@@ -297,7 +283,7 @@ TEST(RST, All)
 	// RST 0x0038
 	opcode = 0xff;
 	EXPECT_EQ(get_opcode_size(opcode), 1);
-	cpu.pc += rst(&opcode, &cpu);
+	rst(&opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0038);
 	EXPECT_EQ(cpu.sp, 0x0ffa);
 	EXPECT_EQ(*((uint16_t*) cpu.memory + cpu.sp), 0x0008);

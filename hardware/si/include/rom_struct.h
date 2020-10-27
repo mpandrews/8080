@@ -1,15 +1,17 @@
 #ifndef ROM_STRUCT
 #define ROM_STRUCT
 
+#include "taito_struct.h"
+
 #include <pthread.h>
 #include <stdint.h>
 struct rom_struct
 {
-	// Pointers for the display buffers.
-	uint8_t* video_buffer;
-	pthread_mutex_t* vbuffer_lock;
-	pthread_cond_t* vbuffer_condition;
 	pthread_mutex_t* keystate_lock;
+	pthread_mutex_t* reset_quit_lock;
+	uint8_t* reset_flag;
+	uint8_t* quit_flag;
+
 	// Keystates.  The player controls should be
 	// toggled to on on press, and toggled to off on release.
 	uint32_t p1_start : 1, p1_shoot : 1, p1_left : 1, p1_right : 1,
@@ -24,7 +26,7 @@ struct rom_struct
 			// key is pressed, but not unset when it is released.
 			// Instead, the CPU thread should clear them after
 			// reading them.
-			coin : 1, reset : 1;
+			coin : 1;
 	uint8_t shift_old;
 	uint8_t shift_new;
 	uint8_t shift_offset;

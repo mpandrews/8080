@@ -21,8 +21,7 @@ int jmp(const uint8_t* opcode, struct cpu_state* cpu)
 
 	cpu->pc = memory_address;
 
-	cycle_wait(10);
-	return 0;
+	return 10;
 }
 
 int jcond(const uint8_t* opcode, struct cpu_state* cpu)
@@ -48,14 +47,8 @@ int jcond(const uint8_t* opcode, struct cpu_state* cpu)
 	// which is the next 2 bytes after the jcond opcode. If the condition
 	// was not met, then increment the program counter by 3 to the next
 	// opcode
-	cycle_wait(10);
-	if (conditionMet)
-	{
-		cpu->pc = IMM16(opcode);
-		return 0;
-	}
-	else
-		return 3;
+	if (conditionMet) { cpu->pc = IMM16(opcode); }
+	return 10;
 }
 
 int call(const uint8_t* opcode, struct cpu_state* cpu)
@@ -75,8 +68,7 @@ int call(const uint8_t* opcode, struct cpu_state* cpu)
 
 	// set the program counter to the argument supplied to by call
 	cpu->pc = IMM16(opcode);
-	cycle_wait(17);
-	return 0;
+	return 17;
 }
 
 int ccond(const uint8_t* opcode, struct cpu_state* cpu)
@@ -105,13 +97,11 @@ int ccond(const uint8_t* opcode, struct cpu_state* cpu)
 		// put CALL's argument which is at cpu->pc + 1 in memory
 		// into the program counter
 		cpu->pc = IMM16(opcode);
-		cycle_wait(17);
-		return 0;
+		return 17;
 	}
 	else
 	{
-		cycle_wait(11);
-		return 3;
+		return 11;
 	}
 }
 
@@ -133,8 +123,7 @@ int ret(const uint8_t* opcode, struct cpu_state* cpu)
 	cpu->sp += 2;
 
 	// RET takes 10 cycles
-	cycle_wait(10);
-	return 0;
+	return 10;
 }
 
 int retcond(const uint8_t* opcode, struct cpu_state* cpu)
@@ -156,13 +145,11 @@ int retcond(const uint8_t* opcode, struct cpu_state* cpu)
 	{
 		cpu->pc = *((uint16_t*) &cpu->memory[cpu->sp]);
 		cpu->sp += 2;
-		cycle_wait(11);
-		return 0;
+		return 11;
 	}
 	else
 	{
-		cycle_wait(5);
-		return 1;
+		return 5;
 	}
 }
 
@@ -182,8 +169,7 @@ int rst(const uint8_t* opcode, struct cpu_state* cpu)
 	// so we can just filter out all the other bits and assign that
 	// directly. Neat.
 	cpu->pc = opcode[0] & 0b111000;
-	cycle_wait(11);
-	return 0;
+	return 11;
 }
 
 int pchl(const uint8_t* opcode, struct cpu_state* cpu)
@@ -198,6 +184,5 @@ int pchl(const uint8_t* opcode, struct cpu_state* cpu)
 
 	// The contents of register pair HL are copied to the PC
 	cpu->pc = cpu->hl;
-	cycle_wait(5);
-	return 0;
+	return 5;
 }

@@ -18,25 +18,24 @@ TEST(HW_IN, Space_Invaders)
 
 	struct rom_struct rstruct
 	{
-		.video_buffer = nullptr, .vbuffer_lock = nullptr,
-		.vbuffer_condition = nullptr, .keystate_lock = &keystate_lock,
-		.p1_start = 1, .p1_shoot = 0, .p1_left = 0, .p1_right = 0,
-		.p2_start = 1, .p2_shoot = 0, .p2_left = 0, .p2_right = 1,
-		.tilt = 0, .dip0 = 0, .dip1 = 0, .dip2 = 0, .dip3 = 0,
-		.dip4 = 0, .dip5 = 0, .dip6 = 0, .dip7 = 0, .coin = 1,
-		.reset = 0, .shift_old = 0b11001101, .shift_new = 0b10101011,
-		.shift_offset = 3
+		.keystate_lock = &keystate_lock
 	};
+	rstruct.p1_start     = 1;
+	rstruct.p2_start     = 1;
+	rstruct.p2_right     = 1;
+	rstruct.coin	     = 1;
+	rstruct.shift_old    = 0b11001101;
+	rstruct.shift_new    = 0b10101011;
+	rstruct.shift_offset = 3;
+
+	struct taito_struct tstruct = {};
+	tstruct.rom_struct	    = &rstruct;
 
 	unsigned char memory[MAX_MEMORY];
 	memset(memory, 0, MAX_MEMORY);
 	struct cpu_state cpu
 	{
-		.int_cond = nullptr, .int_lock = nullptr, .memory = memory,
-		.interrupt_buffer = nullptr, .data_bus = nullptr,
-		.address_bus = nullptr, .hw_struct = &rstruct, .sp = 0, .pc = 0,
-		.bc = 0, .de = 0, .hl = 0, .psw = 0, .halt_flag = 0,
-		.reset_flag = 0, .interrupt_enable_flag = 0
+		.memory = memory, .hw_struct = &tstruct
 	};
 
 	// Set up hw_in for Space Invaders
@@ -65,7 +64,7 @@ TEST(HW_IN, Space_Invaders)
 	uint8_t opcode[2] = {0xdb, 1};
 
 	// IN port 1
-	opcodes[opcode[0]](opcode, &cpu);
+	EXPECT_EQ(opcodes[opcode[0]](opcode, &cpu), 10);
 	EXPECT_EQ(get_opcode_size(opcode[0]), 2);
 	EXPECT_EQ(cpu.a, 0b00001111);
 	EXPECT_EQ(rstruct.coin, 0); // check the coin has been cleared
