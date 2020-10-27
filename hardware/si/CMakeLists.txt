@@ -17,4 +17,4 @@ target_include_directories(si PRIVATE
 	)
 target_compile_options(si PRIVATE ${FlagSettings})
 
-target_link_libraries(si PRIVATE taito ${SDL2_LIBRARIES})
+target_link_libraries(si PRIVATE taito SDL2)
