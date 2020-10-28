@@ -22,6 +22,16 @@ static inline void check_malloc(void* arg)
 	}
 }
 
+void* front_end(void* arg)
+{
+	(void) arg;
+#ifdef VERBOSE
+	fprintf(stderr, "SI FRONT END THREAD RUNNING!\n");
+#endif
+
+	return NULL;
+}
+
 int hw_in(const uint8_t* opcode, struct cpu_state* cpu)
 {
 	assert(opcode[0] == 0b11011011);
