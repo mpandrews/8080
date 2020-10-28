@@ -1,9 +1,9 @@
 extern "C"
 {
 #include "cpu.h"
-#include "taito_struct.h"
 #include "hw_lib_imports.h"
 #include "screen_timer.h"
+#include "taito_struct.h"
 }
 
 #include <pthread.h>
