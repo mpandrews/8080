@@ -1,10 +1,11 @@
 extern "C"
 {
 #include "cpu.h"
-#include "hw_lib_imports.h"
 #include "screen_timer.h"
 #include "taito_struct.h"
 }
+
+#include "hw_lib_imports.h"
 
 #include <pthread.h>
 
@@ -24,8 +25,7 @@ extern "C" int foo(struct taito_struct* tStruct)
 
 		// Populate bottom half of screen and render.
 
-		// update_keystates needs Jen's branch merged to exist.
-		// update_keystates(tStruct->rom_struct);
+		update_keystates(tStruct->rom_struct);
 		screen_timer();
 
 		pthread_mutex_lock(tStruct->interrupt_lock);
