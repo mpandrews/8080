@@ -2,6 +2,10 @@
 
 ### Project Quickstart
 - Clone this repository
+- Install necessary packages:
+    - Required: gcc-10, g++-10, cmake (version 3.10+), SDL2, gtest
+    - Ubuntu/Debian/Mint: `sudo apt-get install cmake libgtest-dev libsdl2-dev libsdl2-image-dev`
+    - Arch/Manjaro: `sudo pacman -Syyu cmake gtest sdl2 sdl2_image`
 - Within the project directory, create a build subdirectory. (i.e. Debug or Release) 
 - Navigate into your subdirectory, and run either of the following:
     - `cmake -DCMAKE_BUILD_TYPE=Release ..`
