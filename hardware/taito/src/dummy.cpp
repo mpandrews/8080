@@ -11,6 +11,7 @@ extern "C"
 
 extern "C" int foo(struct taito_struct* tStruct)
 {
+	pthread_mutex_lock(tStruct->vbuffer_lock);
 	for (;;)
 	{
 		// Screen populate top half of screen.
@@ -22,6 +23,7 @@ extern "C" int foo(struct taito_struct* tStruct)
 					tStruct->interrupt_lock);
 		*tStruct->interrupt_buffer = 0xcf;
 		pthread_mutex_unlock(tStruct->interrupt_lock);
+		pthread_cond_wait(tStruct->vbuffer_cond, tStruct->vbuffer_lock);
 
 		// Populate bottom half of screen and render.
 
@@ -34,6 +36,7 @@ extern "C" int foo(struct taito_struct* tStruct)
 					tStruct->interrupt_lock);
 		*tStruct->interrupt_buffer = 0xd7;
 		pthread_mutex_unlock(tStruct->interrupt_lock);
+		pthread_cond_wait(tStruct->vbuffer_cond, tStruct->vbuffer_lock);
 	}
 	return 0;
 }
