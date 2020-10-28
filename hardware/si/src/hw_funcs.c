@@ -110,6 +110,9 @@ void* hw_init_struct(struct system_resources* res)
 	// Call the constructor for the taito library's struct.
 	struct taito_struct* tstruct = create_taito_struct();
 	check_malloc(tstruct);
+	tstruct->interrupt_buffer = res->interrupt_buffer;
+	tstruct->interrupt_lock	  = res->interrupt_lock;
+	tstruct->interrupt_cond	  = res->interrupt_cond;
 	// Allocate memory for the ROM struct, which lives inside the taito
 	// struct.
 	struct rom_struct* rstruct = malloc(sizeof(struct rom_struct));
@@ -135,4 +138,12 @@ void hw_destroy_struct(void* hw_struct)
 	free(rstruct->keystate_lock);
 	free(rstruct);
 	destroy_taito_struct(tstruct);
+}
+
+int foo(struct taito_struct*);
+
+void* front_end(void* tstruct)
+{
+	foo((struct taito_struct*) tstruct);
+	return NULL;
 }

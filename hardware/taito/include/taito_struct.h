@@ -10,6 +10,9 @@ struct taito_struct
 	pthread_cond_t* vbuffer_cond;
 	uint8_t* vbuffer;
 	void* rom_struct;
+	uint8_t* interrupt_buffer;
+	pthread_mutex_t* interrupt_lock;
+	pthread_cond_t* interrupt_cond;
 };
 
 struct taito_struct* create_taito_struct();
