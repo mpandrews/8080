@@ -76,7 +76,7 @@ To run one, just specify the rom and the hardware set, e.g. `./8080 -r roms/cput
 
 It is strongly recommended, however, that you build an unthrottled version first:
 
-`make clean && make C_FLAGS="-DCYCLE_TIME=0 -O2"`
+`make clean && make C_FLAGS="-DUNTHROTTLED -O2"`
 
 Though this isn't mandatory, be aware that at 2MHz, `cputest` will take several minutes, and `exerciser` will take several hours.  If you build a debug version, and your system is slow enough that the debug disassembly drives speed below 2MHz, it will of course take even longer.
 
