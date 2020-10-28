@@ -33,7 +33,14 @@ void screen_timer()
 
 	// Initialize the timer on first call.
 	if (target.tv_sec == 0 && target.tv_nsec == 0)
-	{ clock_gettime(CLOCK_MONOTONIC, &target); }
+	{
+		clock_gettime(CLOCK_MONOTONIC, &target);
+		// If this is the first call, then there's no need to sleep.
+		// This is simply the baseline time on which all future calls
+		// will increment.
+		is_bottom = 1;
+		return;
+	}
 
 	target.tv_nsec += is_bottom ? BOTTOM_LINES * NS_PER_LINE
 				    : TOP_LINES * NS_PER_LINE;
