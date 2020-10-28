@@ -38,7 +38,7 @@ void screen_timer()
 	target.tv_nsec += is_bottom ? BOTTOM_LINES * NS_PER_LINE
 				    : TOP_LINES * NS_PER_LINE;
 
-	if (target.tv_nsec > 1000000000)
+	if (target.tv_nsec >= 1000000000)
 	{
 		++target.tv_sec;
 		target.tv_nsec -= 1000000000;
