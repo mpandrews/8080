@@ -37,11 +37,7 @@ int update_keystates(void* rom_struct)
 			case SDL_SCANCODE_UP: rStruct->p2_shoot = 1; break;
 			case SDL_SCANCODE_A: rStruct->p1_left = 1; break;
 			case SDL_SCANCODE_D: rStruct->p1_right = 1; break;
-			case SDL_SCANCODE_W:
-				rStruct->p1_shoot = 1;
-				break;
-				// Dips and tilt act as toggles that flip each
-				// time they are pressed
+			case SDL_SCANCODE_W: rStruct->p1_shoot = 1; break;
 			case SDL_SCANCODE_T:
 				rStruct->tilt = !rStruct->tilt;
 				break;
