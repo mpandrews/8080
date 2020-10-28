@@ -20,4 +20,4 @@ target_include_directories(taito PUBLIC
 
 target_compile_options(taito PRIVATE ${FlagSettings})
 
-target_link_libraries(taito ${SDL2_LIBRARIES})
+target_link_libraries(taito SDL)
