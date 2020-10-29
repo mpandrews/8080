@@ -32,7 +32,7 @@ extern "C" int foo(struct taito_struct* tStruct)
 
 		// Populate bottom half of screen and render.
 
-		update_keystates(tStruct->rom_struct);
+		if (update_keystates(tStruct->rom_struct)) return 0;
 		screen_timer();
 
 		pthread_mutex_lock(tStruct->interrupt_lock);
