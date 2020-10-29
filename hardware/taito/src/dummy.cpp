@@ -7,10 +7,15 @@ extern "C"
 
 #include "hw_lib_imports.h"
 
+#include <SDL2/SDL.h>
 #include <pthread.h>
+
+#define RST2 (0xd7)
+#define RST1 (0xcf)
 
 extern "C" int foo(struct taito_struct* tStruct)
 {
+	SDL_Init(SDL_INIT_VIDEO);
 	pthread_mutex_lock(tStruct->vbuffer_lock);
 	for (;;)
 	{
@@ -21,7 +26,7 @@ extern "C" int foo(struct taito_struct* tStruct)
 		if (*tStruct->interrupt_buffer)
 			pthread_cond_wait(tStruct->interrupt_cond,
 					tStruct->interrupt_lock);
-		*tStruct->interrupt_buffer = 0xcf;
+		*tStruct->interrupt_buffer = RST1;
 		pthread_mutex_unlock(tStruct->interrupt_lock);
 		pthread_cond_wait(tStruct->vbuffer_cond, tStruct->vbuffer_lock);
 
@@ -34,7 +39,7 @@ extern "C" int foo(struct taito_struct* tStruct)
 		if (*tStruct->interrupt_buffer)
 			pthread_cond_wait(tStruct->interrupt_cond,
 					tStruct->interrupt_lock);
-		*tStruct->interrupt_buffer = 0xd7;
+		*tStruct->interrupt_buffer = RST2;
 		pthread_mutex_unlock(tStruct->interrupt_lock);
 		pthread_cond_wait(tStruct->vbuffer_cond, tStruct->vbuffer_lock);
 	}
