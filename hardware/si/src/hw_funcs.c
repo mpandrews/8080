@@ -73,48 +73,21 @@ int hw_out(const uint8_t* opcode, struct cpu_state* cpu)
 	{
 	case 2: rstruct->shift_offset = cpu->a & 0x07; break;
 	case 3:
-		if (cpu->a & 1)
-		{
-			// Play UFO sound
-		}
-		if (cpu->a & (1 << 1))
-		{
-			// Play shot sound
-		}
-		if (cpu->a & (1 << 2))
-		{
-			// Play player die sound
-		}
-		if (cpu->a & (1 << 3))
-		{
-			// Play invader die sound
-		}
+		if (cpu->a & 1) { rstruct->ufo_sound = 1; }
+		if (cpu->a & (1 << 1)) { rstruct->shot_sound = 1; }
+		if (cpu->a & (1 << 2)) { rstruct->player_die_sound = 1; }
+		if (cpu->a & (1 << 3)) { rstruct->invader_killed_sound = 1; }
 		break;
 	case 4:
 		rstruct->shift_old = rstruct->shift_new;
 		rstruct->shift_new = cpu->a;
 		break;
 	case 5:
-		if (cpu->a & 1)
-		{
-			// Play fast invader 1 sound
-		}
-		if (cpu->a & (1 << 1))
-		{
-			// Play fast invader 2 sound
-		}
-		if (cpu->a & (1 << 2))
-		{
-			// Play fast invader 3 sound
-		}
-		if (cpu->a & (1 << 3))
-		{
-			// Play fast invader 4 sound
-		}
-		if (cpu->a & (1 << 4))
-		{
-			// Play UFO hit sound
-		}
+		if (cpu->a & 1) { rstruct->fast_invader1_sound = 1; }
+		if (cpu->a & (1 << 1)) { rstruct->fast_invader2_sound = 1; }
+		if (cpu->a & (1 << 2)) { rstruct->fast_invader3_sound = 1; }
+		if (cpu->a & (1 << 3)) { rstruct->fast_invader4_sound = 1; }
+		if (cpu->a & (1 << 4)) { rstruct->ufo_hit_sound = 1; }
 		if (cpu->a & (1 << 5))
 		{
 			// Cocktail mode control; flip screen
