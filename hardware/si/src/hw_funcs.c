@@ -73,17 +73,58 @@ int hw_out(const uint8_t* opcode, struct cpu_state* cpu)
 	{
 	case 2: rstruct->shift_offset = cpu->a & 0x07; break;
 	case 3:
-		// JEN
+		if (cpu->a & 1)
+		{
+			// Play UFO sound
+		}
+		if (cpu->a & (1 << 1))
+		{
+			// Play shot sound
+		}
+		if (cpu->a & (1 << 2))
+		{
+			// Play player die sound
+		}
+		if (cpu->a & (1 << 3))
+		{
+			// Play invader die sound
+		}
 		break;
 	case 4:
 		rstruct->shift_old = rstruct->shift_new;
 		rstruct->shift_new = cpu->a;
 		break;
 	case 5:
-		// JEN
+		if (cpu->a & 1)
+		{
+			// Play fast invader 1 sound
+		}
+		if (cpu->a & (1 << 1))
+		{
+			// Play fast invader 2 sound
+		}
+		if (cpu->a & (1 << 2))
+		{
+			// Play fast invader 3 sound
+		}
+		if (cpu->a & (1 << 3))
+		{
+			// Play fast invader 4 sound
+		}
+		if (cpu->a & (1 << 4))
+		{
+			// Play UFO hit sound
+		}
+		if (cpu->a & (1 << 5))
+		{
+			// Cocktail mode control; flip screen
+		}
 		break;
 	case 6:
-		// JEN
+		// Reset
+		pthread_mutex_lock(cpu->reset_quit_lock);
+		*(rstruct->reset_flag) = 1;
+		pthread_mutex_unlock(cpu->reset_quit_lock);
 		break;
 	}
 	return 10;
