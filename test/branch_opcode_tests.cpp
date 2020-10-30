@@ -270,7 +270,7 @@ TEST(RST, All)
 	// It should also decrement SP by two and push PC
 	// onto the stack.
 	EXPECT_EQ(cpu.sp, 0x0ffe);
-	EXPECT_EQ(*((uint16_t*) cpu.memory + cpu.sp), 0xfff0);
+	EXPECT_EQ(*((uint16_t*) (cpu.memory + cpu.sp)), 0xfff0);
 
 	// RST 0x0008
 	opcode = 0xcf;
@@ -278,7 +278,7 @@ TEST(RST, All)
 	rst(&opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0008);
 	EXPECT_EQ(cpu.sp, 0x0ffc);
-	EXPECT_EQ(*((uint16_t*) cpu.memory + cpu.sp), 0x0000);
+	EXPECT_EQ(*((uint16_t*) (cpu.memory + cpu.sp)), 0x0000);
 
 	// RST 0x0038
 	opcode = 0xff;
@@ -286,5 +286,5 @@ TEST(RST, All)
 	rst(&opcode, &cpu);
 	EXPECT_EQ(cpu.pc, 0x0038);
 	EXPECT_EQ(cpu.sp, 0x0ffa);
-	EXPECT_EQ(*((uint16_t*) cpu.memory + cpu.sp), 0x0008);
+	EXPECT_EQ(*((uint16_t*) (cpu.memory + cpu.sp)), 0x0008);
 }
