@@ -79,7 +79,8 @@ int main(int argc, char** argv)
 	// the hardware wants the CPU to carry around: returns a void*,
 	// which the HW-specific functions can then cast to whatever it really
 	// is.
-	void* (*hw_init_struct)() = dlsym(hw_lib_handle, "hw_init_struct");
+	void* (*hw_init_struct)(struct system_resources*) =
+			dlsym(hw_lib_handle, "hw_init_struct");
 	if (!hw_init_struct)
 	{
 		fprintf(stderr,
@@ -135,10 +136,9 @@ int main(int argc, char** argv)
 	pthread_mutex_init(&reset_quit_lock, NULL);
 	uint8_t data_bus;
 	uint16_t address_bus;
-	uint8_t reset_flag = 0;
-	uint8_t quit_flag  = 0;
-	uint8_t interrupt_buffer;
-	void* hw_struct = hw_init_struct();
+	uint8_t reset_flag	 = 0;
+	uint8_t quit_flag	 = 0;
+	uint8_t interrupt_buffer = 0;
 
 	struct system_resources res = {.interrupt_cond = &interrupt_condition,
 			.interrupt_lock		       = &interrupt_lock,
@@ -147,11 +147,11 @@ int main(int argc, char** argv)
 			.interrupt_buffer	       = &interrupt_buffer,
 			.data_bus		       = &data_bus,
 			.address_bus		       = &address_bus,
-			.hw_struct		       = hw_struct,
 			.hw_lib			       = hw_lib_handle,
 			.reset_flag		       = &reset_flag,
 			.quit_flag		       = &quit_flag};
 
+	res.hw_struct = hw_init_struct(&res);
 	pthread_t front_end_thread;
 
 	// We check to see if the hardware library defines a front_end function:
@@ -159,7 +159,12 @@ int main(int argc, char** argv)
 	// nothing to do here.
 	void* (*front_end)(void*) = dlsym(hw_lib_handle, "front_end");
 	if (front_end)
-	{ pthread_create(&front_end_thread, NULL, front_end, (void*) &res); }
+	{
+		pthread_create(&front_end_thread,
+				NULL,
+				front_end,
+				(void*) res.hw_struct);
+	}
 
 	// Run the CPU routine in this thread.
 	cpu_thread_routine(&res);
@@ -173,7 +178,7 @@ int main(int argc, char** argv)
 	}
 	// Cleanup.
 	free(memory_space);
-	hw_destroy_struct(hw_struct);
+	hw_destroy_struct(res.hw_struct);
 	dlclose(hw_lib_handle);
 	exit(0);
 }

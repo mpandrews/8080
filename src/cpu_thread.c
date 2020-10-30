@@ -101,7 +101,7 @@ void* cpu_thread_routine(void* resources)
 			break;
 		case 2: // Interrupt enabled, not halted.
 			pthread_mutex_lock(cpu.int_lock);
-			if (cpu.interrupt_buffer) goto interrupt_execution;
+			if (*cpu.interrupt_buffer) goto interrupt_execution;
 			pthread_mutex_unlock(cpu.int_lock);
 			goto normal_execution;
 			break;

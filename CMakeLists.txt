@@ -57,8 +57,6 @@ target_include_directories(8080 PRIVATE ${INCLUDE_DIR})
 target_compile_options(8080 PRIVATE 
 	${FlagSettings}
 )
-set_target_properties(8080 PROPERTIES
-	ENABLE_EXPORTS TRUE)
 
 enable_testing()
 find_package(GTest)
