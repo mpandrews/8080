@@ -135,6 +135,16 @@ TEST(HW_OUT, Space_Invaders)
 	EXPECT_EQ(get_opcode_size(opcode[0]), 2);
 	EXPECT_EQ(rstruct.shift_offset, 3);
 
+	// OUT port 3
+	opcode[1] = 3;
+	cpu.a	  = 0b00000101;
+	rstruct.ufo_sound = 1;
+	opcodes[opcode[0]](opcode, &cpu);
+	EXPECT_EQ(rstruct.ufo_sound, 0);
+	EXPECT_EQ(rstruct.shot_sound, 0);
+	EXPECT_EQ(rstruct.player_die_sound, 1);
+	EXPECT_EQ(rstruct.invader_killed_sound, 0);
+
 	// OUT port 4
 	opcode[1]	  = 4;
 	cpu.a		  = 0b11111111;
@@ -143,4 +153,14 @@ TEST(HW_OUT, Space_Invaders)
 	opcodes[opcode[0]](opcode, &cpu);
 	EXPECT_EQ(rstruct.shift_old, 0b10101011);
 	EXPECT_EQ(rstruct.shift_new, 0b11111111);
+
+	// OUT port 5
+	opcode[1] = 5;
+	cpu.a	  = 0b00010110;
+	opcodes[opcode[0]](opcode, &cpu);
+	EXPECT_EQ(rstruct.fast_invader1_sound, 0);
+	EXPECT_EQ(rstruct.fast_invader2_sound, 1);
+	EXPECT_EQ(rstruct.fast_invader3_sound, 1);
+	EXPECT_EQ(rstruct.fast_invader4_sound, 0);
+	EXPECT_EQ(rstruct.ufo_hit_sound, 1);
 }
