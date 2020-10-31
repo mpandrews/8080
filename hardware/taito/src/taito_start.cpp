@@ -11,7 +11,7 @@ extern "C" int taito_start(struct taito_struct* tStruct)
 {
 	TaitoScreen screen(tStruct);
 	sideOfScreen screenHalf;
-	for (int i = 0;; ++i)
+	for (;;)
 	{
 		screenHalf = TOP;
 		screen.videoRamToTaitoBuffer(screenHalf);
