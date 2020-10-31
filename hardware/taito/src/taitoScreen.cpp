@@ -176,3 +176,12 @@ TaitoScreen::~TaitoScreen()
 	SDL_DestroyWindow(this->window);
 	SDL_DestroyRenderer(this->renderer);
 }
+
+/* class factories to provide an interface to the unit tests
+ */
+extern "C" TaitoScreen* create_taito_screen(struct taito_struct* tStruct)
+{
+	return new TaitoScreen(tStruct);
+}
+
+extern "C" void destroy_taito_screen(TaitoScreen* ts) { delete ts; }

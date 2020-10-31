@@ -1,4 +1,3 @@
-
 extern "C"
 {
 #include "cpu.h"
@@ -7,6 +6,8 @@ extern "C"
 #include "opcode_size.h"
 #include "si/include/rom_struct.h"
 }
+
+#include "taitoScreen.hpp"
 
 #include "gtest/gtest.h"
 #include <dlfcn.h>
@@ -90,4 +91,47 @@ TEST(HW_IN, Space_Invaders)
 	EXPECT_EQ(cpu.a, 0b11100110);
 
 	pthread_mutex_destroy(&keystate_lock);
+}
+
+TEST(TAITO, constructor)
+{
+
+	// get the create_taito_func function and get a taito struct.
+	void* hw_lib_handle;
+	hw_lib_handle = dlopen("hw/libtaito.so", RTLD_NOW);
+	// dlopen returns NULL on failure.
+	if (!hw_lib_handle)
+	{
+		fprintf(stderr,
+				"Error opening hardware library:\n\t%s\n",
+				dlerror());
+		exit(1);
+	}
+	// get the create and destroy taito struct functions
+	struct taito_struct* (*create_taito_struct)() =
+			(struct taito_struct * (*) ()) dlsym(
+					hw_lib_handle, "create_taito_struct");
+	if (!create_taito_struct)
+	{
+		fprintf(stderr,
+				"Error finding function 'create_taito_struct'"
+				"in hardware library %s:\n\tlibtaito.so\n",
+				dlerror());
+		exit(1);
+	}
+	struct taito_struct* t_struct = create_taito_struct();
+
+	// Get the TaitoScreen factory functions. This allows us to get
+	// and destroy TaitoScreen instances in this library
+	TaitoScreen* (*create_taito_screen)(struct taito_struct*) =
+			(TaitoScreen * (*) (struct taito_struct*) ) dlsym(
+					hw_lib_handle, "create_taito_screen");
+	void (*destroy_taito_screen)(TaitoScreen*) =
+			(void (*)(TaitoScreen*)) dlsym(
+					hw_lib_handle, "destroy_taito_screen");
+
+	TaitoScreen* screen = NULL;
+	screen		    = create_taito_screen(t_struct);
+	EXPECT_NE(screen, (void*) NULL);
+	destroy_taito_screen(screen);
 }
