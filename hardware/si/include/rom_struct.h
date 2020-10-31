@@ -27,7 +27,9 @@ struct rom_struct
 			// Instead, the CPU thread should clear them after
 			// reading them.
 			coin : 1,
-			// All sounds are toggles
+			// ufo_sound is toggled by hw_out; all other sounds are
+			// set by hw_out and then cleared by front_end after
+			// reading
 			ufo_sound : 1, player_die_sound : 1,
 			invader_killed_sound : 1, fast_invader1_sound : 1,
 			fast_invader2_sound : 1, fast_invader3_sound : 1,
