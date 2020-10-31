@@ -73,21 +73,25 @@ int hw_out(const uint8_t* opcode, struct cpu_state* cpu)
 	{
 	case 2: rstruct->shift_offset = cpu->a & 0x07; break;
 	case 3:
+		pthread_mutex_lock(rstruct->sound_lock);
 		if (cpu->a & 1) { rstruct->ufo_sound = !rstruct->ufo_sound; }
 		if (cpu->a & (1 << 1)) { rstruct->shot_sound = 1; }
 		if (cpu->a & (1 << 2)) { rstruct->player_die_sound = 1; }
 		if (cpu->a & (1 << 3)) { rstruct->invader_killed_sound = 1; }
+		pthread_mutex_unlock(rstruct->sound_lock);
 		break;
 	case 4:
 		rstruct->shift_old = rstruct->shift_new;
 		rstruct->shift_new = cpu->a;
 		break;
 	case 5:
+		pthread_mutex_lock(rstruct->sound_lock);
 		if (cpu->a & 1) { rstruct->fast_invader1_sound = 1; }
 		if (cpu->a & (1 << 1)) { rstruct->fast_invader2_sound = 1; }
 		if (cpu->a & (1 << 2)) { rstruct->fast_invader3_sound = 1; }
 		if (cpu->a & (1 << 3)) { rstruct->fast_invader4_sound = 1; }
 		if (cpu->a & (1 << 4)) { rstruct->ufo_hit_sound = 1; }
+		pthread_mutex_unlock(rstruct->sound_lock);
 		if (cpu->a & (1 << 5))
 		{
 			// Cocktail mode control; flip screen
@@ -134,6 +138,9 @@ void* hw_init_struct(struct system_resources* res)
 	rstruct->keystate_lock = malloc(sizeof(pthread_mutex_t));
 	check_malloc(rstruct->keystate_lock);
 	pthread_mutex_init(rstruct->keystate_lock, NULL);
+	rstruct->sound_lock = malloc(sizeof(pthread_mutex_t));
+	check_malloc(rstruct->sound_lock);
+	pthread_mutex_init(rstruct->sound_lock, NULL);
 	// Assign the pointers to the shared CPU struct resources.
 	rstruct->reset_quit_lock = res->reset_quit_lock;
 	rstruct->reset_flag	 = res->reset_flag;
@@ -149,7 +156,9 @@ void hw_destroy_struct(void* hw_struct)
 	struct taito_struct* tstruct = (struct taito_struct*) hw_struct;
 	struct rom_struct* rstruct   = (struct rom_struct*) tstruct->rom_struct;
 	pthread_mutex_destroy(rstruct->keystate_lock);
+	pthread_mutex_destroy(rstruct->sound_lock);
 	free(rstruct->keystate_lock);
+	free(rstruct->sound_lock);
 	free(rstruct);
 	destroy_taito_struct(tstruct);
 }

@@ -8,6 +8,7 @@
 struct rom_struct
 {
 	pthread_mutex_t* keystate_lock;
+	pthread_mutex_t* sound_lock;
 	pthread_mutex_t* reset_quit_lock;
 	uint8_t* reset_flag;
 	uint8_t* quit_flag;

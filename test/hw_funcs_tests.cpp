@@ -94,7 +94,13 @@ TEST(HW_IN, Space_Invaders)
 
 TEST(HW_OUT, Space_Invaders)
 {
-	struct rom_struct rstruct   = {};
+	pthread_mutex_t sound_lock;
+	pthread_mutex_init(&sound_lock, NULL);
+
+	struct rom_struct rstruct
+	{
+		.sound_lock = &sound_lock
+	};
 	struct taito_struct tstruct = {};
 	tstruct.rom_struct	    = &rstruct;
 
@@ -136,8 +142,8 @@ TEST(HW_OUT, Space_Invaders)
 	EXPECT_EQ(rstruct.shift_offset, 3);
 
 	// OUT port 3
-	opcode[1] = 3;
-	cpu.a	  = 0b00000101;
+	opcode[1]	  = 3;
+	cpu.a		  = 0b00000101;
 	rstruct.ufo_sound = 1;
 	opcodes[opcode[0]](opcode, &cpu);
 	EXPECT_EQ(rstruct.ufo_sound, 0);
@@ -163,4 +169,6 @@ TEST(HW_OUT, Space_Invaders)
 	EXPECT_EQ(rstruct.fast_invader3_sound, 1);
 	EXPECT_EQ(rstruct.fast_invader4_sound, 0);
 	EXPECT_EQ(rstruct.ufo_hit_sound, 1);
+
+	pthread_mutex_destroy(&sound_lock);
 }
