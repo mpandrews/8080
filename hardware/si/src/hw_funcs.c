@@ -50,6 +50,7 @@ int hw_in(const uint8_t* opcode, struct cpu_state* cpu)
 			 | rstruct->dip6 << 3 | rstruct->p2_shoot << 4
 			 | rstruct->p2_left << 5 | rstruct->p2_right << 6
 			 | rstruct->dip7 << 7;
+		rstruct->tilt = 0;
 		pthread_mutex_unlock(rstruct->keystate_lock);
 		break;
 	case 3:
