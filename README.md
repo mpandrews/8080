@@ -2,6 +2,10 @@
 
 ### Project Quickstart
 - Clone this repository
+- Install necessary packages:
+    - Required: gcc-10, g++-10, cmake (version 3.10+), SDL2, gtest
+    - Ubuntu/Debian/Mint: `sudo apt-get install cmake libgtest-dev libsdl2-dev libsdl2-image-dev`
+    - Arch/Manjaro: `sudo pacman -Syyu cmake gtest sdl2 sdl2_image`
 - Within the project directory, create a build subdirectory. (i.e. Debug or Release) 
 - Navigate into your subdirectory, and run either of the following:
     - `cmake -DCMAKE_BUILD_TYPE=Release ..`
@@ -72,7 +76,7 @@ To run one, just specify the rom and the hardware set, e.g. `./8080 -r roms/cput
 
 It is strongly recommended, however, that you build an unthrottled version first:
 
-`make clean && make C_FLAGS="-DCYCLE_TIME=0 -O2"`
+`make clean && make C_FLAGS="-DUNTHROTTLED -O2"`
 
 Though this isn't mandatory, be aware that at 2MHz, `cputest` will take several minutes, and `exerciser` will take several hours.  If you build a debug version, and your system is slow enough that the debug disassembly drives speed below 2MHz, it will of course take even longer.
 

@@ -30,14 +30,41 @@ int update_keystates(void* rom_struct)
 				quit		      = 1;
 				break;
 			case SDL_SCANCODE_C: rStruct->coin = 1; break;
-			case SDL_SCANCODE_1: rStruct->p1_start = 1; break;
-			case SDL_SCANCODE_2: rStruct->p2_start = 1; break;
+			case SDL_SCANCODE_S: rStruct->p1_start = 1; break;
+			case SDL_SCANCODE_DOWN: rStruct->p2_start = 1; break;
 			case SDL_SCANCODE_LEFT: rStruct->p2_left = 1; break;
 			case SDL_SCANCODE_RIGHT: rStruct->p2_right = 1; break;
 			case SDL_SCANCODE_UP: rStruct->p2_shoot = 1; break;
 			case SDL_SCANCODE_A: rStruct->p1_left = 1; break;
 			case SDL_SCANCODE_D: rStruct->p1_right = 1; break;
 			case SDL_SCANCODE_W: rStruct->p1_shoot = 1; break;
+			case SDL_SCANCODE_T:
+				rStruct->tilt = !rStruct->tilt;
+				break;
+			case SDL_SCANCODE_0:
+				rStruct->dip0 = !rStruct->dip0;
+				break;
+			case SDL_SCANCODE_1:
+				rStruct->dip1 = !rStruct->dip1;
+				break;
+			case SDL_SCANCODE_2:
+				rStruct->dip2 = !rStruct->dip2;
+				break;
+			case SDL_SCANCODE_3:
+				rStruct->dip3 = !rStruct->dip3;
+				break;
+			case SDL_SCANCODE_4:
+				rStruct->dip4 = !rStruct->dip4;
+				break;
+			case SDL_SCANCODE_5:
+				rStruct->dip5 = !rStruct->dip5;
+				break;
+			case SDL_SCANCODE_6:
+				rStruct->dip6 = !rStruct->dip6;
+				break;
+			case SDL_SCANCODE_7:
+				rStruct->dip7 = !rStruct->dip7;
+				break;
 			default: break;
 			}
 		}
