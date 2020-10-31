@@ -26,13 +26,6 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 	this->displayBuffer =
 			new Uint8[TAITO_SCREEN_WIDTH * TAITO_SCREEN_HEIGHT];
 
-	/* Color filters. Colors are determined by the contents of each byte
-	 * in the buffer. The most significant 3 bits set the red component,
-	 * the next 3 significant bits set green, and the 2 least significant
-	 * bits determine the blue component.
-	 */
-	this->currentScreenSide = TOP;
-
 	// Now we set up and configure SDL to render to a window
 	SDL_Init(SDL_INIT_VIDEO);
 	this->window = SDL_CreateWindow("Space Invaders", // window name
@@ -60,11 +53,12 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 		exit(1);
 	}
 
-	// An SDL surface is needed to manage memory-mapped pixel data. When
-	// a screen refresh is needed, the surface object is used in conjunction
-	// with an SDL_Texture object (texture objects are transient so one is
-	// not declared/maintained here) to hand off the memory-mapped data to
-	// the renderer.
+	/* An SDL surface is needed to manage memory-mapped pixel data. When
+	 * a screen refresh is needed, the surface object is used in conjunction
+	 * with an SDL_Texture object (texture objects are transient so one is
+	 * not declared/maintained here) to hand off the memory-mapped data to
+	 * the renderer.
+	 */
 	this->surface = SDL_CreateRGBSurfaceWithFormatFrom(this->displayBuffer,
 			TAITO_SCREEN_WIDTH,	 // width of surface
 			TAITO_SCREEN_HEIGHT,	 // height of surface
@@ -146,25 +140,18 @@ void TaitoScreen::videoRamToTaitoBuffer(sideOfScreen screenHalf)
 	if (screenHalf == TOP)
 	{
 		start_row = 0;
-		end_row	  = SCREEN_SPLIT_ROW;
+		end_row	  = SCREEN_DIVIDE_ROW;
 	}
 	else
 	{
-		start_row = SCREEN_SPLIT_ROW;
+		start_row = SCREEN_DIVIDE_ROW;
 		end_row	  = TAITO_SCREEN_HEIGHT;
 	}
 
 	/* This will translate the 1 bit per pixel TAITO video ram buffer to the
 	 * 1 byte per pixel video buffer for our display. This will not perform
 	 * the rotation. That will be handled by SDL when it comes time to
-	 * render the screen. Probably much more efficiently than I could do
-	 * here.
-	 *
-	 * This will also impart color information into the bytes. Since this
-	 * is happening pre-rotation, the column we are in will determine the
-	 * color representation. The rotation is counter-clockwise, so the
-	 * left-most columns will become the bottom of the screen and the right-
-	 * most columns will become the top.
+	 * render the screen.
 	 */
 
 	// iterate through each byte of the space invader's video buffer

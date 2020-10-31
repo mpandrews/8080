@@ -20,7 +20,6 @@ extern "C"
 #define TAITO_SCREEN_WIDTH  256
 #define TAITO_SCREEN_HEIGHT 224
 #define WINDOW_SCALE_FACTOR 4
-#define SCREEN_SPLIT_ROW    96
 #define WHITE_PIXEL	    0b11111111
 #define BLACK_PIXEL	    0b00000000
 
@@ -50,7 +49,6 @@ class TaitoScreen
 
 	pthread_mutex_t* vidBufferLock;
 	pthread_cond_t* vidBufferCond;
-	sideOfScreen currentScreenSide;
 
 	// color filters for the top and bottom of the taito screen
 	Uint8 topFilterColor;
