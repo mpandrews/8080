@@ -17,8 +17,8 @@ extern "C"
 #define RST1 (0xcf)
 #define RST2 (0xd7)
 
-#define TAITO_SCREEN_WIDTH	    256
-#define TAITO_SCREEN_HEIGHT    224
+#define TAITO_SCREEN_WIDTH  256
+#define TAITO_SCREEN_HEIGHT 224
 #define WINDOW_SCALE_FACTOR 4
 #define SCREEN_SPLIT_ROW    96
 #define WHITE_PIXEL	    0b11111111
@@ -62,7 +62,7 @@ class TaitoScreen
 	SDL_Surface* surface;
 
       public:
-	TaitoScreen(struct taito_struct *tStruct);
+	TaitoScreen(struct taito_struct* tStruct);
 	~TaitoScreen();
 	void videoRamToTaitoBuffer(sideOfScreen);
 	void renderFrame();

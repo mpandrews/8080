@@ -129,7 +129,6 @@ void* hw_init_struct(struct system_resources* res)
 	rstruct->dip6 = 1;
 	rstruct->dip7 = 1;
 
-
 	// Assign the pointers to the shared CPU struct resources.
 	rstruct->reset_quit_lock = res->reset_quit_lock;
 	rstruct->reset_flag	 = res->reset_flag;

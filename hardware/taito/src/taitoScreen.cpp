@@ -1,16 +1,17 @@
-#include "hw_lib_imports.h"
 #include "taitoScreen.hpp"
+
+#include "hw_lib_imports.h"
 
 #include <iostream>
 
 TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 {
 	// set members from taito_struct
-	this->interruptLock = tStruct->interrupt_lock;
-	this->interruptCond = tStruct->interrupt_cond;
-	this->interruptBuffer = tStruct->interrupt_buffer;
-	this->vidBufferCond = tStruct->vbuffer_cond;
-	this->vidBufferLock = tStruct->vbuffer_lock;
+	this->interruptLock    = tStruct->interrupt_lock;
+	this->interruptCond    = tStruct->interrupt_cond;
+	this->interruptBuffer  = tStruct->interrupt_buffer;
+	this->vidBufferCond    = tStruct->vbuffer_cond;
+	this->vidBufferLock    = tStruct->vbuffer_lock;
 	this->taitoVideoBuffer = tStruct->vbuffer;
 	pthread_mutex_lock(this->vidBufferLock);
 
@@ -22,7 +23,8 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 	 * or other effects to more accurately simulate an analog hardware
 	 * screen like that in the space invaders cabinet.
 	 */
-	this->displayBuffer = new Uint8[TAITO_SCREEN_WIDTH * TAITO_SCREEN_HEIGHT];
+	this->displayBuffer =
+			new Uint8[TAITO_SCREEN_WIDTH * TAITO_SCREEN_HEIGHT];
 
 	/* Color filters. Colors are determined by the contents of each byte
 	 * in the buffer. The most significant 3 bits set the red component,
@@ -36,8 +38,8 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 	this->window = SDL_CreateWindow("Space Invaders", // window name
 			SDL_WINDOWPOS_CENTERED,		  // horizontal pos
 			SDL_WINDOWPOS_CENTERED,		  // vertical pos
-			TAITO_SCREEN_HEIGHT * WINDOW_SCALE_FACTOR,	    // width
-			TAITO_SCREEN_WIDTH * WINDOW_SCALE_FACTOR,	    // height
+			TAITO_SCREEN_HEIGHT * WINDOW_SCALE_FACTOR,  // width
+			TAITO_SCREEN_WIDTH * WINDOW_SCALE_FACTOR,   // height
 			(SDL_WINDOW_SHOWN | SDL_WINDOW_INPUT_FOCUS) // flags
 	);
 	if (window == NULL)
@@ -64,10 +66,11 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 	// not declared/maintained here) to hand off the memory-mapped data to
 	// the renderer.
 	this->surface = SDL_CreateRGBSurfaceWithFormatFrom(this->displayBuffer,
-			TAITO_SCREEN_WIDTH,  // width of surface
-			TAITO_SCREEN_HEIGHT, // height of surface
-			8,		  // depth - bits-per-pixel
-			TAITO_SCREEN_WIDTH,  // pitch - width of one row of pixels
+			TAITO_SCREEN_WIDTH,	 // width of surface
+			TAITO_SCREEN_HEIGHT,	 // height of surface
+			8,			 // depth - bits-per-pixel
+			TAITO_SCREEN_WIDTH,	 // pitch - width of one row of
+						 // pixels
 			SDL_PIXELFORMAT_RGB332); // format
 	if (surface == NULL)
 	{
@@ -80,7 +83,7 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 void TaitoScreen::sendInterrupt(Uint8 interruptCode)
 {
 	pthread_mutex_lock(this->interruptLock);
-	if(*this->interruptBuffer)
+	if (*this->interruptBuffer)
 		pthread_cond_wait(this->interruptCond, this->interruptLock);
 	*this->interruptBuffer = interruptCode;
 	pthread_mutex_unlock(this->interruptLock);
@@ -100,9 +103,11 @@ void TaitoScreen::renderFrame()
 
 	// Create SDL_Rect to scale the rotated screen to our window
 	SDL_Rect dest;
-	dest.x = (WINDOW_SCALE_FACTOR * (TAITO_SCREEN_HEIGHT - TAITO_SCREEN_WIDTH))
+	dest.x = (WINDOW_SCALE_FACTOR
+				 * (TAITO_SCREEN_HEIGHT - TAITO_SCREEN_WIDTH))
 		 / 2;
-	dest.y = (WINDOW_SCALE_FACTOR * (TAITO_SCREEN_WIDTH - TAITO_SCREEN_HEIGHT))
+	dest.y = (WINDOW_SCALE_FACTOR
+				 * (TAITO_SCREEN_WIDTH - TAITO_SCREEN_HEIGHT))
 		 / 2;
 	dest.w = WINDOW_SCALE_FACTOR * TAITO_SCREEN_WIDTH;
 	dest.h = WINDOW_SCALE_FACTOR * TAITO_SCREEN_HEIGHT;
@@ -138,15 +143,15 @@ void TaitoScreen::videoRamToTaitoBuffer(sideOfScreen screenHalf)
 	Uint8 pixels;
 	int start_row, end_row;
 
-	if(screenHalf == TOP)
+	if (screenHalf == TOP)
 	{
 		start_row = 0;
-		end_row = SCREEN_SPLIT_ROW;
+		end_row	  = SCREEN_SPLIT_ROW;
 	}
 	else
 	{
 		start_row = SCREEN_SPLIT_ROW;
-		end_row = TAITO_SCREEN_HEIGHT;
+		end_row	  = TAITO_SCREEN_HEIGHT;
 	}
 
 	/* This will translate the 1 bit per pixel TAITO video ram buffer to the
@@ -163,13 +168,17 @@ void TaitoScreen::videoRamToTaitoBuffer(sideOfScreen screenHalf)
 	 */
 
 	// iterate through each byte of the space invader's video buffer
-	for (int i = TAITO_SCREEN_WIDTH * start_row / 8; i < TAITO_SCREEN_WIDTH * end_row / 8; ++i)
+	for (int i = TAITO_SCREEN_WIDTH * start_row / 8;
+			i < TAITO_SCREEN_WIDTH * end_row / 8;
+			++i)
 	{
 		pixels = this->taitoVideoBuffer[i];
 		// expand each byte into one byte for each of the 8 bits
 		for (int j = 0; j < 8; ++j)
 		{
-			this->displayBuffer[(i * 8) + j] = pixels & bitMasks[j] ? WHITE_PIXEL : BLACK_PIXEL;
+			this->displayBuffer[(i * 8) + j] =
+					pixels & bitMasks[j] ? WHITE_PIXEL
+							     : BLACK_PIXEL;
 		}
 	}
 }
@@ -180,4 +189,3 @@ TaitoScreen::~TaitoScreen()
 	SDL_DestroyWindow(this->window);
 	SDL_DestroyRenderer(this->renderer);
 }
-
