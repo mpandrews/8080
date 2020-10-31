@@ -1,7 +1,10 @@
-#include "taito_start.hpp"
+extern "C"
+{
+#include "taito_start.h"
 
-#include "hw_lib_imports.h"
 #include "screen_timer.h"
+}
+#include "hw_lib_imports.h"
 #include "taitoScreen.hpp"
 
 extern "C" int taito_start(struct taito_struct* tStruct)

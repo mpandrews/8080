@@ -3,6 +3,6 @@
 
 #include "taito_struct.h"
 
-extern "C" int taito_start(struct taito_struct*);
+int taito_start(struct taito_struct*);
 
 #endif

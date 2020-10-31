@@ -1,6 +1,7 @@
 #include "cpu.h"
 #include "opcode_array.h"
 #include "rom_struct.h"
+#include "taito_start.h"
 #include "taito_struct.h"
 
 #include <assert.h>
@@ -148,8 +149,6 @@ void hw_destroy_struct(void* hw_struct)
 	free(rstruct);
 	destroy_taito_struct(tstruct);
 }
-
-int taito_start(struct taito_struct*);
 
 void* front_end(void* tstruct)
 {
