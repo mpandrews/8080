@@ -163,7 +163,7 @@ int rst(const uint8_t* opcode, struct cpu_state* cpu)
 
 	// Push PC onto the stack.
 	cpu->sp -= 2;
-	*((uint16_t*) cpu->memory + cpu->sp) = cpu->pc;
+	*((uint16_t*) (cpu->memory + cpu->sp)) = cpu->pc;
 	// RST jumps to the address signified in bits 3, 4, and 5 of the opcode,
 	// multiplied by eight.  As it happens, bit 3 is already the 8s place,
 	// so we can just filter out all the other bits and assign that
