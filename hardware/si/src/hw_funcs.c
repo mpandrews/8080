@@ -98,12 +98,6 @@ int hw_out(const uint8_t* opcode, struct cpu_state* cpu)
 			// Cocktail mode control; flip screen
 		}
 		break;
-	case 6:
-		// Reset
-		pthread_mutex_lock(cpu->reset_quit_lock);
-		*(rstruct->reset_flag) = 1;
-		pthread_mutex_unlock(cpu->reset_quit_lock);
-		break;
 	}
 	return 10;
 }
