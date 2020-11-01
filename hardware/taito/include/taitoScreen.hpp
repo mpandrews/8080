@@ -20,8 +20,8 @@ extern "C"
 #define TAITO_SCREEN_WIDTH  256
 #define TAITO_SCREEN_HEIGHT 224
 #define WINDOW_SCALE_FACTOR 3
-#define WHITE_PIXEL	    0b11111111
-#define BLACK_PIXEL	    0b00000000
+#define WHITE_PIXEL	    0x0000
+#define BLACK_PIXEL	    0x000f
 
 // This sets line that defines the end of the top half of the screen and the
 // beginning of the second half of the screen, as it pertains to interrupts.
@@ -45,7 +45,7 @@ class TaitoScreen
 	const Uint8* taitoVideoBuffer;
 	// The translated version of the taitoVideoBuffer. Expanded to 1 byte
 	// per pixel
-	Uint8* displayBuffer;
+	Uint16* displayBuffer;
 
 	pthread_mutex_t* vidBufferLock;
 	pthread_cond_t* vidBufferCond;
@@ -55,12 +55,19 @@ class TaitoScreen
 	SDL_Renderer* renderer;
 	SDL_Surface* surface;
 
+	int currColorMask;
+	int numColorMasks;
+	SDL_Surface** colorMasks;
+
       public:
-	TaitoScreen(struct taito_struct* tStruct);
+	TaitoScreen(struct taito_struct* tStruct,
+			Uint8 colorMaskProms[][896],
+			int numColorMaskProms);
 	~TaitoScreen();
 	void videoRamToTaitoBuffer(sideOfScreen);
 	void renderFrame();
 	void sendInterrupt(Uint8 interruptCode);
+	Uint8* getColorMaskFromProm(Uint8*);
 };
 
 #endif

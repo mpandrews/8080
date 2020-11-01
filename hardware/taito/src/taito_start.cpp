@@ -7,9 +7,10 @@ extern "C"
 #include "hw_lib_imports.h"
 #include "taitoScreen.hpp"
 
-extern "C" int taito_start(struct taito_struct* tStruct)
+extern "C" int
+taito_start(struct taito_struct* tStruct, uint8_t proms[][896], int num_proms)
 {
-	TaitoScreen screen(tStruct);
+	TaitoScreen screen(tStruct, proms, num_proms);
 	sideOfScreen screenHalf;
 	for (;;)
 	{
