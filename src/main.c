@@ -173,7 +173,6 @@ int main(int argc, char** argv)
 	// the cpu routine routines.
 	if (front_end)
 	{
-		pthread_cancel(front_end_thread);
 		pthread_join(front_end_thread, NULL);
 	}
 	// Cleanup.

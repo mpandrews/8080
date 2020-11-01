@@ -122,6 +122,7 @@ void* hw_init_struct(struct system_resources* res)
 	rstruct->keystate_lock = malloc(sizeof(pthread_mutex_t));
 	check_malloc(rstruct->keystate_lock);
 	pthread_mutex_init(rstruct->keystate_lock, NULL);
+	rstruct->dip0 = 1;
 	rstruct->dip1 = 1;
 	rstruct->dip2 = 1;
 	rstruct->dip3 = 1;
