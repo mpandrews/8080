@@ -171,10 +171,7 @@ int main(int argc, char** argv)
 
 	// If we have a front_end, then we'll cancel and join it after
 	// the cpu routine routines.
-	if (front_end)
-	{
-		pthread_join(front_end_thread, NULL);
-	}
+	if (front_end) { pthread_join(front_end_thread, NULL); }
 	// Cleanup.
 	free(memory_space);
 	hw_destroy_struct(res.hw_struct);
