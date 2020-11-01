@@ -38,9 +38,7 @@ int update_keystates(void* rom_struct)
 			case SDL_SCANCODE_A: rStruct->p1_left = 1; break;
 			case SDL_SCANCODE_D: rStruct->p1_right = 1; break;
 			case SDL_SCANCODE_W: rStruct->p1_shoot = 1; break;
-			case SDL_SCANCODE_T:
-				rStruct->tilt = !rStruct->tilt;
-				break;
+			case SDL_SCANCODE_T: rStruct->tilt = 1; break;
 			case SDL_SCANCODE_0:
 				rStruct->dip0 = !rStruct->dip0;
 				break;
