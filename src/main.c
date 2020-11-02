@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include "hw_func_pointers.h"
 #include "opcode_array.h"
 #include "opcode_decls.h"
 
@@ -13,7 +14,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-void parse_arguments(int argc, char** argv, char* rom_name, char* hw_lib_name);
+static inline void parse_arguments(
+		int argc, char** argv, char* rom_name, char* hw_lib_name);
+
+static inline void find_hw_funcs(void* hw_lib_handle, char* hw_lib_name);
 
 int main(int argc, char** argv)
 {
@@ -52,58 +56,8 @@ int main(int argc, char** argv)
 				dlerror());
 		exit(1);
 	}
-	// Assign the OUT opcode function defined in the HW lib.
-	opcodes[0xd3] = dlsym(hw_lib_handle, "hw_out");
-	if (!opcodes[0xd3])
-	{
-		fprintf(stderr,
-				"Error finding function 'hw_out' in hardware"
-				" library %s:\n\t%s\n",
-				hw_lib_name,
-				dlerror());
-		exit(1);
-	}
-	// Assign the IN opcode function.
-	opcodes[0xdb] = dlsym(hw_lib_handle, "hw_in");
-	if (!opcodes[0xdb])
-	{
-		fprintf(stderr,
-				"Error finding function 'hw_in' in hardware"
-				" library %s:\n\t%s\n",
-				hw_lib_name,
-				dlerror());
-		exit(1);
-	}
 
-	// Hardware-defined function to initialize whatever data parcel
-	// the hardware wants the CPU to carry around: returns a void*,
-	// which the HW-specific functions can then cast to whatever it really
-	// is.
-	void* (*hw_init_struct)(struct system_resources*) =
-			dlsym(hw_lib_handle, "hw_init_struct");
-	if (!hw_init_struct)
-	{
-		fprintf(stderr,
-				"Error finding function 'hw_init_struct' in "
-				"hardware"
-				" library %s:\n\t%s\n",
-				hw_lib_name,
-				dlerror());
-		exit(1);
-	}
-	// HW-defined function to clean up its struct.
-	void (*hw_destroy_struct)(void*) =
-			dlsym(hw_lib_handle, "hw_destroy_struct");
-	if (!hw_destroy_struct)
-	{
-		fprintf(stderr,
-				"Error finding function 'hw_destroy_struct' in "
-				"hardware"
-				" library %s:\n\t%s\n",
-				hw_lib_name,
-				dlerror());
-		exit(1);
-	}
+	find_hw_funcs(hw_lib_handle, hw_lib_name);
 
 	// Block to avoid these temporary variables taking up stack space.
 	// We'll then read the file into the memory buffer, and then close it.
@@ -134,8 +88,6 @@ int main(int argc, char** argv)
 	pthread_mutex_init(&interrupt_lock, NULL);
 	pthread_mutex_t reset_quit_lock;
 	pthread_mutex_init(&reset_quit_lock, NULL);
-	uint8_t data_bus;
-	uint16_t address_bus;
 	uint8_t reset_flag	 = 0;
 	uint8_t quit_flag	 = 0;
 	uint8_t interrupt_buffer = 0;
@@ -145,9 +97,6 @@ int main(int argc, char** argv)
 			.reset_quit_lock	       = &reset_quit_lock,
 			.memory			       = memory_space,
 			.interrupt_buffer	       = &interrupt_buffer,
-			.data_bus		       = &data_bus,
-			.address_bus		       = &address_bus,
-			.hw_lib			       = hw_lib_handle,
 			.reset_flag		       = &reset_flag,
 			.quit_flag		       = &quit_flag};
 
@@ -157,7 +106,7 @@ int main(int argc, char** argv)
 	// We check to see if the hardware library defines a front_end function:
 	// if we do, we spin it up in a second thread.  If not, there's
 	// nothing to do here.
-	void* (*front_end)(void*) = dlsym(hw_lib_handle, "front_end");
+	front_end = dlsym(hw_lib_handle, "front_end");
 	if (front_end)
 	{
 		pthread_create(&front_end_thread,
@@ -258,4 +207,72 @@ void parse_arguments(int argc, char** argv, char* rom_name, char* hw_lib_name)
 		hw_lib_name[0] = 0;
 		strcpy(hw_lib_name, "hw/libnone.so");
 	}
+}
+
+void find_hw_funcs(void* hw_lib_handle, char* hw_lib_name)
+{
+	// Assign the OUT opcode function defined in the HW lib.
+	opcodes[0xd3] = dlsym(hw_lib_handle, "hw_out");
+	if (!opcodes[0xd3])
+	{
+		fprintf(stderr,
+				"Error finding function 'hw_out' in hardware"
+				" library %s:\n\t%s\n",
+				hw_lib_name,
+				dlerror());
+		exit(1);
+	}
+	// Assign the IN opcode function.
+	opcodes[0xdb] = dlsym(hw_lib_handle, "hw_in");
+	if (!opcodes[0xdb])
+	{
+		fprintf(stderr,
+				"Error finding function 'hw_in' in hardware"
+				" library %s:\n\t%s\n",
+				hw_lib_name,
+				dlerror());
+		exit(1);
+	}
+
+	// Hardware-defined function to initialize whatever data parcel
+	// the hardware wants the CPU to carry around: returns a void*,
+	// which the HW-specific functions can then cast to whatever it really
+	// is.
+	hw_init_struct = dlsym(hw_lib_handle, "hw_init_struct");
+	if (!hw_init_struct)
+	{
+		fprintf(stderr,
+				"Error finding function 'hw_init_struct' in "
+				"hardware"
+				" library %s:\n\t%s\n",
+				hw_lib_name,
+				dlerror());
+		exit(1);
+	}
+	// HW-defined function to clean up its struct.
+	hw_destroy_struct = dlsym(hw_lib_handle, "hw_destroy_struct");
+	if (!hw_destroy_struct)
+	{
+		fprintf(stderr,
+				"Error finding function 'hw_destroy_struct' in "
+				"hardware"
+				" library %s:\n\t%s\n",
+				hw_lib_name,
+				dlerror());
+		exit(1);
+	}
+
+	interrupt_hook = dlsym(hw_lib_handle, "hw_interrupt_hook");
+	if (!hw_destroy_struct)
+	{
+		fprintf(stderr,
+				"Error finding function 'hw_interrupt_hook' in "
+				"hardware"
+				" library %s:\n\t%s\n",
+				hw_lib_name,
+				dlerror());
+		exit(1);
+	}
+
+	front_end = dlsym(hw_lib_handle, "front_end");
 }

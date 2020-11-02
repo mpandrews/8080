@@ -108,8 +108,9 @@ int ei(const uint8_t* opcode, struct cpu_state* cpu)
 	fprintf(stderr, "EI\n");
 #endif
 
-	// Enable interrupts
-	cpu->interrupt_enable_flag = 2;
+	// Enable interrupts.  We check to see if they're 0 because
+	// otherwise we might move the interrupt state from enabled to pending.
+	if (!cpu->interrupt_enable_flag) cpu->interrupt_enable_flag = 2;
 
 	return 4;
 }

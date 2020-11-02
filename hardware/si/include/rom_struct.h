@@ -7,12 +7,6 @@
 #include <stdint.h>
 struct rom_struct
 {
-	pthread_mutex_t* keystate_lock;
-	pthread_mutex_t* sound_lock;
-	pthread_mutex_t* reset_quit_lock;
-	uint8_t* reset_flag;
-	uint8_t* quit_flag;
-
 	// Keystates.  The player controls should be
 	// toggled to on on press, and toggled to off on release.
 	uint32_t p1_start : 1, p1_shoot : 1, p1_left : 1, p1_right : 1,

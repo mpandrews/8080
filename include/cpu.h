@@ -70,10 +70,8 @@ struct cpu_state
 	uint8_t* const memory; // Points to an array containing the memory.
 	uint8_t* const interrupt_buffer; // Points to the buffer where pending
 	// interrupts are stored.
-	uint8_t* const data_bus;
 	uint8_t* const reset_flag;
 	uint8_t* const quit_flag;
-	uint16_t* const address_bus;
 	void* hw_struct;
 	// Registers!
 	uint16_t sp; // Stack pointer
@@ -144,15 +142,9 @@ struct system_resources
 	pthread_cond_t* interrupt_cond;
 	pthread_mutex_t* interrupt_lock;
 	pthread_mutex_t* reset_quit_lock;
-	int (*interrupt_hook)(const uint8_t*,
-			struct cpu_state*,
-			int (*op_func)(const uint8_t*, struct cpu_state*));
 	uint8_t* memory;	   // Points to an array containing the memory.
 	uint8_t* interrupt_buffer; // Points to the buffer where pending
-	uint8_t* data_bus;
-	uint16_t* address_bus;
 	void* hw_struct;
-	void* hw_lib;
 	uint8_t* reset_flag;
 	uint8_t* quit_flag;
 };

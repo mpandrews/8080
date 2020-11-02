@@ -16,9 +16,7 @@ TEST(HW_IN, Space_Invaders)
 	pthread_mutex_init(&keystate_lock, NULL);
 
 	struct rom_struct rstruct
-	{
-		.keystate_lock = &keystate_lock
-	};
+	{};
 	rstruct.p1_start     = 1;
 	rstruct.p2_start     = 1;
 	rstruct.p2_right     = 1;
@@ -27,8 +25,8 @@ TEST(HW_IN, Space_Invaders)
 	rstruct.shift_new    = 0b10101011;
 	rstruct.shift_offset = 3;
 
-	struct taito_struct tstruct = {};
-	tstruct.rom_struct	    = &rstruct;
+	struct taito_struct tstruct = {.rom_struct = &rstruct,
+			.keystate_lock		   = &keystate_lock};
 
 	unsigned char memory[MAX_MEMORY];
 	memset(memory, 0, MAX_MEMORY);
@@ -96,12 +94,20 @@ TEST(HW_OUT, Space_Invaders)
 	pthread_mutex_t sound_lock;
 	pthread_mutex_init(&sound_lock, NULL);
 
+	/*
+		struct rom_struct rstruct
+		{
+			.sound_lock = &sound_lock
+		};
+		struct taito_struct tstruct = {};
+		tstruct.rom_struct	    = &rstruct;
+	*/
 	struct rom_struct rstruct
+	{};
+	struct taito_struct tstruct
 	{
-		.sound_lock = &sound_lock
+		.rom_struct = &rstruct, .sound_lock = &sound_lock,
 	};
-	struct taito_struct tstruct = {};
-	tstruct.rom_struct	    = &rstruct;
 
 	unsigned char memory[MAX_MEMORY];
 	memset(memory, 0, MAX_MEMORY);

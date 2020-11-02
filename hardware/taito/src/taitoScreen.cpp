@@ -173,6 +173,5 @@ void TaitoScreen::videoRamToTaitoBuffer(sideOfScreen screenHalf)
 TaitoScreen::~TaitoScreen()
 {
 	delete[] this->displayBuffer;
-	SDL_DestroyWindow(this->window);
-	SDL_DestroyRenderer(this->renderer);
+	SDL_Quit();
 }

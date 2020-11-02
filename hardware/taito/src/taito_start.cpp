@@ -17,7 +17,7 @@ extern "C" int taito_start(struct taito_struct* tStruct)
 		screen.sendInterrupt(RST1);
 
 		screen.videoRamToTaitoBuffer(BOTTOM);
-		if (update_keystates(tStruct->rom_struct)) return 0;
+		if (update_keystates(tStruct)) return 0;
 		screen_timer();
 		screen.sendInterrupt(RST2);
 		screen.renderFrame();

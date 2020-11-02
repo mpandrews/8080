@@ -1,5 +1,6 @@
 #include "cpu.h"
 #include "cycle_timer.h"
+#include "hw_func_pointers.h"
 #include "opcode_array.h"
 #include "opcode_size.h"
 
@@ -24,8 +25,6 @@ static inline void print_registers(const struct cpu_state* cpu)
 			"\tHL:  0x%4.4x -> 0x%2.2x\n"
 			"\tPSW: 0x%4.4x\n"
 			"\tSP:  0x%4.4x -> 0x%2.2x\n"
-			"\tAddress Bus: 0x%4.4x -> 0x%2.2x\n"
-			"\tData Bus: 0x%2.2x\n"
 			"\tFlags: %s\n"
 			"\t       SZ-A-P-C\n",
 			cpu->pc,
@@ -39,9 +38,6 @@ static inline void print_registers(const struct cpu_state* cpu)
 			cpu->psw,
 			cpu->sp,
 			cpu->memory[cpu->sp],
-			*cpu->address_bus,
-			cpu->memory[*cpu->address_bus],
-			*cpu->data_bus,
 			flags);
 }
 
@@ -59,23 +55,7 @@ void* cpu_thread_routine(void* resources)
 			.reset_flag	  = res->reset_flag,
 			.quit_flag	  = res->quit_flag,
 			.interrupt_buffer = res->interrupt_buffer,
-			.address_bus	  = res->address_bus,
-			.data_bus	  = res->data_bus,
 			.hw_struct	  = res->hw_struct};
-
-	int (*interrupt_hook)(const uint8_t* opcode,
-			struct cpu_state* cpu,
-			int (*op_func)(const uint8_t*, struct cpu_state*)) =
-			dlsym(res->hw_lib, "hw_interrupt_hook");
-	if (!interrupt_hook)
-	{
-		fprintf(stderr,
-				"Error finding function 'hw_interrupt_hook' in "
-				"hardware"
-				" library:\n\t%s\n",
-				dlerror());
-		exit(1);
-	}
 
 	// We can remove this assignment if we want to force the user
 	// to hardware reset on CPU boot.
