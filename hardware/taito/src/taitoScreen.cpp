@@ -27,7 +27,11 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 			new Uint8[TAITO_SCREEN_WIDTH * TAITO_SCREEN_HEIGHT];
 
 	// Now we set up and configure SDL to render to a window
-	SDL_Init(SDL_INIT_VIDEO);
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0)
+	{
+		std::cout << "Could not initialize SDL. " << std::endl;
+		exit(1);
+	};
 	this->window = SDL_CreateWindow("Space Invaders", // window name
 			SDL_WINDOWPOS_CENTERED,		  // horizontal pos
 			SDL_WINDOWPOS_CENTERED,		  // vertical pos
@@ -39,6 +43,14 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 	{
 		std::cout << "Could not load SDL window. " << SDL_GetError()
 			  << std::endl;
+		exit(1);
+	}
+
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 1, 2048) != 0)
+	{
+		fprintf(stderr,
+				"Unable to initialize audio: %s\n",
+				Mix_GetError());
 		exit(1);
 	}
 
