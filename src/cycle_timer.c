@@ -67,9 +67,9 @@ int cycle_wait(int cycles, struct cpu_state* cpu)
 		// the elapsed cycle count should have taken.
 
 		target.tv_nsec += count * CYCLE_TIME;
-		if (target.tv_nsec > 999999999)
+		if (target.tv_nsec > 1000000000)
 		{
-			target.tv_nsec -= 999999999;
+			target.tv_nsec -= 1000000000;
 			++target.tv_sec;
 		}
 		count = 0;
