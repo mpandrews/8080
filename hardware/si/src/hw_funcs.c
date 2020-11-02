@@ -1,6 +1,7 @@
 #include "cpu.h"
 #include "opcode_array.h"
 #include "rom_struct.h"
+#include "taito_start.h"
 #include "taito_struct.h"
 
 #include <assert.h>
@@ -130,9 +131,21 @@ void* hw_init_struct(struct system_resources* res)
 	// struct.
 	struct rom_struct* rstruct = malloc(sizeof(struct rom_struct));
 	check_malloc(rstruct);
+	memset(rstruct, 0, sizeof(struct rom_struct));
 	rstruct->keystate_lock = malloc(sizeof(pthread_mutex_t));
 	check_malloc(rstruct->keystate_lock);
 	pthread_mutex_init(rstruct->keystate_lock, NULL);
+	rstruct->dip0 = 1;
+	rstruct->dip1 = 1;
+	rstruct->dip2 = 1;
+	rstruct->dip3 = 1;
+	rstruct->dip4 = 1;
+	rstruct->dip5 = 1;
+	rstruct->dip6 = 1;
+	rstruct->dip7 = 1;
+
+	rstruct->sound_lock = malloc(sizeof(pthread_mutex_t));
+	check_malloc(rstruct->sound_lock);
 	rstruct->sound_lock = malloc(sizeof(pthread_mutex_t));
 	check_malloc(rstruct->sound_lock);
 	pthread_mutex_init(rstruct->sound_lock, NULL);
@@ -158,10 +171,8 @@ void hw_destroy_struct(void* hw_struct)
 	destroy_taito_struct(tstruct);
 }
 
-int foo(struct taito_struct*);
-
 void* front_end(void* tstruct)
 {
-	foo((struct taito_struct*) tstruct);
+	taito_start((struct taito_struct*) tstruct);
 	return NULL;
 }
