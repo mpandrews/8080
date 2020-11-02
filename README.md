@@ -13,6 +13,22 @@
 - The Debug build target will add realtime disassembly and CPU state output on `stderr`.  
 - Run `make`.  Once a build tree is established for a build type, any changes to the actual source files will be picked up by make.
 - Run `make test` to run unit tests, if desired.
+### Play Space Invaders Game
+- In the `Release` subdirectory, run `make` and then `./8080 -r roms/invaders_cv --hw si` to play Space Invaders.
+- Keyboard control:
+    - `C` = Insert coin
+    - `S` = 1 Player start
+    - `Down` = 2 Player start
+    - `A` = Player 1 left
+    - `D` = Player 1 right
+    - `W` = Player 1 shoot
+    - `Left` = Player 2 left
+    - `Right` = Player 2 right
+    - `Up` = Player 2 shoot
+    - `R` = Reset game
+    - `Esc` = Quit game
+    - `T` = Tilt
+    - numbers 0-7 = dip switches
 ### Running the Emulator
 `make` will produce an executable called `8080`, and some shared library files which define external hardware sets.  (An 8080 not hooked into anything is of limited use!)
 `8080` has the following options:
