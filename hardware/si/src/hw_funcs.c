@@ -146,6 +146,9 @@ void* hw_init_struct(struct system_resources* res)
 
 	rstruct->sound_lock = malloc(sizeof(pthread_mutex_t));
 	check_malloc(rstruct->sound_lock);
+	rstruct->sound_lock = malloc(sizeof(pthread_mutex_t));
+	check_malloc(rstruct->sound_lock);
+	pthread_mutex_init(rstruct->sound_lock, NULL);
 	// Assign the pointers to the shared CPU struct resources.
 	rstruct->reset_quit_lock = res->reset_quit_lock;
 	rstruct->reset_flag	 = res->reset_flag;
