@@ -46,7 +46,7 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 		exit(1);
 	}
 
-	if (Mix_OpenAudio(11025, MIX_DEFAULT_FORMAT, 1, 4096) != 0)
+	if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 1, 512) != 0)
 	{
 		fprintf(stderr,
 				"Unable to initialize audio: %s\n",

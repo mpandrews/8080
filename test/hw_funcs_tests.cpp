@@ -144,7 +144,7 @@ TEST(HW_OUT, Space_Invaders)
 	cpu.a		  = 0b00000101;
 	rstruct.ufo_sound = 1;
 	opcodes[opcode[0]](opcode, &cpu);
-	EXPECT_EQ(rstruct.ufo_sound, 0);
+	EXPECT_EQ(rstruct.ufo_sound, 1);
 	EXPECT_EQ(rstruct.shot_sound, 0);
 	EXPECT_EQ(rstruct.player_die_sound, 1);
 	EXPECT_EQ(rstruct.invader_killed_sound, 0);

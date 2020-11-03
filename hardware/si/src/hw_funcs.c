@@ -76,7 +76,7 @@ int hw_out(const uint8_t* opcode, struct cpu_state* cpu)
 	case 2: rstruct->shift_offset = cpu->a & 0x07; break;
 	case 3:
 		pthread_mutex_lock(rstruct->sound_lock);
-		if (cpu->a & 1) { rstruct->ufo_sound = !rstruct->ufo_sound; }
+		rstruct->ufo_sound = cpu->a & 1;
 		if (cpu->a & (1 << 1)) { rstruct->shot_sound = 1; }
 		if (cpu->a & (1 << 2)) { rstruct->player_die_sound = 1; }
 		if (cpu->a & (1 << 3)) { rstruct->invader_killed_sound = 1; }
