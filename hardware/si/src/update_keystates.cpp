@@ -70,7 +70,9 @@ int update_keystates(void* rom_struct)
 		{
 			switch (e.key.keysym.scancode)
 			{
-			// Keystate toggles - cleared on keyup
+				// Keystate toggles - cleared on keyup
+			case SDL_SCANCODE_C: rStruct->coin = 0; break;
+			case SDL_SCANCODE_T: rStruct->tilt = 0; break;
 			case SDL_SCANCODE_S: rStruct->p1_start = 0; break;
 			case SDL_SCANCODE_DOWN: rStruct->p2_start = 0; break;
 			case SDL_SCANCODE_LEFT: rStruct->p2_left = 0; break;

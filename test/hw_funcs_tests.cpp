@@ -66,7 +66,6 @@ TEST(HW_IN, Space_Invaders)
 	EXPECT_EQ(opcodes[opcode[0]](opcode, &cpu), 10);
 	EXPECT_EQ(get_opcode_size(opcode[0]), 2);
 	EXPECT_EQ(cpu.a, 0b00001111);
-	EXPECT_EQ(rstruct.coin, 0); // check the coin has been cleared
 
 	// IN port 2
 	opcode[1] = 2;
