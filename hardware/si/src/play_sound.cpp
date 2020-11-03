@@ -1,7 +1,7 @@
 #include "rom_struct.h"
 #include "sound.h"
 
-#include <SDL_mixer.h>
+#include <SDL2/SDL_mixer.h>
 
 Mix_Chunk** load_sound()
 {

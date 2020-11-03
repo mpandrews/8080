@@ -1,7 +1,7 @@
 #ifndef HW_LIB_IMPORTS_H
 #define HW_LIB_IMPORTS_H
 
-#include <SDL_mixer.h>
+#include <SDL2/SDL_mixer.h>
 
 __attribute__((weak)) extern int update_keystates(void*);
 __attribute__((weak)) extern Mix_Chunk** load_sound();
