@@ -10,6 +10,8 @@ extern "C"
 extern "C" int taito_start(struct taito_struct* tStruct)
 {
 	TaitoScreen screen(tStruct);
+	Mix_Chunk** sound_effects = load_sound(tStruct->rom_struct);
+
 	for (;;)
 	{
 		screen.videoRamToTaitoBuffer(TOP);
@@ -18,6 +20,7 @@ extern "C" int taito_start(struct taito_struct* tStruct)
 
 		screen.videoRamToTaitoBuffer(BOTTOM);
 		if (update_keystates(tStruct->rom_struct)) return 0;
+		play_sound(sound_effects, tStruct->rom_struct);
 		screen_timer();
 		screen.sendInterrupt(RST2);
 		screen.renderFrame();
