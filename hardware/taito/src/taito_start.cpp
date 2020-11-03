@@ -10,7 +10,7 @@ extern "C"
 extern "C" int taito_start(struct taito_struct* tStruct)
 {
 	TaitoScreen screen(tStruct);
-	Mix_Chunk** sound_effects = load_sound(tStruct->rom_struct);
+	Mix_Chunk** sound_effects = load_sound();
 
 	for (;;)
 	{
