@@ -29,6 +29,7 @@
     - `Esc` = Quit game
     - `T` = Tilt
     - numbers 0-7 = dip switches
+    - number 8 = Sound on/off (default is sound on)
 ### Running the Emulator
 `make` will produce an executable called `8080`, and some shared library files which define external hardware sets.  (An 8080 not hooked into anything is of limited use!)
 `8080` has the following options:

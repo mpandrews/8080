@@ -62,6 +62,8 @@ void play_sound(void* sounds, void* rom_struct)
 	struct rom_struct* rStruct = (struct rom_struct*) rom_struct;
 	Mix_Chunk** sound_effects  = (Mix_Chunk**) sounds;
 
+	if (rStruct->sound_off) { return; }
+
 	if (rStruct->ufo_sound) { Mix_ResumeMusic(); }
 	else
 	{

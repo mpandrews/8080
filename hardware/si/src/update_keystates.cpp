@@ -65,6 +65,9 @@ int update_keystates(void* t_struct)
 			case SDL_SCANCODE_7:
 				rStruct->dip7 = !rStruct->dip7;
 				break;
+			case SDL_SCANCODE_8:
+				rStruct->sound_off = !rStruct->sound_off;
+				break;
 			default: break;
 			}
 		}

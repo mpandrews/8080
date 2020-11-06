@@ -24,7 +24,7 @@ struct rom_struct
 			invader_killed_sound : 1, fast_invader1_sound : 1,
 			fast_invader2_sound : 1, fast_invader3_sound : 1,
 			fast_invader4_sound : 1, shot_sound : 1,
-			ufo_hit_sound : 1;
+			ufo_hit_sound : 1, sound_off : 1;
 	uint8_t shift_old;
 	uint8_t shift_new;
 	uint8_t shift_offset;
