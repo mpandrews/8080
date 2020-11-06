@@ -1,32 +1,34 @@
 #include "rom_struct.h"
+#include "taito_struct.h"
 
 #include <SDL2/SDL.h>
 
-int update_keystates(void* rom_struct)
+int update_keystates(void* t_struct)
 {
-	struct rom_struct* rStruct = (struct rom_struct*) rom_struct;
+	struct taito_struct* tStruct = (struct taito_struct*) t_struct;
+	struct rom_struct* rStruct   = (struct rom_struct*) tStruct->rom_struct;
 	SDL_Event e;
 	int quit = 0;
 
 	// Make sure no other thread is mutating keystates or reset/quit
 	// flags at the same time.
-	pthread_mutex_lock(rStruct->keystate_lock);
-	pthread_mutex_lock(rStruct->reset_quit_lock);
+	pthread_mutex_lock(tStruct->keystate_lock);
+	pthread_mutex_lock(tStruct->reset_quit_lock);
 
 	while (SDL_PollEvent(&e))
 	{
 		if (e.type == SDL_QUIT)
 		{
-			*(rStruct->quit_flag) = 1;
+			*(tStruct->quit_flag) = 1;
 			quit		      = 1;
 		}
 		else if (e.type == SDL_KEYDOWN)
 		{
 			switch (e.key.keysym.scancode)
 			{
-			case SDL_SCANCODE_R: *(rStruct->reset_flag) = 1; break;
+			case SDL_SCANCODE_R: *(tStruct->reset_flag) = 1; break;
 			case SDL_SCANCODE_ESCAPE:
-				*(rStruct->quit_flag) = 1;
+				*(tStruct->quit_flag) = 1;
 				quit		      = 1;
 				break;
 			case SDL_SCANCODE_C: rStruct->coin = 1; break;
@@ -86,8 +88,8 @@ int update_keystates(void* rom_struct)
 		}
 	}
 
-	pthread_mutex_unlock(rStruct->reset_quit_lock);
-	pthread_mutex_unlock(rStruct->keystate_lock);
+	pthread_mutex_unlock(tStruct->reset_quit_lock);
+	pthread_mutex_unlock(tStruct->keystate_lock);
 
 	return quit; // return 1 if quit has been pressed
 }

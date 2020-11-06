@@ -62,8 +62,6 @@ void play_sound(void* sounds, void* rom_struct)
 	struct rom_struct* rStruct = (struct rom_struct*) rom_struct;
 	Mix_Chunk** sound_effects  = (Mix_Chunk**) sounds;
 
-	pthread_mutex_lock(rStruct->sound_lock);
-
 	if (rStruct->ufo_sound) { Mix_ResumeMusic(); }
 	else
 	{
@@ -110,6 +108,4 @@ void play_sound(void* sounds, void* rom_struct)
 		rStruct->ufo_hit_sound = 0;
 		Mix_PlayChannel(-1, sound_effects[7], 0);
 	}
-
-	pthread_mutex_unlock(rStruct->sound_lock);
 }
