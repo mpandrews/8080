@@ -37,9 +37,11 @@ TEST(MOV, RegisterToMem)
 {
 
 	unsigned char memory[MAX_MEMORY];
+	unsigned char rom_mask = 0;
 	struct cpu_state cpu
 	{
-		.memory = memory, .bc = 0x0001, .hl = 12345
+		.memory = memory, .rom_mask = &rom_mask, .bc = 0x0001,
+		.hl = 12345, .mask_shift = 16,
 	};
 
 	memset(memory, 0, MAX_MEMORY);
@@ -58,9 +60,10 @@ TEST(MOV, RegisterToMem)
 TEST(MVI, ToRegister)
 {
 	unsigned char memory[MAX_MEMORY];
+	unsigned char rom_mask = 0;
 	struct cpu_state cpu
 	{
-		.memory = memory
+		.memory = memory, .rom_mask = &rom_mask, .mask_shift = 16,
 	};
 	memset(memory, 0, MAX_MEMORY);
 
@@ -121,9 +124,10 @@ TEST(MVI, ToRegister)
 TEST(MVI, ToMem)
 {
 	unsigned char memory[MAX_MEMORY];
+	unsigned char rom_mask = 0;
 	struct cpu_state cpu
 	{
-		.memory = memory
+		.memory = memory, .rom_mask = &rom_mask, .mask_shift = 16,
 	};
 	memset(memory, 0, MAX_MEMORY);
 	cpu.hl		  = 12345;
@@ -155,10 +159,10 @@ TEST(STA, All)
 {
 	unsigned char memory[MAX_MEMORY];
 	memset(memory, 0, MAX_MEMORY);
-
+	unsigned char rom_mask = 0;
 	struct cpu_state cpu
 	{
-		.memory = memory
+		.memory = memory, .rom_mask = &rom_mask, .mask_shift = 16,
 	};
 
 	cpu.a		  = 0x12;
@@ -193,11 +197,12 @@ TEST(SHLD, All)
 
 	unsigned char memory[MAX_MEMORY];
 	memset(memory, 0, MAX_MEMORY);
+	unsigned char rom_mask = 0;
 	struct cpu_state cpu
 	{
-		.memory = memory, .hl = 0x1234
+		.memory = memory, .rom_mask = &rom_mask, .hl = 0x1234,
+		.mask_shift = 16,
 	};
-
 	uint8_t opcode[3] = {0x22, 0xaa, 0xbb};
 	EXPECT_EQ(get_opcode_size(opcode[0]), 3);
 	// SHLD
@@ -233,9 +238,11 @@ TEST(STAX, B_D)
 {
 
 	unsigned char memory[MAX_MEMORY];
+	unsigned char rom_mask = 0;
 	struct cpu_state cpu
 	{
-		.memory = memory, .bc = 0x1234, .de = 0x5678
+		.memory = memory, .rom_mask = &rom_mask, .bc = 0x1234,
+		.de = 0x5678, .mask_shift = 16,
 	};
 	memset(memory, 0, MAX_MEMORY);
 	cpu.a = 0xab;
