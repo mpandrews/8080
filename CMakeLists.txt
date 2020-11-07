@@ -37,6 +37,7 @@ add_library(SourceFiles
 		src/cpu_thread.c
 		src/logical_opcodes.c
 		src/other_opcodes.c
+		src/hw_func_pointers.c
 )
 
 target_compile_options(SourceFiles PRIVATE ${FlagSettings})

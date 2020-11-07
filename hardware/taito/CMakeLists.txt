@@ -2,6 +2,13 @@
 add_library(taito SHARED)
 
 find_package(SDL2 REQUIRED)
+find_library(SDL_MIXER_LIBRARY
+		NAMES SDL2_mixer
+		HINTS
+		ENV SDLMIXERDIR
+		ENV SDLDIR
+		PATH_SUFFIXES lib
+		)
 
 file(GLOB srcs
 	CONFIGURE_DEPENDS
@@ -23,5 +30,6 @@ target_compile_options(taito PRIVATE ${FlagSettings})
 
 target_link_libraries(taito 
 	SDL2
+	SDL2_mixer
 	${CMAKE_THREAD_LIBS_INIT}
 )
