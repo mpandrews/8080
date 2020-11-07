@@ -1,5 +1,6 @@
 #include "cpu.h"
 #include "opcode_array.h"
+#include "proms.h"
 #include "rom_struct.h"
 #include "taito_start.h"
 #include "taito_struct.h"
@@ -120,9 +121,9 @@ void* hw_init_struct(struct system_resources* res)
 	rstruct->dip7 = 1;
 
 	// Call the constructor for the taito library's struct.
-	struct taito_struct* tstruct = create_taito_struct(res, rstruct);
-	// Assign the pointers to the shared CPU struct resources.
-	// Assign our rom struct into the taito struct.
+	// Pass in proms and num_proms which are defined in si/src/proms.c
+	struct taito_struct* tstruct =
+			create_taito_struct(res, rstruct, proms, num_proms);
 
 	return tstruct;
 }
@@ -138,5 +139,6 @@ void hw_destroy_struct(void* hw_struct)
 void* front_end(void* tstruct)
 {
 	taito_start((struct taito_struct*) tstruct);
+
 	return NULL;
 }

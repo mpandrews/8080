@@ -18,9 +18,14 @@ struct taito_struct
 	pthread_mutex_t* const reset_quit_lock;
 	uint8_t* const reset_flag;
 	uint8_t* const quit_flag;
+	uint8_t const (*const proms)[896];
+	uint8_t const num_proms;
 };
 
-struct taito_struct* create_taito_struct();
+struct taito_struct* create_taito_struct(struct system_resources*,
+		void*,
+		uint8_t const (*)[896],
+		uint8_t const);
 
 void destroy_taito_struct(struct taito_struct*);
 
