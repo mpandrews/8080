@@ -4,8 +4,8 @@
 - Clone this repository
 - Install necessary packages:
     - Required: gcc-10, g++-10, cmake (version 3.10+), SDL2, gtest
-    - Ubuntu/Debian/Mint: `sudo apt-get install cmake libgtest-dev libsdl2-dev libsdl2-image-dev`
-    - Arch/Manjaro: `sudo pacman -Syyu cmake gtest sdl2 sdl2_image`
+    - Ubuntu/Debian/Mint: `sudo apt-get install cmake libgtest-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev`
+    - Arch/Manjaro: `sudo pacman -Syyu cmake gtest sdl2 sdl2_image sdl2_mixer`
 - Within the project directory, create a build subdirectory. (i.e. Debug or Release) 
 - Navigate into your subdirectory, and run either of the following:
     - `cmake -DCMAKE_BUILD_TYPE=Release ..`
@@ -29,6 +29,7 @@
     - `Esc` = Quit game
     - `T` = Tilt
     - numbers 0-7 = dip switches
+    - number 8 = Sound on/off (default is sound on)
 ### Running the Emulator
 `make` will produce an executable called `8080`, and some shared library files which define external hardware sets.  (An 8080 not hooked into anything is of limited use!)
 `8080` has the following options:

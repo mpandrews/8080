@@ -65,6 +65,9 @@ int update_keystates(void* t_struct)
 			case SDL_SCANCODE_7:
 				rStruct->dip7 = !rStruct->dip7;
 				break;
+			case SDL_SCANCODE_8:
+				rStruct->sound_off = !rStruct->sound_off;
+				break;
 			default: break;
 			}
 		}
@@ -72,7 +75,9 @@ int update_keystates(void* t_struct)
 		{
 			switch (e.key.keysym.scancode)
 			{
-			// Keystate toggles - cleared on keyup
+				// Keystate toggles - cleared on keyup
+			case SDL_SCANCODE_C: rStruct->coin = 0; break;
+			case SDL_SCANCODE_T: rStruct->tilt = 0; break;
 			case SDL_SCANCODE_S: rStruct->p1_start = 0; break;
 			case SDL_SCANCODE_DOWN: rStruct->p2_start = 0; break;
 			case SDL_SCANCODE_LEFT: rStruct->p2_left = 0; break;

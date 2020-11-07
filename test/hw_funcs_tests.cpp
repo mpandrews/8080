@@ -64,7 +64,6 @@ TEST(HW_IN, Space_Invaders)
 	EXPECT_EQ(opcodes[opcode[0]](opcode, &cpu), 10);
 	EXPECT_EQ(get_opcode_size(opcode[0]), 2);
 	EXPECT_EQ(cpu.a, 0b00001111);
-	EXPECT_EQ(rstruct.coin, 0); // check the coin has been cleared
 
 	// IN port 2
 	opcode[1] = 2;
@@ -151,7 +150,7 @@ TEST(HW_OUT, Space_Invaders)
 	cpu.a		  = 0b00000101;
 	rstruct.ufo_sound = 1;
 	opcodes[opcode[0]](opcode, &cpu);
-	EXPECT_EQ(rstruct.ufo_sound, 0);
+	EXPECT_EQ(rstruct.ufo_sound, 1);
 	EXPECT_EQ(rstruct.shot_sound, 0);
 	EXPECT_EQ(rstruct.player_die_sound, 1);
 	EXPECT_EQ(rstruct.invader_killed_sound, 0);
