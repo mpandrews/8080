@@ -71,35 +71,19 @@ void play_sound(void* sounds, void* rom_struct)
 	}
 
 	if (rStruct->fast_invader1_sound && !Mix_Playing(0))
-	{
-		Mix_PlayChannel(0, sound_effects[0], 0);
-	}
+	{ Mix_PlayChannel(0, sound_effects[0], 0); }
 	if (rStruct->fast_invader2_sound && !Mix_Playing(1))
-	{
-		Mix_PlayChannel(1, sound_effects[1], 0);
-	}
+	{ Mix_PlayChannel(1, sound_effects[1], 0); }
 	if (rStruct->fast_invader3_sound && !Mix_Playing(2))
-	{
-		Mix_PlayChannel(2, sound_effects[2], 0);
-	}
+	{ Mix_PlayChannel(2, sound_effects[2], 0); }
 	if (rStruct->fast_invader4_sound && !Mix_Playing(3))
-	{
-		Mix_PlayChannel(3, sound_effects[3], 0);
-	}
+	{ Mix_PlayChannel(3, sound_effects[3], 0); }
 	if (rStruct->invader_killed_sound && !Mix_Playing(4))
-	{
-		Mix_PlayChannel(4, sound_effects[4], 0);
-	}
+	{ Mix_PlayChannel(4, sound_effects[4], 0); }
 	if (rStruct->player_die_sound && !Mix_Playing(5))
-	{
-		Mix_PlayChannel(5, sound_effects[5], 0);
-	}
+	{ Mix_PlayChannel(5, sound_effects[5], 0); }
 	if (rStruct->shot_sound && !Mix_Playing(6))
-	{
-		Mix_PlayChannel(6, sound_effects[6], 0);
-	}
+	{ Mix_PlayChannel(6, sound_effects[6], 0); }
 	if (rStruct->ufo_hit_sound && !Mix_Playing(7))
-	{
-		Mix_PlayChannel(7, sound_effects[7], 0);
-	}
+	{ Mix_PlayChannel(7, sound_effects[7], 0); }
 }
