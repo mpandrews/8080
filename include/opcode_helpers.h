@@ -305,4 +305,24 @@ static inline uint16_t _add(
 	return result;
 }
 
+static inline void write8(struct cpu_state* cpu, uint16_t offset, uint8_t value)
+{
+	if (!cpu->rom_mask[offset >> cpu->mask_shift])
+		cpu->memory[offset] = value;
+#ifdef VERBOSE
+	else
+		fprintf(stderr,
+				"Attempted write to read-only program memory "
+				"at 0x%4.4x!\n",
+				offset);
+#endif
+}
+
+static inline void write16(
+		struct cpu_state* cpu, uint16_t offset, uint16_t value)
+{
+	write8(cpu, offset, (uint8_t) value);
+	write8(cpu, offset + 1, *(((uint8_t*) &value) + 1));
+}
+
 #endif

@@ -45,7 +45,7 @@ int push(const uint8_t* opcode, struct cpu_state* cpu)
 	}
 	cpu->sp -= 2;
 
-	*((uint16_t*) (cpu->memory + cpu->sp)) = value;
+	write16(cpu, cpu->sp, value);
 
 	return 11;
 }
@@ -78,8 +78,8 @@ int xthl(const uint8_t* opcode, struct cpu_state* cpu)
 
 	// swap the contents of hl and memory[sp]
 	uint16_t temp = *((uint16_t*) &cpu->memory[cpu->sp]);
-	*((uint16_t*) &cpu->memory[cpu->sp]) = cpu->hl;
-	cpu->hl				     = temp;
+	write16(cpu, cpu->sp, cpu->hl);
+	cpu->hl = temp;
 
 	return 18;
 }

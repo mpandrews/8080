@@ -64,7 +64,7 @@ int call(const uint8_t* opcode, struct cpu_state* cpu)
 	// move the stack pointer
 	// push the next instruction onto the stack.
 	cpu->sp -= 2;
-	*((uint16_t*) &cpu->memory[cpu->sp]) = cpu->pc;
+	write16(cpu, cpu->sp, cpu->pc);
 
 	// set the program counter to the argument supplied to by call
 	cpu->pc = IMM16(opcode);
@@ -93,7 +93,7 @@ int ccond(const uint8_t* opcode, struct cpu_state* cpu)
 	if (conditionMet)
 	{
 		cpu->sp -= 2;
-		*((uint16_t*) &cpu->memory[cpu->sp]) = cpu->pc;
+		write16(cpu, cpu->sp, cpu->pc);
 		// put CALL's argument which is at cpu->pc + 1 in memory
 		// into the program counter
 		cpu->pc = IMM16(opcode);
@@ -163,7 +163,7 @@ int rst(const uint8_t* opcode, struct cpu_state* cpu)
 
 	// Push PC onto the stack.
 	cpu->sp -= 2;
-	*((uint16_t*) (cpu->memory + cpu->sp)) = cpu->pc;
+	write16(cpu, cpu->sp, cpu->pc);
 	// RST jumps to the address signified in bits 3, 4, and 5 of the opcode,
 	// multiplied by eight.  As it happens, bit 3 is already the 8s place,
 	// so we can just filter out all the other bits and assign that
