@@ -1,12 +1,34 @@
 # 8080 Emulator and Space Invaders
 
+### Introduction
+The Intel-8080 is an 8-bit microprocessor that Intel began producing in 1974. It could support clock rates up to 2 MHz. It has 8 main 8-bit registers, including an accumulator and a flags register. It also contains a 16-bit stack pointer and a 16-bit program counter. Furthermore, each pair of main registers (except the accumulator/flags registers) can be read/written as three 16-bit registers. It interfaces with the outside world through 40 pins. Included in these pins are 8 bidirectional data pins, 16 output address pins, two clock pins, an interrupt pin, a reset pin, and various other pins for power supply and indicating/controlling the processor state.
+
+Space Invaders is a 1978 arcade game by Taido. The game’s goal is to defeat five rows of eleven aliens that move horizontally back and force across the screen as they advance toward the bottom of the screen. 
+
+Space Invaders is a processor-based system consisting of an Intel 8080 CPU running at roughly 2 MHz, 8K ROM, 8K of RAM, a 2-byte shift register, and specialized audio and display hardware. The goal of this project is to create an Intel 8080 emulator in C/C++ that can execute a Space Invaders ROM file and play the game. This project will heavily draw from the knowledge gained from CS 271, Computer Architecture and Assembly Language, as well some others like CS 344, Operating Systems, to understand how the Intel 8080 operates and emulate its behavior using C/C++.
+
 ### Project Quickstart
 - Clone this repository
-- Install necessary packages:
-    - Required: gcc-10, g++-10, cmake (version 3.10+), SDL2, gtest
-    - Ubuntu/Debian/Mint: `sudo apt-get install cmake libgtest-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev`
-    - Arch/Manjaro: `sudo pacman -Syyu cmake gtest sdl2 sdl2_image sdl2_mixer`
+- Dependencies:
+    - SDL2 development libraries
+        - Core SDL2 libs
+        - SDL2 image libs
+        - SDL2 mixer libs
+    - Google Test development libraries for C++.
+- Required Build Tools:
+    - CMake version 3.10 or higher.
+    - GCC/G++ version 10.  (8 works, but has not been thoroughly tested.  Clang/LLVM has not been tested.)
+- System Requirements:
+    - Linux (Will not compile at all on Mac; Mac support is something we hope to implement, but only one of us has access to a Mac.)
+    - Little-endian architecture.  This is unlikely to come up, but the emulator relies heavily on type-punning; it simply will not work on a big-endian system.
+    - A working X server is required to play Space Invaders.  The hardware test ROMs are purely console, however, and do not require X.  X is not supported out of the box on WSL/WSL2 or in docker containers, so Space Invaders (or any other graphical program!) will not work in those environments without considerable setup.
+- Installation instructions for the library dependencies:
+    - Distros using the apt package manager (e.g., Debian, Ubuntu, Mint:)
+    - `$ sudo apt-get install cmake libgtest-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev`
+- Distros using the pacman package manager (i.e. Arch, Manjaro:)
+    - `$ sudo pacman -Syyu cmake gtest sdl2 sdl2_image sdl2_mixer`
 - Within the project directory, create a build subdirectory. (i.e. Debug or Release) 
+    - e.g. `mkdir release` or `mkdir debug`
 - Navigate into your subdirectory, and run either of the following:
     - `cmake -DCMAKE_BUILD_TYPE=Release ..`
     - `cmake -DCMAKE_BUILD_TYPE=Debug ..`
@@ -14,7 +36,7 @@
 - Run `make`.  Once a build tree is established for a build type, any changes to the actual source files will be picked up by make.
 - Run `make test` to run unit tests, if desired.
 ### Play Space Invaders Game
-- In the `Release` subdirectory, run `make` and then `./8080 -r roms/invaders_cv --hw si` to play Space Invaders.
+- In the `release` subdirectory, run `make` and then `./8080 -r roms/invaders_cv --hw si` to play Space Invaders.
 - Keyboard control:
     - `C` = Insert coin
     - `S` = 1 Player start
