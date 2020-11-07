@@ -1,6 +1,7 @@
 extern "C"
 {
 #include "taito_start.h"
+
 #include "screen_timer.h"
 }
 

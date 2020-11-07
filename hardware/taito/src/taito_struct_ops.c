@@ -17,8 +17,7 @@ static inline pthread_mutex_t* create_mutex()
 	return new_mutex;
 }
 
-struct taito_struct* create_taito_struct(
-		struct system_resources* res,
+struct taito_struct* create_taito_struct(struct system_resources* res,
 		void* rstruct,
 		uint8_t const (*proms)[896],
 		uint8_t const num_proms)
@@ -51,8 +50,8 @@ struct taito_struct* create_taito_struct(
 			.reset_quit_lock  = reset_quit_lock,
 			.quit_flag	  = res->quit_flag,
 			.reset_flag	  = res->reset_flag,
-			.proms = proms,
-			.num_proms = num_proms,
+			.proms		  = proms,
+			.num_proms	  = num_proms,
 	};
 	memcpy(new_struct, &temp, sizeof(struct taito_struct));
 	return new_struct;

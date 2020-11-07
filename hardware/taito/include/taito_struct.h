@@ -22,12 +22,10 @@ struct taito_struct
 	uint8_t const num_proms;
 };
 
-struct taito_struct* create_taito_struct(
-		struct system_resources*,
+struct taito_struct* create_taito_struct(struct system_resources*,
 		void*,
-		uint8_t const(*)[896],
-		uint8_t const
-		);
+		uint8_t const (*)[896],
+		uint8_t const);
 
 void destroy_taito_struct(struct taito_struct*);
 

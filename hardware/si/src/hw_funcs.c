@@ -1,7 +1,7 @@
 #include "cpu.h"
 #include "opcode_array.h"
-#include "rom_struct.h"
 #include "proms.h"
+#include "rom_struct.h"
 #include "taito_start.h"
 #include "taito_struct.h"
 
@@ -106,17 +106,6 @@ int hw_out(const uint8_t* opcode, struct cpu_state* cpu)
 
 void* hw_init_struct(struct system_resources* res)
 {
-//<<<<<<< HEAD
-//	// Call the constructor for the taito library's struct.
-//	struct taito_struct* tstruct = create_taito_struct();
-//	check_malloc(tstruct);
-//	tstruct->interrupt_buffer = res->interrupt_buffer;
-//	tstruct->interrupt_lock	  = res->interrupt_lock;
-//	tstruct->interrupt_cond	  = res->interrupt_cond;
-//	tstruct->proms = proms;
-//	tstruct->num_proms = num_proms;
-//=======
-//>>>>>>> 72be6178c2c0767c897d967ae9fdfb9064c06750
 	// Allocate memory for the ROM struct, which lives inside the taito
 	// struct.
 	struct rom_struct* rstruct = malloc(sizeof(struct rom_struct));
@@ -131,16 +120,10 @@ void* hw_init_struct(struct system_resources* res)
 	rstruct->dip6 = 1;
 	rstruct->dip7 = 1;
 
-//<<<<<<< HEAD
-//	rstruct->sound_lock = malloc(sizeof(pthread_mutex_t));
-//	check_malloc(rstruct->sound_lock);
-//	pthread_mutex_init(rstruct->sound_lock, NULL);
-//=======
 	// Call the constructor for the taito library's struct.
-	struct taito_struct* tstruct = create_taito_struct(res, rstruct, proms, num_proms);
-//>>>>>>> 72be6178c2c0767c897d967ae9fdfb9064c06750
-	// Assign the pointers to the shared CPU struct resources.
-	// Assign our rom struct into the taito struct.
+	// Pass in proms and num_proms which are defined in si/src/proms.c
+	struct taito_struct* tstruct =
+			create_taito_struct(res, rstruct, proms, num_proms);
 
 	return tstruct;
 }
