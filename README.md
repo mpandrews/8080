@@ -1,5 +1,5 @@
 # 8080 Emulator and Space Invaders
-
+![](space_invaders.gif)
 ## Table of Contents
 1. [Introduction](#Introduction) 
     - [Dependencies](#Dependencies)
