@@ -70,44 +70,36 @@ void play_sound(void* sounds, void* rom_struct)
 		Mix_PauseMusic();
 	}
 
-	if (rStruct->fast_invader1_sound)
+	if (rStruct->fast_invader1_sound && !Mix_Playing(0))
 	{
-		rStruct->fast_invader1_sound = 0;
-		Mix_PlayChannel(-1, sound_effects[0], 0);
+		Mix_PlayChannel(0, sound_effects[0], 0);
 	}
-	if (rStruct->fast_invader2_sound)
+	if (rStruct->fast_invader2_sound && !Mix_Playing(1))
 	{
-		rStruct->fast_invader2_sound = 0;
-		Mix_PlayChannel(-1, sound_effects[1], 0);
+		Mix_PlayChannel(1, sound_effects[1], 0);
 	}
-	if (rStruct->fast_invader3_sound)
+	if (rStruct->fast_invader3_sound && !Mix_Playing(2))
 	{
-		rStruct->fast_invader3_sound = 0;
-		Mix_PlayChannel(-1, sound_effects[2], 0);
+		Mix_PlayChannel(2, sound_effects[2], 0);
 	}
-	if (rStruct->fast_invader4_sound)
+	if (rStruct->fast_invader4_sound && !Mix_Playing(3))
 	{
-		rStruct->fast_invader4_sound = 0;
-		Mix_PlayChannel(-1, sound_effects[3], 0);
+		Mix_PlayChannel(3, sound_effects[3], 0);
 	}
-	if (rStruct->invader_killed_sound)
+	if (rStruct->invader_killed_sound && !Mix_Playing(4))
 	{
-		rStruct->invader_killed_sound = 0;
-		Mix_PlayChannel(-1, sound_effects[4], 0);
+		Mix_PlayChannel(4, sound_effects[4], 0);
 	}
-	if (rStruct->player_die_sound)
+	if (rStruct->player_die_sound && !Mix_Playing(5))
 	{
-		rStruct->player_die_sound = 0;
-		Mix_PlayChannel(-1, sound_effects[5], 0);
+		Mix_PlayChannel(5, sound_effects[5], 0);
 	}
-	if (rStruct->shot_sound)
+	if (rStruct->shot_sound && !Mix_Playing(6))
 	{
-		rStruct->shot_sound = 0;
-		Mix_PlayChannel(-1, sound_effects[6], 0);
+		Mix_PlayChannel(6, sound_effects[6], 0);
 	}
-	if (rStruct->ufo_hit_sound)
+	if (rStruct->ufo_hit_sound && !Mix_Playing(7))
 	{
-		rStruct->ufo_hit_sound = 0;
-		Mix_PlayChannel(-1, sound_effects[7], 0);
+		Mix_PlayChannel(7, sound_effects[7], 0);
 	}
 }

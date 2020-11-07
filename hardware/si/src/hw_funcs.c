@@ -77,9 +77,9 @@ int hw_out(const uint8_t* opcode, struct cpu_state* cpu)
 	case 3:
 		pthread_mutex_lock(tstruct->sound_lock);
 		rstruct->ufo_sound = cpu->a & 1;
-		if (cpu->a & (1 << 1)) { rstruct->shot_sound = 1; }
-		if (cpu->a & (1 << 2)) { rstruct->player_die_sound = 1; }
-		if (cpu->a & (1 << 3)) { rstruct->invader_killed_sound = 1; }
+		rstruct->shot_sound = !!(cpu->a & (1 << 1));
+		rstruct->player_die_sound = !!(cpu->a & (1 << 2));
+		rstruct->invader_killed_sound = !!(cpu->a & (1 << 3));
 		pthread_mutex_unlock(tstruct->sound_lock);
 		break;
 	case 4:
@@ -88,11 +88,11 @@ int hw_out(const uint8_t* opcode, struct cpu_state* cpu)
 		break;
 	case 5:
 		pthread_mutex_lock(tstruct->sound_lock);
-		if (cpu->a & 1) { rstruct->fast_invader1_sound = 1; }
-		if (cpu->a & (1 << 1)) { rstruct->fast_invader2_sound = 1; }
-		if (cpu->a & (1 << 2)) { rstruct->fast_invader3_sound = 1; }
-		if (cpu->a & (1 << 3)) { rstruct->fast_invader4_sound = 1; }
-		if (cpu->a & (1 << 4)) { rstruct->ufo_hit_sound = 1; }
+		rstruct->fast_invader1_sound = cpu->a & 1;
+		rstruct->fast_invader2_sound = !!(cpu->a & (1 << 1));
+		rstruct->fast_invader3_sound = !!(cpu->a & (1 << 2));
+		rstruct->fast_invader4_sound = !!(cpu->a & (1 << 3));
+		rstruct->ufo_hit_sound = !!(cpu->a & (1 << 4));
 		pthread_mutex_unlock(tstruct->sound_lock);
 		if (cpu->a & (1 << 5))
 		{

@@ -53,6 +53,8 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 				Mix_GetError());
 		exit(1);
 	}
+	Mix_AllocateChannels(9);
+	Mix_ReserveChannels(8);
 
 	// An SDL renderer is associated with a window. It is the object that
 	// refreshes the window or sections of the window
