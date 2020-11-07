@@ -17,6 +17,8 @@ struct taito_struct* create_taito_struct()
 	new_struct->vbuffer_cond = malloc(sizeof(pthread_cond_t));
 	pthread_cond_init(new_struct->vbuffer_cond, NULL);
 	new_struct->vbuffer = malloc(VBUFFER_SIZE);
+	//new_struct->proms = NULL;
+	//new_struct->num_proms = 0;
 	return new_struct;
 }
 

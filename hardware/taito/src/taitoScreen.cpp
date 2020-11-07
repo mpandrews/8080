@@ -4,9 +4,7 @@
 
 #include <iostream>
 
-TaitoScreen::TaitoScreen(struct taito_struct* tStruct,
-		Uint8 colorMaskProms[][896],
-		int numColorMaskProms)
+TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 {
 	// set members from taito_struct
 	this->interruptLock    = tStruct->interrupt_lock;
@@ -78,7 +76,7 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct,
 		exit(1);
 	}
 
-	this->numColorMasks = numColorMaskProms;
+	this->numColorMasks = tStruct->num_proms;
 	if (this->numColorMasks > 0)
 	{
 		this->colorMasks    = new SDL_Surface*[this->numColorMasks];
@@ -88,7 +86,7 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct,
 			// translate the color mask into a pixel byte
 			// array
 			Uint8* maskBytes =
-					getColorMaskFromProm(colorMaskProms[i]);
+					getColorMaskFromProm(tStruct->proms[i]);
 
 			this->colorMasks[i] =
 					SDL_CreateRGBSurfaceWithFormatFrom(
@@ -107,7 +105,7 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct,
 	}
 }
 
-Uint8* TaitoScreen::getColorMaskFromProm(Uint8* prom)
+Uint8* TaitoScreen::getColorMaskFromProm(const unsigned char* const prom)
 {
 	Uint8* mask = new Uint8[(TAITO_SCREEN_WIDTH / 8)
 				* (TAITO_SCREEN_HEIGHT / 8)];
@@ -326,14 +324,14 @@ void TaitoScreen::applyBlur()
 		// pixels. so case 1 == one adjacent transparent pixel
 		switch (8 - adjacentBlackPixels)
 		{
-		case 1: return 0x0e;
-		case 2: return 0x0d;
-		case 3: return 0x0d;
-		case 4: return 0x0c;
-		case 5: return 0x0c;
-		case 6: return 0x0b;
-		case 7: return 0x09;
-		case 8: return 0x07;
+		case 1: return 0x0d;
+		case 2: return 0x0c;
+		case 3: return 0x0c;
+		case 4: return 0x0b;
+		case 5: return 0x0b;
+		case 6: return 0x0a;
+		case 7: return 0x08;
+		case 8: return 0x06;
 		default: return BLACK_PIXEL;
 		};
 	};

@@ -13,6 +13,8 @@ struct taito_struct
 	uint8_t* interrupt_buffer;
 	pthread_mutex_t* interrupt_lock;
 	pthread_cond_t* interrupt_cond;
+	uint8_t const (* proms)[896];
+	uint8_t num_proms;
 };
 
 struct taito_struct* create_taito_struct();

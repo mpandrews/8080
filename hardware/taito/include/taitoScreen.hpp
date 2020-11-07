@@ -19,7 +19,7 @@ extern "C"
 #define TAITO_SCREEN_WIDTH  256
 #define TAITO_SCREEN_HEIGHT 224
 #define WINDOW_SCALE_FACTOR 3
-#define TRANSPARENT_PIXEL   0x0000
+#define TRANSPARENT_PIXEL   0x0004
 #define BLACK_PIXEL	    0x000f
 
 // some helper function defines for the class
@@ -74,9 +74,7 @@ class TaitoScreen
 
       public:
 	// constructor destructor
-	TaitoScreen(struct taito_struct* tStruct,
-			Uint8 colorMaskProms[][896],
-			int numColorMaskProms);
+	TaitoScreen(struct taito_struct* tStruct);
 	~TaitoScreen();
 
 	// getters setters
@@ -91,7 +89,7 @@ class TaitoScreen
 
 	// other
 	void sendInterrupt(Uint8 interruptCode);
-	Uint8* getColorMaskFromProm(Uint8*);
+	Uint8* getColorMaskFromProm(const unsigned char* const);
 };
 
 #endif

@@ -1,7 +1,7 @@
 #include "cpu.h"
 #include "opcode_array.h"
 #include "rom_struct.h"
-#include "si_proms.h"
+#include "proms.h"
 #include "taito_start.h"
 #include "taito_struct.h"
 
@@ -128,6 +128,8 @@ void* hw_init_struct(struct system_resources* res)
 	tstruct->interrupt_buffer = res->interrupt_buffer;
 	tstruct->interrupt_lock	  = res->interrupt_lock;
 	tstruct->interrupt_cond	  = res->interrupt_cond;
+	tstruct->proms = proms;
+	tstruct->num_proms = num_proms;
 	// Allocate memory for the ROM struct, which lives inside the taito
 	// struct.
 	struct rom_struct* rstruct = malloc(sizeof(struct rom_struct));
@@ -173,7 +175,7 @@ void hw_destroy_struct(void* hw_struct)
 void* front_end(void* tstruct)
 {
 	// proms defined in si_proms.h
-	taito_start((struct taito_struct*) tstruct, proms, 2);
+	taito_start((struct taito_struct*) tstruct);
 
 	return NULL;
 }

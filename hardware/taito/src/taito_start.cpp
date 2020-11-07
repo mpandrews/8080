@@ -1,16 +1,15 @@
 extern "C"
 {
 #include "taito_start.h"
-
 #include "screen_timer.h"
 }
+
 #include "hw_lib_imports.h"
 #include "taitoScreen.hpp"
 
-extern "C" int
-taito_start(struct taito_struct* tStruct, uint8_t proms[][896], int num_proms)
+extern "C" int taito_start(struct taito_struct* tStruct)
 {
-	TaitoScreen screen(tStruct, proms, num_proms);
+	TaitoScreen screen(tStruct);
 	for (;;)
 	{
 		screen.videoRamToTaitoBuffer(TOP);
