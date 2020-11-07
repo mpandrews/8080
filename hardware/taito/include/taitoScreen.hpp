@@ -20,7 +20,7 @@ extern "C"
 #define TAITO_SCREEN_WIDTH  256
 #define TAITO_SCREEN_HEIGHT 224
 #define WINDOW_SCALE_FACTOR 3
-#define TRANSPARENT_PIXEL   0x0004
+#define TRANSPARENT_PIXEL   0x0003
 #define BLACK_PIXEL	    0x000f
 
 // some helper function defines for the class

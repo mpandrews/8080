@@ -339,13 +339,13 @@ void TaitoScreen::applyBlur()
 		switch (8 - adjacentBlackPixels)
 		{
 		case 1: return 0x0d;
-		case 2: return 0x0c;
+		case 2: return 0x0d;
 		case 3: return 0x0c;
-		case 4: return 0x0b;
+		case 4: return 0x0c;
 		case 5: return 0x0b;
-		case 6: return 0x0a;
-		case 7: return 0x08;
-		case 8: return 0x06;
+		case 6: return 0x0b;
+		case 7: return 0x09;
+		case 8: return 0x05;
 		default: return BLACK_PIXEL;
 		};
 	};
