@@ -138,7 +138,6 @@ void hw_destroy_struct(void* hw_struct)
 
 void* front_end(void* tstruct)
 {
-	// proms defined in si_proms.h
 	taito_start((struct taito_struct*) tstruct);
 
 	return NULL;
