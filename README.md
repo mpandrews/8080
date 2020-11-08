@@ -53,6 +53,10 @@ Space Invaders is a processor-based system consisting of an Intel 8080 CPU runni
 - Run `make test` to run unit tests, if desired.
 ### Play Space Invaders Game
 - In the `release` subdirectory, run `make` and then `./8080 -r roms/invaders_cv --hw si` to play Space Invaders.
+- You can optionally play other games using the same `si` hardware lib, such as Balloon Bomber, Lunar Rescue, and Ozma. They use the same keyboard controls as SI.
+    - `./8080 -r roms/balloon --hw si`
+    - `./8080 -r roms/lunar_rescue --hw si`
+    - `./8080 -r roms/ozma --hw si`
 - Keyboard control:
     - `C` = Insert coin
     - `S` = 1 Player start
