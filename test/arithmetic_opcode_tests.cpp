@@ -426,9 +426,10 @@ TEST(INR, All)
 {
 	unsigned char memory[MAX_MEMORY];
 	memset(memory, 0, MAX_MEMORY);
+	unsigned char rom_mask = 0;
 	struct cpu_state cpu
 	{
-		.memory = memory
+		.memory = memory, .rom_mask = &rom_mask, .mask_shift = 16,
 	};
 	cpu.hl	= 0x8001;
 	cpu.psw = 0xd5;
@@ -481,9 +482,10 @@ TEST(DCR, All)
 {
 	unsigned char memory[MAX_MEMORY];
 	memset(memory, 0, MAX_MEMORY);
+	unsigned char rom_mask = 0;
 	struct cpu_state cpu
 	{
-		.memory = memory
+		.memory = memory, .rom_mask = &rom_mask, .mask_shift = 16,
 	};
 	cpu.hl	= 0x8001;
 	cpu.psw = 0xd5;
