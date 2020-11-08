@@ -5,17 +5,14 @@
 #include <iostream>
 
 TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
+    : tStruct(tStruct), interruptLock(tStruct->interrupt_lock),
+      interruptCond(tStruct->interrupt_cond),
+      interruptBuffer(tStruct->interrupt_buffer),
+      taitoVideoBuffer(tStruct->vbuffer), vidBufferLock(tStruct->vbuffer_lock),
+      vidBufferCond(tStruct->vbuffer_cond),
+      keystateLock(tStruct->keystate_lock),
+      resetQuitLock(tStruct->reset_quit_lock), numColorMasks(tStruct->num_proms)
 {
-	// set members from taito_struct
-	this->interruptLock    = tStruct->interrupt_lock;
-	this->interruptCond    = tStruct->interrupt_cond;
-	this->interruptBuffer  = tStruct->interrupt_buffer;
-	this->vidBufferCond    = tStruct->vbuffer_cond;
-	this->vidBufferLock    = tStruct->vbuffer_lock;
-	this->taitoVideoBuffer = tStruct->vbuffer;
-	this->keystateLock     = tStruct->keystate_lock;
-	this->resetQuitLock    = tStruct->reset_quit_lock;
-	this->tStruct	       = tStruct;
 	pthread_mutex_lock(this->vidBufferLock);
 
 	/* this displayBuffer will contain a translation of the space invader's
@@ -93,7 +90,6 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 		exit(1);
 	}
 
-	this->numColorMasks = tStruct->num_proms;
 	if (this->numColorMasks > 0)
 	{
 		this->colorMasks    = new SDL_Surface*[this->numColorMasks];
