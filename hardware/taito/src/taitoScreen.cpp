@@ -13,6 +13,9 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 	this->vidBufferCond    = tStruct->vbuffer_cond;
 	this->vidBufferLock    = tStruct->vbuffer_lock;
 	this->taitoVideoBuffer = tStruct->vbuffer;
+	this->keystateLock     = tStruct->keystate_lock;
+	this->resetQuitLock    = tStruct->reset_quit_lock;
+	this->tStruct	       = tStruct;
 	pthread_mutex_lock(this->vidBufferLock);
 
 	/* this displayBuffer will contain a translation of the space invader's
@@ -473,6 +476,39 @@ void TaitoScreen::videoRamToTaitoBuffer(sideOfScreen screenHalf)
 			}
 		}
 	}
+}
+
+int TaitoScreen::handleInput()
+{
+	// Take control of the keystate and reset/quit mutexes to avoid
+	// both threads attempting to read/write at the same time
+	pthread_mutex_lock(this->keystateLock);
+	pthread_mutex_lock(this->resetQuitLock);
+
+	int quit = 0;
+	SDL_Event event;
+	/* poll all SDL events until there are no more in the buffer. For
+	 * each event, the taitoSCreen will determine whether it cares about
+	 * the input, and will take whichever action is appropriate if it does.
+	 * If it does not care about a given event, it will be passed on to the
+	 * hardware library's update_keystates function to be dealt with there.
+	 */
+	while (SDL_PollEvent(&event))
+	{
+		if (event.type == SDL_QUIT)
+		{
+			*(this->tStruct->quit_flag) = 1;
+			quit			    = 1;
+		}
+		else
+		{
+			quit = update_keystates(this->tStruct, &event);
+		}
+	}
+
+	pthread_mutex_unlock(this->resetQuitLock);
+	pthread_mutex_unlock(this->keystateLock);
+	return quit;
 }
 
 TaitoScreen::~TaitoScreen()
