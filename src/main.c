@@ -19,6 +19,9 @@ static inline void parse_arguments(
 
 static inline void find_hw_funcs(void* hw_lib_handle, char* hw_lib_name);
 
+static inline void read_rom_mask(
+		char* rom_name, uint8_t* mask_shift, uint8_t** rom_mask);
+
 int main(int argc, char** argv)
 {
 	void* hw_lib_handle;
@@ -82,6 +85,11 @@ int main(int argc, char** argv)
 		close(file);
 	}
 
+	uint8_t mask_shift;
+	uint8_t* rom_mask;
+
+	read_rom_mask(rom_name, &mask_shift, &rom_mask);
+
 	pthread_cond_t interrupt_condition;
 	pthread_cond_init(&interrupt_condition, NULL);
 	pthread_mutex_t interrupt_lock;
@@ -98,7 +106,9 @@ int main(int argc, char** argv)
 			.memory			       = memory_space,
 			.interrupt_buffer	       = &interrupt_buffer,
 			.reset_flag		       = &reset_flag,
-			.quit_flag		       = &quit_flag};
+			.quit_flag		       = &quit_flag,
+			.rom_mask		       = rom_mask,
+			.mask_shift		       = mask_shift};
 
 	res.hw_struct = hw_init_struct(&res);
 	pthread_t front_end_thread;
@@ -123,6 +133,7 @@ int main(int argc, char** argv)
 	if (front_end) { pthread_join(front_end_thread, NULL); }
 	// Cleanup.
 	free(memory_space);
+	free(rom_mask);
 	hw_destroy_struct(res.hw_struct);
 	dlclose(hw_lib_handle);
 	exit(0);
@@ -275,4 +286,53 @@ void find_hw_funcs(void* hw_lib_handle, char* hw_lib_name)
 	}
 
 	front_end = dlsym(hw_lib_handle, "front_end");
+}
+
+void read_rom_mask(char* rom_name, uint8_t* mask_shift, uint8_t** rom_mask)
+{
+	char mask_file_name[55] = {0};
+	strncpy(mask_file_name, rom_name, 50);
+	strcat(mask_file_name, ".mask");
+	int fd = open(mask_file_name, O_RDONLY);
+	if (fd == -1)
+	{
+#ifdef VERBOSE
+		perror("Could not open ROM mask file, emulated memory"
+		       " will be vulnerable to corruption"
+		       " by ROM");
+#endif
+		*mask_shift = 16;
+		*rom_mask   = malloc(1);
+		**rom_mask  = 0;
+		return;
+	}
+	ssize_t last_read;
+	size_t remaining_space;
+	if (!read(fd, mask_shift, 1))
+	{
+		perror("Error reading mask file");
+		exit(1);
+	}
+	else if (*mask_shift > 15)
+	{
+		fprintf(stderr, "Invalid mask file!");
+		exit(1);
+	}
+	*rom_mask = malloc(MAX_MEMORY >> *mask_shift);
+	memset(*rom_mask, 0, MAX_MEMORY >> *mask_shift);
+	remaining_space = MAX_MEMORY >> *mask_shift;
+	uint8_t* buffer = *rom_mask;
+	do
+	{
+		last_read = read(fd, buffer, remaining_space);
+		if (last_read == -1)
+		{
+			if (errno == EINTR) continue;
+			perror("Error reading input file");
+			exit(1);
+		}
+		buffer += last_read;
+		remaining_space -= last_read;
+	} while (remaining_space && last_read);
+	close(fd);
 }

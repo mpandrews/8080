@@ -16,9 +16,10 @@ TEST(CALL, All)
 
 	unsigned char memory[MAX_MEMORY];
 	memset(memory, 0, MAX_MEMORY);
+	unsigned char rom_mask = 0;
 	struct cpu_state cpu
 	{
-		.memory = memory
+		.memory = memory, .rom_mask = &rom_mask, .mask_shift = 16,
 	};
 	cpu.sp = 0xff00;
 
@@ -198,12 +199,12 @@ void test_ccond(uint8_t flag, uint8_t opc, uint8_t call_if_flag_unset)
 {
 	EXPECT_EQ(get_opcode_size(opc), 3);
 	uint8_t opcode[3] = {opc, 0x10, 0x80};
-
 	unsigned char memory[MAX_MEMORY];
 	memset(memory, 0, MAX_MEMORY);
+	unsigned char rom_mask = 0;
 	struct cpu_state cpu
 	{
-		.memory = memory
+		.memory = memory, .rom_mask = &rom_mask, .mask_shift = 16,
 	};
 	cpu.sp = 0xff00;
 
@@ -255,9 +256,10 @@ TEST(RST, All)
 {
 	unsigned char memory[MAX_MEMORY];
 	memset(memory, 0, MAX_MEMORY);
+	unsigned char rom_mask = 0;
 	struct cpu_state cpu
 	{
-		.memory = memory
+		.memory = memory, .rom_mask = &rom_mask, .mask_shift = 16,
 	};
 	cpu.sp = 0x1000;
 	cpu.pc = 0xfff0;

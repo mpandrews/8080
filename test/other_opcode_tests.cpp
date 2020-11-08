@@ -118,12 +118,13 @@ TEST(XTHL, All)
 {
 	unsigned char memory[MAX_MEMORY];
 	memset(memory, 0, MAX_MEMORY);
+	unsigned char rom_mask = 0;
 	// set the contents of the h register, and the stack pointer
 	// and put something in memory at the addres pointed to by the
 	// stack pointer.
 	struct cpu_state cpu
 	{
-		.memory = memory
+		.memory = memory, .rom_mask = &rom_mask, .mask_shift = 16,
 	};
 	cpu.sp = 0x10ad;
 	cpu.hl = 0x0b3c;
@@ -168,9 +169,10 @@ TEST(PUSH, All)
 
 	unsigned char memory[MAX_MEMORY];
 	memset(memory, 0, MAX_MEMORY);
+	unsigned char rom_mask = 0;
 	struct cpu_state cpu
 	{
-		.memory = memory
+		.memory = memory, .rom_mask = &rom_mask, .mask_shift = 16,
 	};
 	cpu.sp	= 0x1010;
 	cpu.bc	= 0x0102;
