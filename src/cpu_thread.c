@@ -55,7 +55,9 @@ void* cpu_thread_routine(void* resources)
 			.reset_flag	  = res->reset_flag,
 			.quit_flag	  = res->quit_flag,
 			.interrupt_buffer = res->interrupt_buffer,
-			.hw_struct	  = res->hw_struct};
+			.hw_struct	  = res->hw_struct,
+			.rom_mask	  = res->rom_mask,
+			.mask_shift	  = res->mask_shift};
 
 	// We can remove this assignment if we want to force the user
 	// to hardware reset on CPU boot.

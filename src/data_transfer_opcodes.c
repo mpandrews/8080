@@ -28,10 +28,14 @@ int mov(const uint8_t* opcode, struct cpu_state* cpu)
 #endif
 	// Fetch pointers to the operands.
 	uint8_t source = fetch_operand_val(GET_SOURCE_OPERAND(opcode[0]), cpu);
-	uint8_t* dest  = fetch_operand_ptr(
-			 GET_DESTINATION_OPERAND(opcode[0]), cpu);
-
-	*dest = source;
+	if (GET_DESTINATION_OPERAND(opcode[0]) == OPERAND_MEM)
+	{ write8(cpu, cpu->hl, source); }
+	else
+	{
+		uint8_t* dest = fetch_operand_ptr(
+				GET_DESTINATION_OPERAND(opcode[0]), cpu);
+		*dest = source;
+	}
 	// Increment the program counter, since this is a one-byte
 	// instruction.
 
@@ -56,14 +60,14 @@ int mvi(const uint8_t* opcode, struct cpu_state* cpu)
 			opcode[1]);
 #endif
 	// Write the byte following the opcode to the destination.
-	*fetch_operand_ptr(GET_DESTINATION_OPERAND(opcode[0]), cpu) = opcode[1];
 
-	// Two-byte opcode, counting the immediate value.
-	// Takes longer if writing to memory.
 	if (GET_DESTINATION_OPERAND(opcode[0]) == OPERAND_MEM)
+	{
+		write8(cpu, cpu->hl, opcode[1]);
 		return 10;
-	else
-		return 7;
+	}
+	*fetch_operand_ptr(GET_DESTINATION_OPERAND(opcode[0]), cpu) = opcode[1];
+	return 7;
 }
 
 int lxi(const uint8_t* opcode, struct cpu_state* cpu)
@@ -116,8 +120,8 @@ int sta(const uint8_t* opcode, struct cpu_state* cpu)
 
 	// Store the content of the accumulator to memory location specified
 	// in the instruction
-	uint16_t address     = *(const uint16_t*) (opcode + 1);
-	cpu->memory[address] = cpu->a;
+	uint16_t address = IMM16(opcode);
+	write8(cpu, address, cpu->a);
 
 	return 13;
 }
@@ -151,9 +155,8 @@ int shld(const uint8_t* opcode, struct cpu_state* cpu)
 	// Store H and L direct
 	// The content of register HL is moved to the memory location
 	// specified in the next 2 bytes of the instruction.
-	uint16_t address		     = IMM16(opcode);
-	*((uint16_t*) &cpu->memory[address]) = cpu->hl;
-
+	uint16_t address = IMM16(opcode);
+	write16(cpu, address, cpu->hl);
 	return 16;
 }
 
@@ -184,8 +187,7 @@ int stax(const uint8_t* opcode, struct cpu_state* cpu)
 
 	uint16_t* rp = get_register_pair_other(opcode[0], cpu);
 	// load register A to memory at the address found in RP
-	cpu->memory[*rp] = cpu->a;
-
+	write8(cpu, *rp, cpu->a);
 	return 7;
 }
 

@@ -152,11 +152,13 @@ int inr(const uint8_t* opcode, struct cpu_state* cpu)
 	 * The aux carry flag will be set if the lower 3 bits of the operator
 	 * are set.
 	 */
+	if (GET_DESTINATION_OPERAND(opcode[0]) == OPERAND_MEM)
+	{
+		write8(cpu, cpu->hl, _add(*op_ptr, 1, 0, &cpu->flags));
+		return 10;
+	}
 	*op_ptr = _add(*op_ptr, 1, 0, &cpu->flags);
-
-	// If the operand was OPERAND_MEM, then this opcode takes 10 clock
-	// cycles. Otherwise, it takes 5.
-	return (GET_DESTINATION_OPERAND(opcode[0]) == OPERAND_MEM) ? 10 : 5;
+	return 5;
 }
 
 int dcr(const uint8_t* opcode, struct cpu_state* cpu)
@@ -174,11 +176,13 @@ int dcr(const uint8_t* opcode, struct cpu_state* cpu)
 	 * The aux carry flag will be set iff the lower 4 bits of the operator
 	 * are reset.
 	 */
+	if (GET_DESTINATION_OPERAND(opcode[0]) == OPERAND_MEM)
+	{
+		write8(cpu, cpu->hl, _add(*op_ptr, -1, 0, &cpu->flags));
+		return 10;
+	}
 	*op_ptr = _add(*op_ptr, -1, 0, &cpu->flags);
-
-	// If the operand was OPERAND_MEM, then this opcode takes 10 clock
-	// cycles. Otherwise, it takes 5.
-	return (GET_DESTINATION_OPERAND(opcode[0]) == OPERAND_MEM) ? 10 : 5;
+	return 5;
 }
 
 int inx_dcx(const uint8_t* opcode, struct cpu_state* cpu)

@@ -73,6 +73,7 @@ struct cpu_state
 	uint8_t* const reset_flag;
 	uint8_t* const quit_flag;
 	void* hw_struct;
+	const uint8_t* const rom_mask;
 	// Registers!
 	uint16_t sp; // Stack pointer
 	uint16_t pc; // Program counter.
@@ -130,6 +131,7 @@ struct cpu_state
 	 * opcode.
 	 */
 	uint8_t interrupt_enable_flag;
+	const uint8_t mask_shift;
 };
 
 // The system resources struct is just all the shared pointer members
@@ -147,6 +149,8 @@ struct system_resources
 	void* hw_struct;
 	uint8_t* reset_flag;
 	uint8_t* quit_flag;
+	uint8_t* rom_mask;
+	uint8_t mask_shift;
 };
 
 // Declaration of the CPU thread.
