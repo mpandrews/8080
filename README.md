@@ -90,29 +90,44 @@ Space Invaders is a processor-based system consisting of an Intel 8080 CPU runni
     - HLT
   This will leave the CPU in an (emulated) halt state, during which it will continue to check to see if a hardware reset has been requested; effectively a low-CPU usage spinlock.  With the empty hardware set, there is no way to send such a reset.
 ### Speed Benchmarking and Speed Adjustment
-To get CPU speed benchmarking output on `stderr`, define `BENCHMARK`:
-- `make C_FLAGS="-DBENCHMARK"`
+CPU speed benchmarking and CPU speed adjustment are controlled through CMake cache variables.  These instructions will assume you are building in a subdirectory of the project root; you will have to adjust the path to CMakeLists.txt as appopriate if you are building somewhere else.
 
-(Note that it may be `CFLAGS` rather than `C_FLAGS`, depending on your version of `make`.)
+To turn benchmarking on, turn on the `BENCHMARKING` option:
 
-By default, CPU benchmark output will be printed every 2^23 cycles. (~8 million.)  You can override this by passing in a replacement value for `BENCH_INTERVAL`.
-- `make C_FLAGS="-DBENCHMARK -DBENCH_INTERVAL=1000000"`
+- `cmake -DBENCHMARKING=ON ..`
 
-The above command would result in benchmark output every million cycles, which would be twice per second at 2 MHz.
 
-By default, the CPU will be built with an emulated cycle time of 500ns, which equates to 2 MHz.  You can adjust this by passing in a replacement value for `CYCLE_TIME`
-- `make C_FLAGS="-DCYCLE_TIME=250"`
+This setting is persistent, and all builds will have benchmarking until you turn it back off:
 
-The above command would result in a 4Mhz emulation.
+- `cmake -DBENCHMARKING=OFF ..`
 
-Defines can, of course, be mixed:
-- `make C_FLAGS="-DCYCLE_TIME=100 -DBENCHMARK -DBENCH_INTERVAL=2000000"`
+To adjust the benchmarking interval, define `INTERVAL`:
 
-Do note that (by far) the most expensive portion of the normal CPU loop is the timing portion.  Even with a `CYCLE_TIME` of zero, the timing logic will still be traversed.  The main use of the benchmarking is to gauge the accuracy of the emulated speed, not to maximize it.  We may add a true unthrottled mode later; experimentation has shown a ~4x speed increase which may have its uses.
+- `cmake -DINTERVAL=1000000 ..`
 
-Note also that if `VERBOSE` is set while benchmarking, the overhead of all the printing calls could well drive effective emulation speed below 2MHz on slower systems.
+The above would set the interval one million cycles; at the default CPU speed, this is every half second.  To unset this setting, run:
 
-To actually run the benchmark, simply run the emulator as normal.  Do note that for benchmarking to be of any use, the ROM you choose to run will have to execute for at least `BENCH_INTERVAL` cycles of the 8080.  A simple looping ROM is recommended.
+- `cmake -UINTERVAL ..`
+
+To adjust the speed of CPU execution, you can override the time-value of each CPU cycle.  By default, this is 500 nanoseconds, which is appopriate to 2MHz execution.  You can change it by adjusting the CMake variable `CYCLE_TIME`:
+
+- `cmake -DCYCLE_TIME=250 ..`
+
+The above will get you 4MHz emulation.
+
+To return to the default, unset the variable:
+
+- `cmake -UCYCLE_TIME ..`
+
+Note that adjusting the cycle time-value has its limits: the timekeeping itself is very expensive.  To get maximum throughput (e.g. when running a CPU test ROM) you may wish to completely unthrottle the emulated CPU.  This can be turned on via:
+
+- `cmake -DUNTHROTTLE=ON`
+
+It can be turned off again via:
+
+- `cmake -DUNTHROTTLE=OFF`
+
+Note that because the unthrottled mode completely bypasses the timekeeping, no benchmarking is available.
 
 ### CPU Testing
 At present, the emulator passes the available 8080 test ROMs we have access to.  These are included in the repo; when the project is built, ROMs are placed in a `roms` subdirectory, relative to the executable.
@@ -135,7 +150,7 @@ To run one, just specify the rom and the hardware set, e.g. `./8080 -r roms/cput
 
 It is strongly recommended, however, that you build an unthrottled version first:
 
-`make clean && make C_FLAGS="-DUNTHROTTLED -O2"`
+`cmake -DUNTHROTTLE=ON .. && make`
 
 Though this isn't mandatory, be aware that at 2MHz, `cputest` will take several minutes, and `exerciser` will take several hours.  If you build a debug version, and your system is slow enough that the debug disassembly drives speed below 2MHz, it will of course take even longer.
 
