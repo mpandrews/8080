@@ -93,14 +93,6 @@ TEST(HW_OUT, Space_Invaders)
 	pthread_mutex_t sound_lock;
 	pthread_mutex_init(&sound_lock, NULL);
 
-	/*
-		struct rom_struct rstruct
-		{
-			.sound_lock = &sound_lock
-		};
-		struct taito_struct tstruct = {};
-		tstruct.rom_struct	    = &rstruct;
-	*/
 	struct rom_struct rstruct
 	{};
 	struct taito_struct tstruct
