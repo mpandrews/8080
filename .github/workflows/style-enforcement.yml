@@ -18,7 +18,7 @@ jobs:
     - uses: DoozyX/clang-format-lint-action@v0.9
       with:
         source: './src ./include ./test ./hardware'
-        exclude: './hardware/si/src/sound.c'
+        exclude: './hardware/si/src/sound.c, hardware/si/src/mike*.c'
         extensions: 'h,cpp,c'
         clangFormatVersion: 10
         style: file
