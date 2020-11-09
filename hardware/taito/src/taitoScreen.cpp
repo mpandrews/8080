@@ -491,15 +491,25 @@ int TaitoScreen::handleInput()
 	 */
 	while (SDL_PollEvent(&event))
 	{
-		if (event.type == SDL_QUIT)
+		switch (event.type)
 		{
+		case SDL_QUIT:
 			*(this->tStruct->quit_flag) = 1;
 			quit			    = 1;
-		}
-		else
-		{
-			quit = update_keystates(this->tStruct, &event);
-		}
+			break;
+		case SDL_KEYDOWN:
+			switch (event.key.keysym.scancode)
+			{
+			case SDL_SCANCODE_ESCAPE:
+				*(this->tStruct->quit_flag) = 1;
+				quit			    = 1;
+				break;
+			default: goto rom_handler;
+			};
+			break;
+rom_handler:
+		default: update_keystates(this->tStruct, &event);
+		};
 	}
 
 	pthread_mutex_unlock(this->resetQuitLock);

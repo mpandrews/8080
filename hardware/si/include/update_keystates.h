@@ -3,6 +3,6 @@
 
 #include <SDL2/SDL.h>
 
-int update_keystates(void* rom_struct, SDL_Event*);
+void update_keystates(void* rom_struct, SDL_Event*);
 
 #endif

@@ -3,21 +3,16 @@
 #include "rom_struct.h"
 #include "taito_struct.h"
 
-int update_keystates(void* t_struct, SDL_Event* event)
+void update_keystates(void* t_struct, SDL_Event* event)
 {
 	struct taito_struct* tStruct = (struct taito_struct*) t_struct;
 	struct rom_struct* rStruct   = (struct rom_struct*) tStruct->rom_struct;
-	int quit		     = 0;
 
 	if (event->type == SDL_KEYDOWN)
 	{
 		switch (event->key.keysym.scancode)
 		{
 		case SDL_SCANCODE_R: *(tStruct->reset_flag) = 1; break;
-		case SDL_SCANCODE_ESCAPE:
-			*(tStruct->quit_flag) = 1;
-			quit		      = 1;
-			break;
 		case SDL_SCANCODE_C: rStruct->coin = 1; break;
 		case SDL_SCANCODE_S: rStruct->p1_start = 1; break;
 		case SDL_SCANCODE_DOWN: rStruct->p2_start = 1; break;
@@ -60,5 +55,4 @@ int update_keystates(void* t_struct, SDL_Event* event)
 		default: break;
 		}
 	}
-	return quit;
 }
