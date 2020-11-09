@@ -50,19 +50,23 @@ enum sideOfScreen
 class TaitoScreen
 {
       private:
-	pthread_mutex_t* interruptLock;
-	pthread_cond_t* interruptCond;
-	Uint8* interruptBuffer;
+	struct taito_struct* const tStruct;
+
+	pthread_mutex_t* const interruptLock;
+	pthread_cond_t* const interruptCond;
+	Uint8* const interruptBuffer;
 
 	// A pointer to the beginning of the video buffer that the
 	// 8080 thread will write taito video data to
-	const Uint8* taitoVideoBuffer;
+	const Uint8* const taitoVideoBuffer;
 	// The translated version of the taitoVideoBuffer. Expanded to 1 byte
 	// per pixel
 	Uint16* displayBuffer;
 
-	pthread_mutex_t* vidBufferLock;
-	pthread_cond_t* vidBufferCond;
+	pthread_mutex_t* const vidBufferLock;
+	pthread_cond_t* const vidBufferCond;
+	pthread_mutex_t* const keystateLock;
+	pthread_mutex_t* const resetQuitLock;
 
 	// SDL objects used to create a window and render graphics to it
 	SDL_Window* window;
@@ -70,7 +74,7 @@ class TaitoScreen
 	SDL_Surface* gameDisplaySurface;
 
 	int currColorMask;
-	int numColorMasks;
+	const int numColorMasks;
 	SDL_Surface** colorMasks;
 
       public:
@@ -87,6 +91,7 @@ class TaitoScreen
 	void renderFrame();
 	void renderSurface(SDL_Surface*);
 	void applyBlur();
+	int handleInput();
 
 	// other
 	void sendInterrupt(Uint8 interruptCode);

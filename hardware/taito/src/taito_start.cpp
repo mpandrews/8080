@@ -1,8 +1,6 @@
 extern "C"
 {
 #include "taito_start.h"
-
-#include "screen_timer.h"
 }
 
 #include "hw_lib_imports.h"
@@ -15,12 +13,13 @@ extern "C" int taito_start(struct taito_struct* tStruct)
 
 	for (;;)
 	{
+
 		screen.videoRamToTaitoBuffer(TOP);
 		screen_timer();
 		screen.sendInterrupt(RST1);
 
 		screen.videoRamToTaitoBuffer(BOTTOM);
-		if (update_keystates(tStruct)) return 0;
+		if (screen.handleInput()) return 0;
 
 		pthread_mutex_lock(tStruct->sound_lock);
 		play_sound(sound_effects, tStruct->rom_struct);

@@ -121,9 +121,7 @@ void* hw_init_struct(struct system_resources* res)
 	rstruct->dip7 = 1;
 
 	// Call the constructor for the taito library's struct.
-	// Pass in proms and num_proms which are defined in si/src/proms.c
-	struct taito_struct* tstruct =
-			create_taito_struct(res, rstruct, proms, num_proms);
+	struct taito_struct* tstruct = create_taito_struct(res, rstruct);
 
 	return tstruct;
 }

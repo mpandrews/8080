@@ -1,7 +1,8 @@
-
 #ifndef UPDATE_KEYSTATES_H
 #define UPDATE_KEYSTATES_H
 
-int update_keystates(void* rom_struct);
+#include <SDL2/SDL.h>
+
+void update_keystates(void* rom_struct, SDL_Event*);
 
 #endif

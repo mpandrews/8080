@@ -5,14 +5,14 @@
 #include <iostream>
 
 TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
+    : tStruct(tStruct), interruptLock(tStruct->interrupt_lock),
+      interruptCond(tStruct->interrupt_cond),
+      interruptBuffer(tStruct->interrupt_buffer),
+      taitoVideoBuffer(tStruct->vbuffer), vidBufferLock(tStruct->vbuffer_lock),
+      vidBufferCond(tStruct->vbuffer_cond),
+      keystateLock(tStruct->keystate_lock),
+      resetQuitLock(tStruct->reset_quit_lock), numColorMasks(tStruct->num_proms)
 {
-	// set members from taito_struct
-	this->interruptLock    = tStruct->interrupt_lock;
-	this->interruptCond    = tStruct->interrupt_cond;
-	this->interruptBuffer  = tStruct->interrupt_buffer;
-	this->vidBufferCond    = tStruct->vbuffer_cond;
-	this->vidBufferLock    = tStruct->vbuffer_lock;
-	this->taitoVideoBuffer = tStruct->vbuffer;
 	pthread_mutex_lock(this->vidBufferLock);
 
 	/* this displayBuffer will contain a translation of the space invader's
@@ -90,7 +90,6 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 		exit(1);
 	}
 
-	this->numColorMasks = tStruct->num_proms;
 	if (this->numColorMasks > 0)
 	{
 		this->colorMasks    = new SDL_Surface*[this->numColorMasks];
@@ -473,6 +472,49 @@ void TaitoScreen::videoRamToTaitoBuffer(sideOfScreen screenHalf)
 			}
 		}
 	}
+}
+
+int TaitoScreen::handleInput()
+{
+	// Take control of the keystate and reset/quit mutexes to avoid
+	// both threads attempting to read/write at the same time
+	pthread_mutex_lock(this->keystateLock);
+	pthread_mutex_lock(this->resetQuitLock);
+
+	int quit = 0;
+	SDL_Event event;
+	/* poll all SDL events until there are no more in the buffer. For
+	 * each event, the taitoSCreen will determine whether it cares about
+	 * the input, and will take whichever action is appropriate if it does.
+	 * If it does not care about a given event, it will be passed on to the
+	 * hardware library's update_keystates function to be dealt with there.
+	 */
+	while (SDL_PollEvent(&event))
+	{
+		switch (event.type)
+		{
+		case SDL_QUIT:
+			*(this->tStruct->quit_flag) = 1;
+			quit			    = 1;
+			break;
+		case SDL_KEYDOWN:
+			switch (event.key.keysym.scancode)
+			{
+			case SDL_SCANCODE_ESCAPE:
+				*(this->tStruct->quit_flag) = 1;
+				quit			    = 1;
+				break;
+			default: goto rom_handler;
+			};
+			break;
+rom_handler:
+		default: update_keystates(this->tStruct, &event);
+		};
+	}
+
+	pthread_mutex_unlock(this->resetQuitLock);
+	pthread_mutex_unlock(this->keystateLock);
+	return quit;
 }
 
 TaitoScreen::~TaitoScreen()

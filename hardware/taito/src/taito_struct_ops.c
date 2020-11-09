@@ -4,6 +4,7 @@
 #endif
 
 #include "cpu.h"
+#include "proms.h"
 #include "taito_struct.h"
 
 #include <pthread.h>
@@ -17,10 +18,8 @@ static inline pthread_mutex_t* create_mutex()
 	return new_mutex;
 }
 
-struct taito_struct* create_taito_struct(struct system_resources* res,
-		void* rstruct,
-		uint8_t const (*proms)[896],
-		uint8_t const num_proms)
+struct taito_struct* create_taito_struct(
+		struct system_resources* res, void* rstruct)
 {
 	struct taito_struct* new_struct = malloc(sizeof(struct taito_struct));
 
