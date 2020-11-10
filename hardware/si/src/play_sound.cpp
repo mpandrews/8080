@@ -38,6 +38,7 @@ Mix_Chunk** load_sound()
 	SDL_RWops* shot_rw = SDL_RWFromConstMem(mike_laser, sizeof(mike_laser));
 	Mix_Chunk* shot_sound = Mix_LoadWAV_RW(shot_rw, 1);
 	sound_effects[6]      = shot_sound;
+	Mix_VolumeChunk(sound_effects[6], 32);
 
 	SDL_RWops* ufo_hit_rw	 = SDL_RWFromConstMem(ufo_hit, sizeof(ufo_hit));
 	Mix_Chunk* ufo_hit_sound = Mix_LoadWAV_RW(ufo_hit_rw, 1);

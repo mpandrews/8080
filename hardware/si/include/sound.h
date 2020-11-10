@@ -12,7 +12,7 @@ extern const uint8_t player_die[8775];
 extern const uint8_t invader_killed[4124];
 extern const uint8_t ufo_hit[1846];
 extern const uint8_t ufo[51698];
-extern const uint8_t mike_laser[6660];
+extern const uint8_t mike_laser[46350];
 extern const uint8_t mike_ufo[222750];
 
 #endif
