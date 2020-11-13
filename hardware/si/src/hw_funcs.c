@@ -43,7 +43,6 @@ int hw_in(const uint8_t* opcode, struct cpu_state* cpu)
 			 | rstruct->p1_start << 2 | 1 << 3
 			 | rstruct->p1_shoot << 4 | rstruct->p1_left << 5
 			 | rstruct->p1_right << 6 | 0 << 7;
-		rstruct->coin = 0;
 		pthread_mutex_unlock(tstruct->keystate_lock);
 		break;
 	case 2:
@@ -119,6 +118,7 @@ void* hw_init_struct(struct system_resources* res)
 	rstruct->dip5 = 1;
 	rstruct->dip6 = 1;
 	rstruct->dip7 = 1;
+	rstruct->coin = 1;
 
 	// Call the constructor for the taito library's struct.
 	struct taito_struct* tstruct = create_taito_struct(res, rstruct);

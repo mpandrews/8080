@@ -13,7 +13,7 @@ void update_keystates(void* t_struct, SDL_Event* event)
 		switch (event->key.keysym.scancode)
 		{
 		case SDL_SCANCODE_R: *(tStruct->reset_flag) = 1; break;
-		case SDL_SCANCODE_C: rStruct->coin = 1; break;
+		case SDL_SCANCODE_C: rStruct->coin = 0; break;
 		case SDL_SCANCODE_S: rStruct->p1_start = 1; break;
 		case SDL_SCANCODE_DOWN: rStruct->p2_start = 1; break;
 		case SDL_SCANCODE_LEFT: rStruct->p2_left = 1; break;
@@ -42,7 +42,7 @@ void update_keystates(void* t_struct, SDL_Event* event)
 		switch (event->key.keysym.scancode)
 		{
 			// Keystate toggles - cleared on keyup
-		case SDL_SCANCODE_C: rStruct->coin = 0; break;
+		case SDL_SCANCODE_C: rStruct->coin = 1; break;
 		case SDL_SCANCODE_T: rStruct->tilt = 0; break;
 		case SDL_SCANCODE_S: rStruct->p1_start = 0; break;
 		case SDL_SCANCODE_DOWN: rStruct->p2_start = 0; break;
