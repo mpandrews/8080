@@ -70,7 +70,8 @@ int main(int argc, char** argv)
 		uint8_t* buffer	       = memory_space;
 		size_t remaining_space = MAX_MEMORY;
 
-		do {
+		do
+		{
 			last_read = read(file, buffer, remaining_space);
 			if (last_read == -1)
 			{
@@ -322,7 +323,8 @@ void read_rom_mask(char* rom_name, uint8_t* mask_shift, uint8_t** rom_mask)
 	memset(*rom_mask, 0, MAX_MEMORY >> *mask_shift);
 	remaining_space = MAX_MEMORY >> *mask_shift;
 	uint8_t* buffer = *rom_mask;
-	do {
+	do
+	{
 		last_read = read(fd, buffer, remaining_space);
 		if (last_read == -1)
 		{

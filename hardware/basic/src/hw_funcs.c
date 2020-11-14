@@ -29,7 +29,7 @@ int hw_in(const uint8_t* opcode, struct cpu_state* cpu)
 		cpu->a = 0xff;
 		break;
 	case 0x11: // Input data
-		// clang-format off
+		   // clang-format off
 	// If we don't ignore clang-formatting here, our braces get unindented.
 		{	   // New scope to allow a variable declaration.
 			int input = getch();
@@ -49,7 +49,7 @@ int hw_in(const uint8_t* opcode, struct cpu_state* cpu)
 			default: cpu->a = input; break;
 			}
 		}
-		// clang-format on
+		   // clang-format on
 	}
 
 	return 10;
