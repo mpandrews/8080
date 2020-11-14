@@ -70,8 +70,7 @@ int main(int argc, char** argv)
 		uint8_t* buffer	       = memory_space;
 		size_t remaining_space = MAX_MEMORY;
 
-		do
-		{
+		do {
 			last_read = read(file, buffer, remaining_space);
 			if (last_read == -1)
 			{
@@ -150,9 +149,10 @@ const char* const USAGE = "Usage: %s\n"
 			  "\t--hw --hardware\n"
 			  "\t\tThe name of the hardware library to use.\n"
 			  "\t\tAvailable options are:"
-			  "'si',"
-			  "'none',"
-			  "'cpudiag'.\n"
+			  " 'si',"
+			  " 'none',"
+			  " 'basic',"
+			  " 'cpudiag'.\n"
 			  "\t\tDefaults to 'none' if not specified.\n"
 			  "\t-h, --help\n"
 			  "\t\tPrint this message.\n";
@@ -322,8 +322,7 @@ void read_rom_mask(char* rom_name, uint8_t* mask_shift, uint8_t** rom_mask)
 	memset(*rom_mask, 0, MAX_MEMORY >> *mask_shift);
 	remaining_space = MAX_MEMORY >> *mask_shift;
 	uint8_t* buffer = *rom_mask;
-	do
-	{
+	do {
 		last_read = read(fd, buffer, remaining_space);
 		if (last_read == -1)
 		{
