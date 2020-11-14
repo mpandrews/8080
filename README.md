@@ -8,6 +8,7 @@
     - [Installation](#Installation-instructions-for-the-library-dependencies)
 2. [Project Quickstart](#Project-Quickstart)
     - [Play Space Invaders Game](#Play-Space-Invaders-Game)
+    - [Altair 8k BASIC](#Altair-8k-Basic)
     - [Running the Emulator](#Running-the-Emulator)
     - [Speed Benchmarking and Speed Adjustment](#Speed-Benchmarking-and-Speed-Adjustment)
     - [CPU Testing](#CPU-Testing)
@@ -27,6 +28,7 @@ Space Invaders is a processor-based system consisting of an Intel 8080 CPU runni
     - SDL2 image libs
     - SDL2 mixer libs
 - Google Test development libraries for C++.
+- NCurses
     
 ### Required Build Tools
 - CMake version 3.10 or higher.
@@ -35,13 +37,13 @@ Space Invaders is a processor-based system consisting of an Intel 8080 CPU runni
 ### System Requirements
 - Linux (Will not compile at all on Mac; Mac support is something we hope to implement, but only one of us has access to a Mac.)
 - Little-endian architecture.  This is unlikely to come up, but the emulator relies heavily on type-punning; it simply will not work on a big-endian system.
-- A working X server is required to play Space Invaders.  The hardware test ROMs are purely console, however, and do not require X.  X is not supported out of the box on WSL/WSL2 or in docker containers, so Space Invaders (or any other graphical program!) will not work in those environments without considerable setup.
+- A working X server is required to play Space Invaders.  The hardware test ROMs are purely console, however, and do not require X.  Altair BASIC can also be run without X.  X is not supported out of the box on WSL/WSL2 or in docker containers, so Space Invaders (or any other graphical program!) will not work in those environments without considerable setup.
 
 ### Installation instructions for the library dependencies
 - Distros using the apt package manager (e.g., Debian, Ubuntu, Mint:)
-    - `$ sudo apt-get install cmake libgtest-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev`
+    - `$ sudo apt-get install cmake libgtest-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libncurses-dev`
 - Distros using the pacman package manager (i.e. Arch, Manjaro:)
-    - `$ sudo pacman -Syyu cmake gtest sdl2 sdl2_image sdl2_mixer`
+    - `$ sudo pacman -Syyu cmake gtest sdl2 sdl2_image sdl2_mixer ncurses`
 
 ## Project Quickstart
 - Clone this repository        
@@ -54,7 +56,7 @@ Space Invaders is a processor-based system consisting of an Intel 8080 CPU runni
 - Run `make`.  Once a build tree is established for a build type, any changes to the actual source files will be picked up by make.
 - Run `make test` to run unit tests, if desired.
 ### Play Space Invaders Game
-- In the `release` subdirectory, run `make` and then `./8080 -r roms/invaders_cv --hw si` to play Space Invaders.
+- In the `release` subdirectory, run `make` and then `./8080 -r roms/invaders_cv --hw si` to play Space Invaders.  (Note that while you can play the game on a Debug build, it will be very slow on most systems due to the overhead of the continuous disassembly printing.)
 - You can optionally play other games using the same `si` hardware lib, such as Balloon Bomber, Lunar Rescue, and Ozma. They use the same keyboard controls as SI.
     - `./8080 -r roms/balloon --hw si`
     - `./8080 -r roms/lunar_rescue --hw si`
@@ -74,12 +76,49 @@ Space Invaders is a processor-based system consisting of an Intel 8080 CPU runni
     - `T` = Tilt
     - numbers 0-7 = dip switches
     - number 8 = Sound on/off (default is sound on)
-### Running the Emulator
+### Altair 8K BASIC
+#### Running BASIC
+ The emulator includes the [Altair Clone ROM of Altair 8k BASIC 4.0](https://altairclone.com/downloads/roms/8K%20BASIC/).  Because Altair BASIC handled text I/O via the Altair 8800's serial card, we have added an `ncurses`-based hardware library for use with the ROM.
+ 
+ Build either a release or debug version of the emulator with `make` in the appropriate directory.  To run BASIC:
+
+ - `./8080 -r roms/basic --hw basic`
+
+ Be aware that if you are using a Debug build, you will need to redirect `stderr` somewhere else, or BASIC's output will be mixed with the disassembly in a very unpleasant manner.
+
+ Because `Ctrl-C` (`^C`) is a crucial keyboard shortcut within BASIC, input is taken raw, meaning that the terminal will not intercept special combinations.  As such, the following combinations will work in the following ways:
+
+ - `^C` will be interpreted by BASIC itself, which uses it to interrupt a running BASIC program.
+ - `^D`, `^\`, and `^[` will all exit the emulator cleanly.  Note in particular that `\^` will not generate `SIGQUIT`, it will simply exit.
+
+ The escape key (which generates `^[`) will also exit.
+
+ - NOTE: The exit shortcuts will not work if the emulator is compiled in `UNTHROTTLED` mode.  (See [here](#Speed-Benchmarking-And-Speed-Adjustment) for an explanation of throttling.)  If you run the emulator unthrottled, you will have to kill it from another terminal.
+
+There is no mechanism for loading or saving a program within the hardware library: however, pasting may work, depending on your terminal.  Otherwise, you are limited to what you can type yourself.
+
+#### Using BASIC
+
+On startup, BASIC will ask you about memory size: you can safely hit enter here, and it will simply scan the program's memory space.  A ROM mask is provided which makes the very last 1KB page of memory read-only, so BASIC's probe will find 63k of system RAM.  (It will, however, report less as available due to the space it itself takes up.)
+
+BASIC will then ask about terminal width: hitting enter here will default to 72 columns.
+
+The third question BASIC asks on startup is whether you wish the math libraries loaded: BASIC expects `Y` or `N` here: lower-case will not work.
+
+After answering these three questions, you should receive an `OK` prompt, after which you may do as you like.  A BASIC reference manual is available [here](https://altairclone.com/downloads/manuals/BASIC%20Manual%2075.pdf).
+
+#### Mischief
+
+Note that the memory occupied by BASIC itself is not protected: you are free to corrupt it with `POKE` if you so desire.  The effects are unlikely to be terribly interesting, however: because there's no video controller in an Altair 8800, there's no video to corrupt.
+
+Should your inner child be inclined towards the `BEEP` command, it does not, alas, exist.  However, `PRINT CHR$(7)` will attempt to beep, if your terminal supports it.  The results are particularly obnoxious in WSL, though be sure to use other commands to space out the calls to `PRINT CHR$(7)`, or you will achieve only a slightly disappointing buzzing.
+
+### Running the Emulator with other ROMs or Hardware Sets
 `make` will produce an executable called `8080`, and some shared library files which define external hardware sets.  (An 8080 not hooked into anything is of limited use!)
 `8080` has the following options:
 - `-r FILE`, `--rom FILE`
   - Required.  Specifies the ROM file to load into the 8080's memory.
-- `--hw FILE`, `--hardware FILE` 
+- `--hw LIB`, `--hardware LIB` 
   - Optional.  Specifies the name of the hardware library to load.  If omitted, an empty hardware set will be loaded in which no front-end is launched, and the `IN` and `OUT` opcodes will do nothing except burn cycles.  Specifying `none` here will explicitly load the empty hardware set.
 - `-h`, `--help`
   - Print usage instructions and exit.
