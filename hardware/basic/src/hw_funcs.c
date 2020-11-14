@@ -47,7 +47,15 @@ int hw_out(const uint8_t* opcode, struct cpu_state* cpu)
 	switch (opcode[1])
 	{
 	case 0x11:
-		if (cpu->a != '\r') echochar(cpu->a);
+		switch (cpu->a)
+		{
+		// Carriage return needs to be skipped, or the line
+		// will blank itself on CRLF.
+		case '\r': break;
+		case '\a': beep(); break;
+		case '\f': erase(); break;
+		default: echochar(cpu->a);
+		}
 	}
 	return 10;
 }
