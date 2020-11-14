@@ -11,7 +11,9 @@
     - [Running the Emulator](#Running-the-Emulator)
     - [Speed Benchmarking and Speed Adjustment](#Speed-Benchmarking-and-Speed-Adjustment)
     - [CPU Testing](#CPU-Testing)
-3. [Reference materials and resources](#Reference-materials-and-resources)
+3. [ROM Files and Read-Only Masking](roms/README.md)
+4. [Adding New Hardware Libraries](hardware/README.md)
+4. [Reference materials and resources](#Reference-materials-and-resources)
 ## Introduction
 The Intel-8080 is an 8-bit microprocessor that Intel began producing in 1974. It could support clock rates up to 2 MHz. It has 8 main 8-bit registers, including an accumulator and a flags register. It also contains a 16-bit stack pointer and a 16-bit program counter. Furthermore, each pair of main registers (except the accumulator/flags registers) can be read/written as three 16-bit registers. It interfaces with the outside world through 40 pins. Included in these pins are 8 bidirectional data pins, 16 output address pins, two clock pins, an interrupt pin, a reset pin, and various other pins for power supply and indicating/controlling the processor state.
 

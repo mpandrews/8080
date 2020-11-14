@@ -46,7 +46,7 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 		exit(1);
 	}
 
-	if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 1, 512) != 0)
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 1, 512) != 0)
 	{
 		fprintf(stderr,
 				"Unable to initialize audio: %s\n",
@@ -54,7 +54,7 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 		exit(1);
 	}
 	Mix_AllocateChannels(9);
-	Mix_ReserveChannels(8);
+	Mix_ReserveChannels(9);
 
 	// An SDL renderer is associated with a window. It is the object that
 	// refreshes the window or sections of the window
