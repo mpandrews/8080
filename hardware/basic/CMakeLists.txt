@@ -12,3 +12,7 @@ target_include_directories(basic PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/include
 	)
 target_compile_options(basic PRIVATE ${FlagSettings})
+
+find_package(Curses REQUIRED)
+
+target_link_libraries(basic ${CURSES_LIBRARIES})
