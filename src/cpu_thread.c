@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef VERBOSE
 // Diagnostic print function to dump the CPU's state to stderr.
 static inline void print_registers(const struct cpu_state* cpu)
 {
@@ -40,6 +41,7 @@ static inline void print_registers(const struct cpu_state* cpu)
 			cpu->memory[cpu->sp],
 			flags);
 }
+#endif
 
 void* cpu_thread_routine(void* resources)
 {
