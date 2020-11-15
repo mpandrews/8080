@@ -93,6 +93,9 @@ class TaitoScreen
 	void applyBlur();
 	int handleInput();
 
+	// event handlers
+	void handleWindowResize();
+
 	// other
 	void sendInterrupt(Uint8 interruptCode);
 	Uint8* getColorMaskFromProm(const unsigned char* const);

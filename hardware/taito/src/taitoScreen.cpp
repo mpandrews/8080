@@ -32,6 +32,8 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 		std::cout << "Could not initialize SDL. " << std::endl;
 		exit(1);
 	};
+
+	// Create and configure the display window
 	this->window = SDL_CreateWindow("Space Invaders", // window name
 			SDL_WINDOWPOS_CENTERED,		  // horizontal pos
 			SDL_WINDOWPOS_CENTERED,		  // vertical pos
@@ -45,7 +47,10 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 			  << std::endl;
 		exit(1);
 	}
+	SDL_SetWindowResizable(this->window, SDL_TRUE);
+	SDL_SetWindowMinimumSize(this->window, TAITO_SCREEN_WIDTH, TAITO_SCREEN_HEIGHT);
 
+	// Set up and configure audio
 	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 1, 512) != 0)
 	{
 		fprintf(stderr,
@@ -59,7 +64,7 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 	// An SDL renderer is associated with a window. It is the object that
 	// refreshes the window or sections of the window
 	this->renderer = SDL_CreateRenderer(
-			this->window, -1, SDL_RENDERER_SOFTWARE);
+			this->window, -1, SDL_RENDERER_ACCELERATED);
 	if (renderer == NULL)
 	{
 		std::cout << "Could not load SDL renderer. " << SDL_GetError()
@@ -380,15 +385,14 @@ void TaitoScreen::renderSurface(SDL_Surface* surf)
 	 * the rotation (which occurs around the center of the rectangle), it
 	 * lines up just right with the window.
 	 */
+	int width, height;
+	SDL_GetWindowSize(this->window, &width, &height);
 	SDL_Rect dest;
-	dest.x = (WINDOW_SCALE_FACTOR
-				 * (TAITO_SCREEN_HEIGHT - TAITO_SCREEN_WIDTH))
-		 / 2;
-	dest.y = (WINDOW_SCALE_FACTOR
-				 * (TAITO_SCREEN_WIDTH - TAITO_SCREEN_HEIGHT))
-		 / 2;
-	dest.w = WINDOW_SCALE_FACTOR * TAITO_SCREEN_WIDTH;
-	dest.h = WINDOW_SCALE_FACTOR * TAITO_SCREEN_HEIGHT;
+	dest.x = (width - height) / 2;
+	dest.y = (height - width) / 2;
+	// width and height are backwards because this is pre-rotation
+	dest.w = height;
+	dest.h = width;
 
 	// Create a texture from the passed-in surface
 	SDL_Texture* texture = NULL;
@@ -507,6 +511,13 @@ int TaitoScreen::handleInput()
 			default: goto rom_handler;
 			};
 			break;
+		case SDL_WINDOWEVENT:
+			switch (event.window.event)
+			{
+				case SDL_WINDOWEVENT_RESIZED:
+					this->handleWindowResize();
+					break;
+			};
 rom_handler:
 		default: update_keystates(this->tStruct, &event);
 		};
@@ -515,6 +526,21 @@ rom_handler:
 	pthread_mutex_unlock(this->resetQuitLock);
 	pthread_mutex_unlock(this->keystateLock);
 	return quit;
+}
+
+void TaitoScreen::handleWindowResize()
+{
+	int width,
+	    height;
+
+	// get the attempted resize values
+	SDL_GetWindowSize(this->window, &width, &height);
+
+	/* If the window is being made smaller, check that it is not being
+	 * made smaller than the minimum possible size, which is
+	 * TAITO_SCREEN_WIDTH x TAITO_SCREEN_HEIGHT. If it is, do not let it 
+	 * go any smaller. If it is being made larger, then just set it to the new width
+	 */
 }
 
 TaitoScreen::~TaitoScreen()
