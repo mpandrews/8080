@@ -12,6 +12,9 @@ set(FlagSettings "-Wall" "-Werror" "-Wextra"
 	"$<$<CONFIG:DEBUG>:-DVERBOSE -DDEBUG>"
 )
 
+set (CMAKE_BUILD_RPATH_USE_ORIGIN ON)
+set (CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH}:$ORIGIN})
+
 OPTION(UNTHROTTLE "Unthrottle emulated CPU speed" OFF)
 CMAKE_DEPENDENT_OPTION(BENCHMARKING "Turn on CPU emulation speed benchmarking output" OFF 
 	"NOT UNTHROTTLE" OFF)
