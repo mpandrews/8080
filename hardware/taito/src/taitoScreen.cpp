@@ -66,7 +66,7 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 	// An SDL renderer is associated with a window. It is the object that
 	// refreshes the window or sections of the window
 	this->renderer = SDL_CreateRenderer(
-			this->window, -1, SDL_RENDERER_SOFTWARE);
+			this->window, -1, SDL_RENDERER_ACCELERATED);
 	if (renderer == NULL)
 	{
 		std::cout << "Could not load SDL renderer. " << SDL_GetError()
@@ -561,6 +561,7 @@ int TaitoScreen::handleInput()
 				break;
 			default: break;
 			};
+			break;
 rom_handler:
 		default: update_keystates(this->tStruct, &event);
 		};
