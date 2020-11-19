@@ -2,6 +2,7 @@
 ![](space_invaders.gif)
 ## Table of Contents
 1. [Introduction](#Introduction) 
+    - [Features](#Features)
     - [Dependencies](#Dependencies)
     - [Required Build Tools](#Required-Build-Tools)
     - [System Requirements](#System-Requirements)
@@ -9,7 +10,7 @@
 2. [Project Quickstart](#Project-Quickstart)
     - [Play Space Invaders Game](#Play-Space-Invaders-Game)
     - [Altair 8k BASIC](#Altair-8k-Basic)
-    - [Running the Emulator](#Running-the-Emulator)
+    - [Running the Emulator](#Running-the-Emulator-with-other-ROMs-or-Hardware-Sets)
     - [Speed Benchmarking and Speed Adjustment](#Speed-Benchmarking-and-Speed-Adjustment)
     - [CPU Testing](#CPU-Testing)
 3. [ROM Files and Read-Only Masking](roms/README.md)
@@ -21,6 +22,14 @@ The Intel-8080 is an 8-bit microprocessor that Intel began producing in 1974. It
 Space Invaders is a 1978 arcade game by Taito. The game’s goal is to defeat five rows of eleven aliens that move horizontally back and forth across the screen as they advance toward the bottom of the screen. 
 
 Space Invaders is a processor-based system consisting of an Intel 8080 CPU running at roughly 2 MHz, 8K ROM, 8K of RAM, a 2-byte shift register, and specialized audio and display hardware. The goal of this project is to create an Intel 8080 emulator in C/C++ that can execute a Space Invaders ROM file and play the game. This project will heavily draw from the knowledge gained from CS 271, Computer Architecture and Assembly Language, as well some others like CS 344, Operating Systems, to understand how the Intel 8080 operates and emulate its behavior using C/C++.
+
+### Features
+- [x] Playable games: Space Invaders, Balloon Bomber, Lunar Rescue, and Ozma
+- [x] Keyboard controls
+- [x] Colored screen
+- [x] Resizable screen
+- [x] Sound
+- [x] Altair 8k Basic
 
 ### Dependencies
 - SDL2 development libraries
@@ -56,26 +65,39 @@ Space Invaders is a processor-based system consisting of an Intel 8080 CPU runni
 - Run `make`.  Once a build tree is established for a build type, any changes to the actual source files will be picked up by make.
 - Run `make test` to run unit tests, if desired.
 ### Play Space Invaders Game
-- In the `release` subdirectory, run `make` and then `./8080 -r roms/invaders_cv --hw si` to play Space Invaders.  (Note that while you can play the game on a Debug build, it will be very slow on most systems due to the overhead of the continuous disassembly printing.)
+![](si.png) 
+- Keyboard control:
+
+| Key | Description |
+| --- | --- |
+| C | Insert Coin |
+| S | 1 Player start |
+| Down | 2 Player start |
+| A | Player 1 left |
+| D | Player 1 right |
+| W | Player 1 shoot |
+| Left | Player 2 left |
+| Right | Player 2 right |
+| Up | Player 2 shoot |
+| R | Reset game |
+| Esc | Quit game |
+| T | Tilt |
+| 0-7 | dip switches |
+| 8 | Sound on/off |
+
+- In the `release` subdirectory, run `make` and then `./8080 -r roms/invaders_cv --hw si` to play Space Invaders.  
+    - Note that while you can play the game on a Debug build, it will be very slow on most systems due to the overhead of the continuous disassembly printing.
 - You can optionally play other games using the same `si` hardware lib, such as Balloon Bomber, Lunar Rescue, and Ozma. They use the same keyboard controls as SI.
     - `./8080 -r roms/balloon --hw si`
+    
+    ![](balloon.png)
     - `./8080 -r roms/lunar_rescue --hw si`
+    
+    ![](lunar.png)
     - `./8080 -r roms/ozma --hw si`
-- Keyboard control:
-    - `C` = Insert coin
-    - `S` = 1 Player start
-    - `Down` = 2 Player start
-    - `A` = Player 1 left
-    - `D` = Player 1 right
-    - `W` = Player 1 shoot
-    - `Left` = Player 2 left
-    - `Right` = Player 2 right
-    - `Up` = Player 2 shoot
-    - `R` = Reset game
-    - `Esc` = Quit game
-    - `T` = Tilt
-    - numbers 0-7 = dip switches
-    - number 8 = Sound on/off (default is sound on)
+    
+    ![](ozma.png)
+
 ### Altair 8K BASIC
 #### Running BASIC
  The emulator includes the [Altair Clone ROM of Altair 8k BASIC 4.0](https://altairclone.com/downloads/roms/8K%20BASIC/).  Because Altair BASIC handled text I/O via the Altair 8800's serial card, we have added an `ncurses`-based hardware library for use with the ROM.
@@ -175,11 +197,11 @@ At present, the emulator passes the available 8080 test ROMs we have access to. 
 
 Three test roms are available:
 - The 1980 Microcosm Associates test, usually called TST8080.
-- - `roms/cpudiag`
+    - `roms/cpudiag`
 - The 1981 Supersoft Associates Diagnostic II v. 1.2, usually called CPUTEST.
-- - `roms/cputest`
+    - `roms/cputest`
 - The 1994 zexlax Z80 Exerciser by Frank Cringle, with the 2009 modifications by Ian Bartholomew.
-- - `roms/exerciser`
+    - `roms/exerciser`
 
 Assembly source for all three can be found at https://altairclone.com/downloads/cpu_tests/ .
 
