@@ -77,6 +77,8 @@ class TaitoScreen
 	const int numColorMasks;
 	SDL_Surface** colorMasks;
 
+	SDL_Rect displayRect;
+
       public:
 	// constructor destructor
 	TaitoScreen(struct taito_struct* tStruct);
@@ -92,6 +94,9 @@ class TaitoScreen
 	void renderSurface(SDL_Surface*);
 	void applyBlur();
 	int handleInput();
+
+	// event handlers
+	void configureDisplayRect();
 
 	// other
 	void sendInterrupt(Uint8 interruptCode);

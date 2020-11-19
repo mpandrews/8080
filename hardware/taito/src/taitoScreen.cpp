@@ -32,6 +32,8 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 		std::cout << "Could not initialize SDL. " << std::endl;
 		exit(1);
 	};
+
+	// Create and configure the display window
 	this->window = SDL_CreateWindow("Space Invaders", // window name
 			SDL_WINDOWPOS_CENTERED,		  // horizontal pos
 			SDL_WINDOWPOS_CENTERED,		  // vertical pos
@@ -45,7 +47,12 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 			  << std::endl;
 		exit(1);
 	}
+	SDL_SetWindowResizable(this->window, SDL_TRUE);
+	SDL_SetWindowMinimumSize(
+			this->window, TAITO_SCREEN_HEIGHT, TAITO_SCREEN_WIDTH);
+	this->configureDisplayRect();
 
+	// Set up and configure audio
 	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 1, 512) != 0)
 	{
 		fprintf(stderr,
@@ -59,7 +66,7 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 	// An SDL renderer is associated with a window. It is the object that
 	// refreshes the window or sections of the window
 	this->renderer = SDL_CreateRenderer(
-			this->window, -1, SDL_RENDERER_SOFTWARE);
+			this->window, -1, SDL_RENDERER_ACCELERATED);
 	if (renderer == NULL)
 	{
 		std::cout << "Could not load SDL renderer. " << SDL_GetError()
@@ -75,13 +82,13 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 	 */
 	this->gameDisplaySurface = SDL_CreateRGBSurfaceWithFormatFrom(
 			this->displayBuffer,
-			TAITO_SCREEN_WIDTH,  // width of surface
-			TAITO_SCREEN_HEIGHT, // height of surface
+			TAITO_SCREEN_HEIGHT, // width of surface
+			TAITO_SCREEN_WIDTH,  // height of surface
 			SDL_BYTESPERPIXEL(
 					SDL_PIXELFORMAT_ARGB4444), // depth -
 								   // bits-per-pixel
-			TAITO_SCREEN_WIDTH * 2, // pitch - width of one row of
-						// pixels
+			TAITO_SCREEN_HEIGHT * 2, // pitch - width of one row of
+						 // pixels in bytes
 			SDL_PIXELFORMAT_RGBA4444); // format
 	if (gameDisplaySurface == NULL)
 	{
@@ -104,10 +111,10 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 			this->colorMasks[i] =
 					SDL_CreateRGBSurfaceWithFormatFrom(
 							maskBytes,
-							TAITO_SCREEN_WIDTH / 8,
 							TAITO_SCREEN_HEIGHT / 8,
-							8,
 							TAITO_SCREEN_WIDTH / 8,
+							8,
+							TAITO_SCREEN_HEIGHT / 8,
 							SDL_PIXELFORMAT_RGB332);
 		}
 	}
@@ -122,37 +129,46 @@ Uint8* TaitoScreen::getColorMaskFromProm(const unsigned char* const prom)
 {
 	Uint8* mask = new Uint8[(TAITO_SCREEN_WIDTH / 8)
 				* (TAITO_SCREEN_HEIGHT / 8)];
-	for (int i = 0; i
-			< (TAITO_SCREEN_WIDTH / 8) * (TAITO_SCREEN_HEIGHT / 8);
-			++i)
+	for (int i = 0; i < (TAITO_SCREEN_HEIGHT / 8); ++i)
 	{
-		switch (prom[i])
+		for (int j = 0; j < (TAITO_SCREEN_WIDTH / 8); ++j)
 		{
-		case 0:
-			mask[i] = 0b00000000; // black
-			break;
-		case 1:
-			mask[i] = 0b11100000; // red
-			break;
-		case 2:
-			mask[i] = 0b00000011; // blue
-			break;
-		case 3:
-			mask[i] = 0b11100011; // red + blue = magenta
-			break;
-		case 4:
-			mask[i] = 0b00011100; // green
-			break;
-		case 5:
-			mask[i] = 0b11111100; // red + green = yellow
-			break;
-		case 6:
-			mask[i] = 0b00011111; // green + blue = cyan
-			break;
-		case 7:
-			mask[i] = 0b11111111; // green + blue + red = white
-			break;
-		};
+			int maskIndex = ((TAITO_SCREEN_WIDTH / 8) - j - 1)
+							* (TAITO_SCREEN_HEIGHT
+									/ 8)
+					+ i;
+			switch (prom[i * (TAITO_SCREEN_WIDTH / 8) + j])
+			{
+			case 0:
+				mask[maskIndex] = 0b00000000; // black
+				break;
+			case 1:
+				mask[maskIndex] = 0b11100000; // red
+				break;
+			case 2:
+				mask[maskIndex] = 0b00000011; // blue
+				break;
+			case 3:
+				mask[maskIndex] = 0b11100011; // red + blue =
+							      // magenta
+				break;
+			case 4:
+				mask[maskIndex] = 0b00011100; // green
+				break;
+			case 5:
+				mask[maskIndex] = 0b11111100; // red + green =
+							      // yellow
+				break;
+			case 6:
+				mask[maskIndex] = 0b00011111; // green + blue =
+							      // cyan
+				break;
+			case 7:
+				mask[maskIndex] = 0b11111111; // green + blue +
+							      // red = white
+				break;
+			};
+		}
 	}
 	return mask;
 }
@@ -372,6 +388,44 @@ void TaitoScreen::applyBlur()
 		this->displayBuffer[i] = newBuff[i];
 }
 
+void TaitoScreen::configureDisplayRect()
+{
+	int windowWidth, windowHeight, rectWidth, rectHeight, xOffset = 0,
+							      yOffset = 0;
+	SDL_GetWindowSize(this->window, &windowWidth, &windowHeight);
+
+	// Which dimension is the limiting factor for the size of the rect?
+	// i.e. Which dimension is smallest in proportion to the screen size?
+	if (windowWidth * TAITO_SCREEN_WIDTH
+			< windowHeight * TAITO_SCREEN_HEIGHT)
+	{
+		// the width is proportionally smaller
+		rectWidth  = windowWidth;
+		rectHeight = int((windowWidth / float(TAITO_SCREEN_HEIGHT))
+				 * TAITO_SCREEN_WIDTH);
+		yOffset	   = (windowHeight - rectHeight) / 2;
+	}
+	else if (windowWidth * TAITO_SCREEN_WIDTH
+			> windowHeight * TAITO_SCREEN_HEIGHT)
+	{
+		// the height is proportionally smaller, height will remain the
+		// same
+		rectHeight = windowHeight;
+		rectWidth  = int((windowHeight / float(TAITO_SCREEN_WIDTH))
+				 * TAITO_SCREEN_HEIGHT);
+		xOffset	   = (windowWidth - rectWidth) / 2;
+	}
+	else
+	{
+		rectHeight = windowHeight;
+		rectWidth  = windowWidth;
+	}
+	this->displayRect.x = xOffset;
+	this->displayRect.y = yOffset;
+	this->displayRect.w = rectWidth;
+	this->displayRect.h = rectHeight;
+}
+
 void TaitoScreen::renderSurface(SDL_Surface* surf)
 {
 	/* Create a rect that is the same size of the screen for rotations.
@@ -380,15 +434,6 @@ void TaitoScreen::renderSurface(SDL_Surface* surf)
 	 * the rotation (which occurs around the center of the rectangle), it
 	 * lines up just right with the window.
 	 */
-	SDL_Rect dest;
-	dest.x = (WINDOW_SCALE_FACTOR
-				 * (TAITO_SCREEN_HEIGHT - TAITO_SCREEN_WIDTH))
-		 / 2;
-	dest.y = (WINDOW_SCALE_FACTOR
-				 * (TAITO_SCREEN_WIDTH - TAITO_SCREEN_HEIGHT))
-		 / 2;
-	dest.w = WINDOW_SCALE_FACTOR * TAITO_SCREEN_WIDTH;
-	dest.h = WINDOW_SCALE_FACTOR * TAITO_SCREEN_HEIGHT;
 
 	// Create a texture from the passed-in surface
 	SDL_Texture* texture = NULL;
@@ -398,13 +443,7 @@ void TaitoScreen::renderSurface(SDL_Surface* surf)
 			  << std::endl;
 
 	// render it to the screen
-	if (SDL_RenderCopyEx(this->renderer,
-			    texture,
-			    NULL,
-			    &dest,
-			    270,
-			    NULL,
-			    SDL_FLIP_NONE)
+	if (SDL_RenderCopy(this->renderer, texture, NULL, &this->displayRect)
 			< 0)
 	{
 		std::cout << "Error rendering texture. " << SDL_GetError()
@@ -419,7 +458,7 @@ void TaitoScreen::renderFrame()
 {
 	// apply blur to the to-be rendered frame, then clear the previous
 	// render, generate the new one, and flash it to the screen.
-	this->applyBlur();
+	// this->applyBlur();
 	SDL_RenderClear(this->renderer);
 	this->renderSurface(this->colorMasks[this->currColorMask]);
 	this->renderSurface(this->gameDisplaySurface);
@@ -464,8 +503,15 @@ void TaitoScreen::videoRamToTaitoBuffer(sideOfScreen screenHalf)
 								 + j];
 			for (int k = 0; k < 8; ++k)
 			{
-				this->displayBuffer[i * TAITO_SCREEN_WIDTH
-						    + (j * 8) + k] =
+				/* This weird-looking formula simultaneously
+				 * performs the screen rotation and translates
+				 * the taito video buffer to color-format pixels
+				 */
+				this->displayBuffer[(TAITO_SCREEN_WIDTH
+								    - (j * 8)
+								    - k - 1)
+								    * TAITO_SCREEN_HEIGHT
+						    + i] =
 						pixels & bitMasks[k]
 								? TRANSPARENT_PIXEL
 								: BLACK_PIXEL;
@@ -505,6 +551,15 @@ int TaitoScreen::handleInput()
 				quit			    = 1;
 				break;
 			default: goto rom_handler;
+			};
+			break;
+		case SDL_WINDOWEVENT:
+			switch (event.window.event)
+			{
+			case SDL_WINDOWEVENT_RESIZED:
+				this->configureDisplayRect();
+				break;
+			default: break;
 			};
 			break;
 rom_handler:
