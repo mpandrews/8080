@@ -24,12 +24,13 @@ Space Invaders is a 1978 arcade game by Taito. The game’s goal is to defeat fi
 Space Invaders is a processor-based system consisting of an Intel 8080 CPU running at roughly 2 MHz, 8K ROM, 8K of RAM, a 2-byte shift register, and specialized audio and display hardware. The goal of this project is to create an Intel 8080 emulator in C/C++ that can execute a Space Invaders ROM file and play the game. This project will heavily draw from the knowledge gained from CS 271, Computer Architecture and Assembly Language, as well some others like CS 344, Operating Systems, to understand how the Intel 8080 operates and emulate its behavior using C/C++.
 
 ### Features
-- [x] Playable games: Space Invaders, Balloon Bomber, Lunar Rescue, and Ozma
-- [x] Keyboard controls
+- [x] Space Invaders, Balloon Bomber, Lunar Rescue, and Ozma
 - [x] Colored screen
 - [x] Resizable screen
 - [x] Sound
 - [x] Altair 8k Basic
+- [x] Unit tests 
+- [x] Integration tests (see [CPU Testing](#CPU-Testing))
 
 ### Dependencies
 - SDL2 development libraries
