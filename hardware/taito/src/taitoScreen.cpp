@@ -29,7 +29,8 @@ TaitoScreen::TaitoScreen(struct taito_struct* tStruct)
 	// Now we set up and configure SDL to render to a window
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0)
 	{
-		std::cout << "Could not initialize SDL: " << SDL_GetError() <<std::endl;
+		std::cout << "Could not initialize SDL: " << SDL_GetError()
+			  << std::endl;
 		exit(1);
 	};
 
